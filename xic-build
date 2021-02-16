@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Todo add filename (cant be wildcard)
+mvn package
+
+# TODO run jflex
+
+## create executable
+echo "java -cp ./target/xic-0.0.1-SNAPSHOT.jar mtm68.xic \$@" > xic
+chmod +x xic
