@@ -53,7 +53,7 @@ public class Main {
 	}
 	
 	public void printHelpScreen(CmdLineParser parser) {
-		System.out.println("java xic [options...] arguments...");
+		System.out.println("xic [options...] arguments...");
         parser.printUsage(System.out);
         System.out.println();
 	}
