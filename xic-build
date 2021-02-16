@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Todo add filename (cant be wildcard)
+# Dependencies
 mvn install:install-file \
    -Dfile=./lib/jflex-1.8.2/lib/jflex-full-1.8.2.jar \
    -DgroupId=de.jflex \
@@ -15,11 +15,12 @@ mvn install:install-file \
     -Dversion=2.33 \
     -Dpackaging=jar \
     -DgeneratePom=true
+# Create jar
 mvn package
 
 # TODO run jflex
 
-## create executable
-#echo "java -cp ./target/xic-0.0.1-SNAPSHOT.jar mtm68.xic \$@" > xic
+## Create executable
+#echo "java -cp ./target/xic-0.0.1-SNAPSHOT.jar mtm68.Main\$@" > xic
 echo "java -cp target/xic-0.0.1-SNAPSHOT.jar mtm68.Main" > xic
 chmod +x xic

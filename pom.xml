@@ -10,8 +10,6 @@
   <artifactId>xic</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <dependencies>
-  </dependencies>
 
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
