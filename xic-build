@@ -6,5 +6,6 @@ mvn package
 # TODO run jflex
 
 ## create executable
-echo "java -cp ./target/xic-0.0.1-SNAPSHOT.jar mtm68.xic \$@" > xic
+#echo "java -cp ./target/xic-0.0.1-SNAPSHOT.jar mtm68.xic \$@" > xic
+echo "java -cp target/xic-0.0.1-SNAPSHOT.jar mtm68.Main" > xic
 chmod +x xic
