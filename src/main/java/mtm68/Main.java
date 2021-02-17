@@ -42,6 +42,7 @@ public class Main {
 		}
 		
 		//Act on command arguments
+		if(sourceFiles.isEmpty() && !help) printHelpScreen(cmdParser);
 		
 		if(help) printHelpScreen(cmdParser);
 		
