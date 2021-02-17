@@ -10,12 +10,26 @@
   <artifactId>xic</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <maven.compiler.release>11</maven.compiler.release>
-    </properties>
+  </properties>
+
+  <dependencies>
+	  <dependency>
+  		<groupId>args4j</groupId>
+  		<artifactId>args4j</artifactId>
+  		<version>2.33</version>
+  		<type>bundle</type>
+	  </dependency>
+	  <dependency>
+		<groupId>args4j</groupId>
+  		<artifactId>args4j</artifactId>
+  		<version>2.33</version>
+  		<type>bundle</type>
+	  </dependency>
+  </dependencies>
  
     <build>
         <pluginManagement>
