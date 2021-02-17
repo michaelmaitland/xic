@@ -28,3 +28,6 @@ local.properties
 
 # the build
 xic
+
+# generated lexer
+src/main/java/mtm68/lexer/Lexer.java
