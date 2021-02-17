@@ -41,10 +41,8 @@ public class Main {
 	         printHelpScreen(cmdParser);
 		}
 		
-		//Act on command arguments
-		if(sourceFiles.isEmpty() && !help) printHelpScreen(cmdParser);
-		
-		if(help) printHelpScreen(cmdParser);
+		//Act on command arguments		
+		if(help || sourceFiles.isEmpty()) printHelpScreen(cmdParser);
 		
 		if(lex) {
 			for(File file : sourceFiles) {
