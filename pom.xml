@@ -24,7 +24,7 @@
 	  </dependency>
 	  <dependency>
 		<groupId>de.jflex</groupId>
-  		<artifactId>jflex-maven-plugin</artifactId>
+  		<artifactId>jflex</artifactId>
   		<version>1.8.2</version>
 	  </dependency>
   </dependencies>

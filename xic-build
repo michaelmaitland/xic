@@ -4,7 +4,7 @@
 mvn install:install-file \
    -Dfile=./lib/jflex-1.8.2/lib/jflex-full-1.8.2.jar \
    -DgroupId=de.jflex \
-   -DartifactId=jflex-maven-plugin \
+   -DartifactId=jflex \
    -Dversion=1.8.2 \
    -Dpackaging=jar \
    -DgeneratePom=true
