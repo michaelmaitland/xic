@@ -8,13 +8,13 @@ mvn install:install-file \
    -Dversion=1.8.2 \
    -Dpackaging=jar \
    -DgeneratePom=true
-#  mvn install:install-file \
-#    -Dfile=./lib/args4j-2.33.jar \
-#    -DgroupId=args4j \
-#    -DartifactId=args4j\
-#    -Dversion=2.33 \
-#    -Dpackaging=bundle \
-#    -DgeneratePom=true
+  mvn install:install-file \
+    -Dfile=./lib/args4j-2.33.jar \
+    -DgroupId=args4j \
+    -DartifactId=args4j\
+    -Dversion=2.33 \
+    -Dpackaging=jar \
+    -DgeneratePom=true
 # Create jar
 mvn package
 
