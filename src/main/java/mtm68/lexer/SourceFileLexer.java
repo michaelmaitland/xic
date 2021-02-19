@@ -3,6 +3,7 @@ package mtm68.lexer;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.List;
 
 import mtm68.lexer.Lexer.Token;
 
@@ -22,6 +23,11 @@ public class SourceFileLexer {
 
 	public Token nextToken() throws java.io.IOException {
 		return lexer.nextToken();
+	}
+	
+	public List<Token> getTokens() throws java.io.IOException {
+		// TODO: get all tokens and return
+		return null;
 	}
 	
 	public int getLineNum() {
