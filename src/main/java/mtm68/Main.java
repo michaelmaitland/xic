@@ -13,6 +13,7 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
 import mtm68.lexer.Lexer.Token;
+import mtm68.lexer.Lexer.TokenType;
 import mtm68.lexer.SourceFileLexer;
 
 public class Main {

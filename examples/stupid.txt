@@ -1,1 +1,2 @@
-"\x48ello world!"
+int x: '\x0048';
+int y: 'x';

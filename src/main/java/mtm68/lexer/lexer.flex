@@ -15,6 +15,8 @@ import mtm68.util.StringUtils;
 
 %{
 
+// TODO: Better lex errors (maybe error token?)
+
     public enum TokenType {
 		// Reserved
 		USE,
@@ -23,8 +25,8 @@ import mtm68.util.StringUtils;
 		ELSE,
 		RETURN,
 		LENGTH,
-		INT_T,
-		BOOL_T,
+		INT_T("int"),
+		BOOL_T("bool"),
 		TRUE,
 		FALSE,
 
@@ -34,37 +36,48 @@ import mtm68.util.StringUtils;
 		STRING,
 		
 		// Punctuation
-		DOT,
-		OPEN_SQUARE,
-		CLOSE_SQUARE,
-		OPEN_PAREN,
-		CLOSE_PAREN,
-		OPEN_CURLY,
-		CLOSE_CURLY,
-		EXCLAMATION,
-		COLON,
-		SEMICOLON,
-		COMMA,
+		DOT("."),
+		OPEN_SQUARE("["),
+		CLOSE_SQUARE("]"),
+		OPEN_PAREN("("),
+		CLOSE_PAREN(")"),
+		OPEN_CURLY("{"),
+		CLOSE_CURLY("}"),
+		EXCLAMATION("!"),
+		COLON(":"),
+		SEMICOLON(";"),
+		COMMA(","),
+        EQ("="),
 		
 		// Operators
-		ADD,
-		SUB,
-		MULT,
-		DIV,
-		MOD,
-		HIGH_MULT,
-		LT,
-		LEQ,
-		GT,
-		GEQ,
-		EQ,
-		NEQ,
-		AND,
-		OR;
+		ADD("+"),
+		SUB("-"),
+		MULT("*"),
+		DIV("/"),
+		MOD("%"),
+		HIGH_MULT("*>>"),
+		LT("<"),
+		LEQ("<="),
+		GT(">"),
+		GEQ(">="),
+		EQEQ("=="),
+		NEQ("!="),
+		AND("&"),
+		OR("|");
+
+        private String pp;
+
+        private TokenType(String pp) {
+            this.pp = pp;
+        }
+
+        private TokenType() {
+            this.pp = name().toLowerCase();
+        }
 		
 		@Override
 		public String toString() {
-			return name().toLowerCase();
+			return pp;
 		}
     }
     public static class Token {
@@ -105,23 +118,28 @@ import mtm68.util.StringUtils;
 	}
 %}
 
-// TODO: How to parse UTF
-
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+Comment = "//" {InputCharacter}* {LineTerminator}?
 Whitespace = [ \t\f\r\n]
 Letter = [a-zA-Z]
 Digit = [0-9]
-Identifier = {Letter}({Digit}|{Letter}|_)*
-Integer = 0 | [1-9]{Digit}*
 HexDigit = [0-9A-Fa-f]
 Hex = "\\x" {HexDigit}{1,4}
+Identifier = {Letter}({Digit}|{Letter}|_|"\'")*
+Integer = 0 | [1-9]{Digit}* 
+IntegerLiteral = "\'" {InputCharacter} "\'" 
+HexLiteral = "\'" {Hex} "\'" 
 
 %state STRING
 
 %%
 
-{Whitespace}  { /* ignore */ }
 
 <YYINITIAL> {
+    {Whitespace}  { /* ignore */ }
+    {Comment}     { /* ignore */ }
+
     "use"         { return createToken(TokenType.USE); }
     "if"		  { return createToken(TokenType.IF); }
     "while"  	  { return createToken(TokenType.WHILE); }
@@ -133,11 +151,38 @@ Hex = "\\x" {HexDigit}{1,4}
     "true"        { return createToken(TokenType.TRUE); }
     "false"       { return createToken(TokenType.FALSE); }
 
+    "."           { return createToken(TokenType.DOT); }
+    "["           { return createToken(TokenType.OPEN_SQUARE); }
+    "]"           { return createToken(TokenType.CLOSE_SQUARE); }
+    "("           { return createToken(TokenType.OPEN_PAREN); }
+    ")"           { return createToken(TokenType.CLOSE_PAREN); }
+    "{"           { return createToken(TokenType.OPEN_CURLY); }
+    "}"           { return createToken(TokenType.CLOSE_CURLY); }
+    "!"           { return createToken(TokenType.EXCLAMATION); }
+    ":"           { return createToken(TokenType.COLON); }
+    ";"           { return createToken(TokenType.SEMICOLON); }
+    ","           { return createToken(TokenType.COMMA); }
+    "="           { return createToken(TokenType.EQ); }
+
+    "+"           { return createToken(TokenType.ADD); }
+    "-"           { return createToken(TokenType.SUB); }
+    "*"           { return createToken(TokenType.MULT); }
+    "/"           { return createToken(TokenType.DIV); }
+    "*>>"         { return createToken(TokenType.HIGH_MULT); }
+    "<"           { return createToken(TokenType.LT); }
+    "<="          { return createToken(TokenType.LEQ); }
+    ">"           { return createToken(TokenType.GT); }
+    ">="          { return createToken(TokenType.GEQ); }
+    "=="          { return createToken(TokenType.EQEQ); }
+    "!="          { return createToken(TokenType.NEQ); }
+    "&"           { return createToken(TokenType.AND); }
+    "|"           { return createToken(TokenType.OR); }
+
     {Identifier}  { return createToken(TokenType.ID, yytext()); }
     {Integer}     { return createToken(TokenType.INT,
                      Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
-
-    "."           { return createToken(TokenType.DOT); }
+    {IntegerLiteral}     { return createToken(TokenType.INT, (long) yytext().charAt(1)); }  
+    {HexLiteral}     { return createToken(TokenType.INT, StringUtils.convertHexToLong(yytext().replace("'", ""))); }  
 
     \"            { string.setLength(0); yybegin(STRING); }
 }
@@ -147,11 +192,11 @@ Hex = "\\x" {HexDigit}{1,4}
     \"                             { yybegin(YYINITIAL); 
                                     return createToken(TokenType.STRING, string.toString()); }
 
-    [^\n\'\\]+                      { string.append(yytext());}
+    [^\n\'\\\"]+                   { string.append(yytext());}
 
-      \\n                            { string.append('\n'); }
-      \\\'                           { string.append('\''); }
-      \\                             { string.append('\\'); }
-      {Hex}                          { char hexChar = StringUtils.convertHexToChar(yytext());
+    \\n                            { string.append('\n'); }
+    \\\'                           { string.append('\''); }
+    \\                             { string.append('\\'); }
+    {Hex}                          { char hexChar = StringUtils.convertHexToChar(yytext());
                                        string.append(hexChar); }
 }
