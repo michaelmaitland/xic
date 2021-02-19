@@ -2,7 +2,10 @@ package mtm68.lexer;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 import mtm68.lexer.Lexer.Token;
 
@@ -19,16 +22,15 @@ public class SourceFileLexer {
 		this.in = new FileReader(filename);
 		this.lexer = new Lexer(in);
 	}
+	
+	public List<Token> getTokens() throws IOException {
+		List<Token> ret = new ArrayList<>();
+		for(Token token = lexer.nextToken(); token != null;) {
+			ret.add(token);
+		}
+		return ret;
+	}
 
-	public Token nextToken() throws java.io.IOException {
-		return lexer.nextToken();
-	}
-	
-	public int getLineNum() {
-		return -1;
-		//return lexer.zzline();
-	}
-	
 	public String getFilename() {
 		return filename;
 	}
