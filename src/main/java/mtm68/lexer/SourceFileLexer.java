@@ -25,7 +25,7 @@ public class SourceFileLexer {
 	
 	public List<Token> getTokens() throws IOException {
 		List<Token> ret = new ArrayList<>();
-		for(Token token = lexer.nextToken(); token != null;) {
+		for(Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
 			ret.add(token);
 		}
 		return ret;

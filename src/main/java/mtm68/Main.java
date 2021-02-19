@@ -1,6 +1,6 @@
 package mtm68;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -11,6 +11,9 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
+
+import mtm68.lexer.Lexer.Token;
+import mtm68.lexer.SourceFileLexer;
 
 public class Main {
 
@@ -24,7 +27,7 @@ public class Main {
 	private Path dPath = Paths.get(System.getProperty("user.dir"));
 	
 	@Argument
-	private List<File> sourceFiles = new ArrayList<File>();
+	private List<String> sourceFiles = new ArrayList<>();
 	
 	public static void main(String[] args) {
 		new Main().parseCmdLine(args);
@@ -45,15 +48,15 @@ public class Main {
 		if(help || sourceFiles.isEmpty()) printHelpScreen(cmdParser);
 		
 		if(lex) {
-			for(File file : sourceFiles) {
-				System.out.println("Lexing " + file.getName() + " into " + dPath.getFileName());
-				// TODO lexing
-//		for(filename : filenames) {
-//			sourcefilerlexr.gettokens
-//			Lexer l = new Lexer(new FileReader(filename))
-//			List<Tokens> tokens = 
-//			parser.parseTokens(tokens)
-//		}
+			for(String filename : sourceFiles) {
+				System.out.println("Lexing " + filename + " into " + dPath.getFileName());
+				try {
+					SourceFileLexer lexer = new SourceFileLexer(filename);
+					List<Token> tokens = lexer.getTokens();
+					tokens.forEach(System.out::println);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

@@ -13,34 +13,39 @@ package mtm68.lexer;
 %column
 
 %{
-    enum TokenType {
-	IF,
-	ID,
-	INT,
-	FLOAT,
-	DOT
-    }
-    class Token {
-	TokenType type;
-	Object attribute;
-	int lineNum;
-	int column;
-	Token(TokenType tt, Object attr, int lineNum, int column) {
-	    type = tt; attribute = attr;
-	    this.lineNum = lineNum;
-	    this.column = column;
-	}
-	public String toString() {
-	    return "" + type + "(" + attribute + ")";
-	}
-	
-	public int getLineNum() {
-		return lineNum;
-	}
+    public enum TokenType {
+		IF,
+		ID,
+		INT,
+		FLOAT,
+		DOT;
 
-	public int getColumn() {
-		return column;
-	}
+		@Override
+		public String toString() {
+			return name().toLowerCase();
+		}
+    }
+    public static class Token {
+		private TokenType type;
+		private Object attribute;
+		private int lineNum;
+		private int column;
+		public Token(TokenType tt, Object attr, int lineNum, int column) {
+			type = tt; attribute = attr;
+			this.lineNum = lineNum;
+			this.column = column;
+		}
+		public String toString() {
+			return lineNum + ":" + column + " " + type + " " + (attribute == null ? "" : attribute);
+		}
+		
+		public int getLineNum() {
+			return lineNum;
+		}
+
+		public int getColumn() {
+			return column;
+		}
     }
 
 	public int yyline() { return yyline + 1; }
