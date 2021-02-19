@@ -47,6 +47,13 @@ public class Main {
 		if(lex) {
 			for(File file : sourceFiles) {
 				System.out.println("Lexing " + file.getName() + " into " + dPath.getFileName());
+				// TODO lexing
+//		for(filename : filenames) {
+//			sourcefilerlexr.gettokens
+//			Lexer l = new Lexer(new FileReader(filename))
+//			List<Tokens> tokens = 
+//			parser.parseTokens(tokens)
+//		}
 			}
 		}
 	}
