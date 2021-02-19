@@ -47,6 +47,8 @@ public class Main {
 		//Act on command arguments		
 		if(help || sourceFiles.isEmpty()) printHelpScreen(cmdParser);
 		
+		// TODO: Ignore non *.xi files
+		// TODO: Figure out if it should throw an error or not
 		if(lex) {
 			for(String filename : sourceFiles) {
 				System.out.println("Lexing " + filename + " into " + dPath.getFileName());

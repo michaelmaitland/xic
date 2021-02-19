@@ -16,6 +16,8 @@ public class SourceFileLexer {
 	private Reader in;
 
 	private Lexer lexer;
+	
+	private List<Token> tokens;
 
 	public SourceFileLexer(String filename) throws FileNotFoundException {
 		this.filename = filename;
@@ -23,12 +25,26 @@ public class SourceFileLexer {
 		this.lexer = new Lexer(in);
 	}
 	
-	public List<Token> getTokens() throws IOException {
-		List<Token> ret = new ArrayList<>();
-		for(Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
-			ret.add(token);
+	// TODO: Throw LexerException
+	public List<Token> getTokens() {
+		if(tokens == null) {
+			tokens = new ArrayList<>();
+			
+			try {
+				for(Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
+					tokens.add(token);
+				}
+			} catch(IOException e) {
+				// TODO: Handle
+			} finally {
+				try {
+					lexer.yyclose();
+				} catch (IOException e) {
+					// TODO: ???? WHAT HAPPENS HERE??
+				}
+			}
 		}
-		return ret;
+		return tokens;
 	}
 
 	public String getFilename() {
