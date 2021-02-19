@@ -49,6 +49,7 @@ public class Main {
 		
 		// TODO: Ignore non *.xi files
 		// TODO: Figure out if it should throw an error or not
+		// TODO: Output tokens into lexed file
 		if(lex) {
 			for(String filename : sourceFiles) {
 				System.out.println("Lexing " + filename + " into " + dPath.getFileName());
