@@ -91,8 +91,19 @@ import mtm68.util.StringUtils;
 			this.column = column;
 		}
 		public String toString() {
-			return lineNum + ":" + column + " " + type + " " + (attribute == null ? "" : attribute);
+			return lineNum + ":" + column + " " + type + prettyPrintAttribute();
 		}
+
+        private String prettyPrintAttribute(){
+            if(attribute == null) return "";
+            
+            if(attribute instanceof String) {
+                String str = (String) attribute;
+                return " " + str.replaceAll("[\n]", "\\\\n");
+            } else {
+            	return " " + attribute.toString();
+            }
+        }
 		
 		public int getLineNum() {
 			return lineNum;

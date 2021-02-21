@@ -78,7 +78,7 @@ public class Main {
 		try {
 			Files.createDirectories(outpath.getParent());
 			Files.write(outpath, tokens.stream()
-					.map(t -> t.toString().trim())
+					.map(Object::toString)
 					.collect(Collectors.toList()), Charset.defaultCharset());
 		} catch (IOException e) {
 			System.out.println("Failed writing lexer results to " + dPath.resolve(outfile) + " for " + filename);
