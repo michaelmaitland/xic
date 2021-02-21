@@ -1,10 +1,13 @@
 package mtm68;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -13,7 +16,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
 import mtm68.lexer.Lexer.Token;
-import mtm68.lexer.Lexer.TokenType;
 import mtm68.lexer.SourceFileLexer;
 
 public class Main {
@@ -57,11 +59,26 @@ public class Main {
 				try {
 					SourceFileLexer lexer = new SourceFileLexer(filename);
 					List<Token> tokens = lexer.getTokens();
-					tokens.forEach(System.out::println);
+					writeToFile(filename, tokens);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+
+	/**
+	 * Writes lexed results to [filename.lexed]
+	 * Requires: filename is of the form filename.xi or filename.ixi
+	 */
+	public void writeToFile(String filename, List<Token> tokens) {
+		String outfile = filename.split("(.+?)(\\.[^.]*$|$)")[0] + ".lexed";
+		try {
+			Files.write(dPath.resolve(outfile), tokens.stream()
+					.map(Object::toString)
+					.collect(Collectors.toList()), Charset.defaultCharset());
+		} catch (IOException e) {
+			System.out.println("Failed writing lexer results to " + dPath.resolve(outfile) + " for " + filename);
 		}
 	}
 	
