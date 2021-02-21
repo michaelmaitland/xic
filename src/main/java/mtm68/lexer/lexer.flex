@@ -65,7 +65,10 @@ import mtm68.util.StringUtils;
 		EQEQ("=="),
 		NEQ("!="),
 		AND("&"),
-		OR("|");
+		OR("|"),
+
+		// Error
+		ERROR;
 
         private String pp;
 
@@ -99,12 +102,14 @@ import mtm68.util.StringUtils;
         private String prettyPrintAttribute(){
             if(attribute == null) return "";
             
+            if(type == TokenType.ERROR) return ":" + attribute;
+            
             if(attribute instanceof String) {
                 String str = (String) attribute;
                 return " " + str.replaceAll("[\n]", "\\\\n");
             } else {
-            	return " " + attribute.toString();
-            }
+            	return " " + attribute;
+			}
         }
 		
 		public int getLineNum() {
@@ -113,6 +118,10 @@ import mtm68.util.StringUtils;
 
 		public int getColumn() {
 			return column;
+		}
+		
+		public TokenType getType() {
+			return type;
 		}
     }
 
@@ -204,6 +213,8 @@ HexLiteral = "\'" {Hex} "\'"
     {HexLiteral}     { return createToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
+    
+    [^]			 { return createToken(TokenType.ERROR, "Invalid character " + yytext()); }
 }
 
 <STRING> {

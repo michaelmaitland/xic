@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mtm68.lexer.Lexer.Token;
+import mtm68.lexer.Lexer.TokenType;
 
 public class SourceFileLexer {
 
@@ -33,6 +34,8 @@ public class SourceFileLexer {
 			try {
 				for(Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
 					tokens.add(token);
+
+					if(token.getType() == TokenType.ERROR) break;
 				}
 			} catch(IOException e) {
 				// TODO: Handle
