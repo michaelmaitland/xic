@@ -49,6 +49,7 @@ import mtm68.util.StringUtils;
 		SEMICOLON(";"),
 		COMMA(","),
         EQ("="),
+        UNDERSCORE("_"),
 		
 		// Operators
 		ADD("+"),
@@ -180,6 +181,7 @@ HexLiteral = "\'" {Hex} "\'"
     ";"           { return createToken(TokenType.SEMICOLON); }
     ","           { return createToken(TokenType.COMMA); }
     "="           { return createToken(TokenType.EQ); }
+    "_"           { return createToken(TokenType.UNDERSCORE); }
 
     "+"           { return createToken(TokenType.ADD); }
     "-"           { return createToken(TokenType.SUB); }
