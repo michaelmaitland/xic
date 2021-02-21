@@ -115,13 +115,18 @@ import mtm68.util.StringUtils;
     }
 
     StringBuffer string = new StringBuffer();
+    int stringCol, stringLine;
 
 	public int yyline() { return yyline + 1; }
 
 	public int yycolumn() { return yycolumn + 1; }
+
+	public Token createToken(TokenType tt, Object attribute, int line, int col) {
+		return new Token(tt, attribute, line, col);	
+	}
 	
 	public Token createToken(TokenType tt, Object attribute) {
-		return new Token(tt, attribute, yyline(), yycolumn());	
+		return createToken(tt, attribute, yyline(), yycolumn());
 	}
 
 	public Token createToken(TokenType tt) {
@@ -195,13 +200,13 @@ HexLiteral = "\'" {Hex} "\'"
     {IntegerLiteral}     { return createToken(TokenType.INT, (long) yytext().charAt(1)); }  
     {HexLiteral}     { return createToken(TokenType.INT, StringUtils.convertHexToLong(yytext().replace("'", ""))); }  
 
-    \"            { string.setLength(0); yybegin(STRING); }
+    \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
 }
 
 <STRING> {
 
     \"                             { yybegin(YYINITIAL); 
-                                    return createToken(TokenType.STRING, string.toString()); }
+                                    return createToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 
