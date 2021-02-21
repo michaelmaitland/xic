@@ -32,7 +32,7 @@ import mtm68.util.StringUtils;
 
 		// Constants
 		ID,
-		INT,
+		INT("integer"),
 		STRING,
 		
 		// Punctuation

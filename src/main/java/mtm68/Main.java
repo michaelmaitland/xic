@@ -53,8 +53,9 @@ public class Main {
 		// TODO: Ignore non *.xi files
 		// TODO: Figure out if it should throw an error or not
 		// TODO: Output tokens into lexed file
+		//System.out.println("dpath: " + dPath);
 		for (String filename : sourceFiles) {
-			System.out.println("Lexing " + filename + " into " + dPath.getFileName());
+			//System.out.println("Lexing " + filename + " into " + dPath.getFileName());
 			try {
 				SourceFileLexer lexer = new SourceFileLexer(filename);
 				List<Token> tokens = lexer.getTokens();
@@ -77,7 +78,7 @@ public class Main {
 		try {
 			Files.createDirectories(outpath.getParent());
 			Files.write(outpath, tokens.stream()
-					.map(Object::toString)
+					.map(t -> t.toString().trim())
 					.collect(Collectors.toList()), Charset.defaultCharset());
 		} catch (IOException e) {
 			System.out.println("Failed writing lexer results to " + dPath.resolve(outfile) + " for " + filename);
