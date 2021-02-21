@@ -33,6 +33,7 @@ import mtm68.util.StringUtils;
 		// Constants
 		ID,
 		INT("integer"),
+		CHARACTER,
 		STRING,
 		
 		// Punctuation
@@ -197,8 +198,8 @@ HexLiteral = "\'" {Hex} "\'"
     {Identifier}  { return createToken(TokenType.ID, yytext()); }
     {Integer}     { return createToken(TokenType.INT,
                      Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
-    {IntegerLiteral}     { return createToken(TokenType.INT, (long) yytext().charAt(1)); }  
-    {HexLiteral}     { return createToken(TokenType.INT, StringUtils.convertHexToLong(yytext().replace("'", ""))); }  
+    {IntegerLiteral}     { return createToken(TokenType.CHARACTER, yytext().charAt(1)); }  
+    {HexLiteral}     { return createToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
 }
