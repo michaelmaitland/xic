@@ -36,11 +36,11 @@ public class Main {
 		try {
 			new Main().parseCmdLine(args);
 		} catch (Exception e) {
-			System.out.println("xic died with message: " + e.getMessage());
+			System.out.println("xic died: " + e.getMessage());
 		}
 	}
 
-	public void parseCmdLine(String[] args) {
+	public void parseCmdLine(String[] args) throws Exception {
 		CmdLineParser cmdParser = new CmdLineParser(this, ParserProperties.defaults().withShowDefaults(false));
 
 		try {
@@ -56,19 +56,14 @@ public class Main {
 
 		// TODO: Ignore non *.xi files
 		// TODO: Figure out if it should throw an error or not
-		// TODO: Output tokens into lexed file
 		//System.out.println("dpath: " + dPath);
 		for (String filename : sourceFiles) {
 			//System.out.println("Lexing " + filename + " into " + dPath.getFileName());
-			try {
 				SourceFileLexer lexer = new SourceFileLexer(filename);
 				List<Token> tokens = lexer.getTokens();
 				if (lex) {
 					writeToFile(filename, tokens);
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 

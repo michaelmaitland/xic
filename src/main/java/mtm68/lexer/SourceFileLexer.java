@@ -37,6 +37,7 @@ public class SourceFileLexer {
 					break;
 			}
 			lexer.yyclose();
+			throw new IOException("Ouch");
 		}
 		return tokens;
 	}
