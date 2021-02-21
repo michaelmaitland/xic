@@ -13,11 +13,11 @@ import mtm68.lexer.Lexer.TokenType;
 public class SourceFileLexer {
 
 	private String filename;
-	
+
 	private Reader in;
 
 	private Lexer lexer;
-	
+
 	private List<Token> tokens;
 
 	public SourceFileLexer(String filename) throws FileNotFoundException {
@@ -25,27 +25,18 @@ public class SourceFileLexer {
 		this.in = new FileReader(filename);
 		this.lexer = new Lexer(in);
 	}
-	
-	// TODO: Throw LexerException
-	public List<Token> getTokens() {
-		if(tokens == null) {
-			tokens = new ArrayList<>();
-			
-			try {
-				for(Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
-					tokens.add(token);
 
-					if(token.getType() == TokenType.ERROR) break;
-				}
-			} catch(IOException e) {
-				// TODO: Handle
-			} finally {
-				try {
-					lexer.yyclose();
-				} catch (IOException e) {
-					// TODO: ???? WHAT HAPPENS HERE??
-				}
+	// TODO: Throw LexerException
+	public List<Token> getTokens() throws IOException {
+		if (tokens == null) {
+			tokens = new ArrayList<>();
+
+			for (Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
+				tokens.add(token);
+				if (token.getType() == TokenType.ERROR)
+					break;
 			}
+			lexer.yyclose();
 		}
 		return tokens;
 	}

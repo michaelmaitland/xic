@@ -33,7 +33,11 @@ public class Main {
 	private List<String> sourceFiles = new ArrayList<>();
 
 	public static void main(String[] args) {
-		new Main().parseCmdLine(args);
+		try {
+			new Main().parseCmdLine(args);
+		} catch (Exception e) {
+			System.out.println("xic died with message: " + e.getMessage());
+		}
 	}
 
 	public void parseCmdLine(String[] args) {
