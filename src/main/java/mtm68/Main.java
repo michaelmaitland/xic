@@ -56,14 +56,12 @@ public class Main {
 
 		// TODO: Ignore non *.xi files
 		// TODO: Figure out if it should throw an error or not
-		//System.out.println("dpath: " + dPath);
 		for (String filename : sourceFiles) {
-			//System.out.println("Lexing " + filename + " into " + dPath.getFileName());
-				SourceFileLexer lexer = new SourceFileLexer(filename);
-				List<Token> tokens = lexer.getTokens();
-				if (lex) {
-					writeToFile(filename, tokens);
-				}
+			SourceFileLexer lexer = new SourceFileLexer(filename);
+			List<Token> tokens = lexer.getTokens();
+			if (lex) {
+				writeToFile(filename, tokens);
+			}
 		}
 	}
 
