@@ -23,6 +23,16 @@ public class SourceFileLexerTests {
 	}
 
 	@Test
+	public void testHexLiterals() throws IOException {
+		assertSingleToken(CHARACTER, '\uFFFF', "'\\xFFFF'");
+		assertSingleToken(CHARACTER, '\u0000', "'\\x0000'");
+		assertSingleToken(CHARACTER, '\u0000', "'\\x0'");
+		assertSingleToken(CHARACTER, '\u000F', "'\\xF'");
+		assertSingleToken(CHARACTER, '\uABCD', "'\\xabcd'");
+		assertSingleToken(CHARACTER, 'A', "'\\x41'");
+	}
+
+	@Test
 	public void testAllSingleTokens() throws IOException {
 		assertSingleToken(USE, "use");
 		assertSingleToken(IF, "if");
