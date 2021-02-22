@@ -39,7 +39,12 @@ public class Main {
 			System.out.println("xic died: " + e.getMessage());
 		}
 	}
-
+	
+	/**
+	 * Parses command line options and arguments. Acts on those arguments
+	 * 
+	 * @param args   the array of program arguments
+	 */
 	public void parseCmdLine(String[] args) throws Exception {
 		CmdLineParser cmdParser = new CmdLineParser(this, ParserProperties.defaults().withShowDefaults(false));
 
@@ -54,9 +59,11 @@ public class Main {
 		if (help || sourceFiles.isEmpty())
 			printHelpScreen(cmdParser);
 
-		// TODO: Ignore non *.xi files
-		// TODO: Figure out if it should throw an error or not
 		for (String filename : sourceFiles) {
+			if(!filename.endsWith(".xi") || !filename.endsWith(".ixi")) {
+				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
+				continue;
+			}
 			SourceFileLexer lexer = new SourceFileLexer(filename);
 			List<Token> tokens = lexer.getTokens();
 			if (lex) {
@@ -67,7 +74,10 @@ public class Main {
 
 	/**
 	 * Writes lexed results to [filename.lexed] 
-	 * Requires: filename is of the form filename.xi or filename.ixi
+	 * Requires: filename is of the form filename.xi or filename.ix
+	 * 
+	 * @param filename the name of the file lexed
+	 * @param tokens   the list of lexed tokens
 	 */
 	public void writeToFile(String filename, List<Token> tokens) {
 		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".lexed");
@@ -82,6 +92,11 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Writes xic help screen to command line
+	 * 
+	 * @param parser   the command line parser
+	 */
 	public void printHelpScreen(CmdLineParser parser) {
 		System.out.println("xic [options...] arguments...");
 		parser.printUsage(System.out);

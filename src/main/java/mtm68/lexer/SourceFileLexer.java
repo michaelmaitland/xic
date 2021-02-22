@@ -27,6 +27,12 @@ public class SourceFileLexer {
 	}
 
 	// TODO: Throw LexerException
+	/**
+	 * Returns list of tokens lexed from the file on which the SourceFileLexer was instantiated on.
+	 * 
+	 * @return list of tokens
+	 * @throws IOException
+	 */
 	public List<Token> getTokens() throws IOException {
 		if (tokens == null) {
 			tokens = new ArrayList<>();
