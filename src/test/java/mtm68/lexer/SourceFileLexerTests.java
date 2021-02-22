@@ -21,6 +21,16 @@ public class SourceFileLexerTests {
 	public void testEmpty() throws IOException {
 		assertTrue(lex("empty", "").isEmpty());
 	}
+	
+	@Test
+	public void testEmptyLiteral() throws IOException {
+		List<Token> tokens = lex("empty literal", "''");
+		assertTrue(!tokens.isEmpty());
+		Token errorToken = tokens.get(0);
+		assertEquals(ERROR, errorToken.getType());
+		assertTrue(errorToken.toString().contains("error:"));
+	}
+
 
 	@Test
 	public void testHexLiterals() throws IOException {
