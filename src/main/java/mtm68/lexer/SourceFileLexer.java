@@ -14,16 +14,18 @@ public class SourceFileLexer {
 
 	private String filename;
 
-	private Reader in;
-
 	private Lexer lexer;
 
 	private List<Token> tokens;
 
 	public SourceFileLexer(String filename) throws FileNotFoundException {
 		this.filename = filename;
-		this.in = new FileReader(filename);
-		this.lexer = new Lexer(in);
+		this.lexer = new Lexer(new FileReader(filename));
+	}
+
+	public SourceFileLexer(String filename, Reader reader) {
+		this.filename = filename;
+		this.lexer = new Lexer(reader);
 	}
 
 	// TODO: Throw LexerException
@@ -43,7 +45,6 @@ public class SourceFileLexer {
 					break;
 			}
 			lexer.yyclose();
-			throw new IOException("Ouch");
 		}
 		return tokens;
 	}

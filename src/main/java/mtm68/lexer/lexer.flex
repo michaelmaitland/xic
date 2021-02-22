@@ -123,6 +123,39 @@ import mtm68.util.StringUtils;
 		public TokenType getType() {
 			return type;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((attribute == null) ? 0 : attribute.hashCode());
+			result = prime * result + column;
+			result = prime * result + lineNum;
+			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Token other = (Token) obj;
+			if (attribute == null) {
+				if (other.attribute != null)
+					return false;
+			} else if (!attribute.equals(other.attribute))
+				return false;
+			if (column != other.column)
+				return false;
+			if (lineNum != other.lineNum)
+				return false;
+			if (type != other.type)
+				return false;
+			return true;
+		}
     }
 
     StringBuffer string = new StringBuffer();
@@ -196,6 +229,7 @@ HexLiteral = "\'" {Hex} "\'"
     "-"           { return createToken(TokenType.SUB); }
     "*"           { return createToken(TokenType.MULT); }
     "/"           { return createToken(TokenType.DIV); }
+    "%"           { return createToken(TokenType.MOD); }
     "*>>"         { return createToken(TokenType.HIGH_MULT); }
     "<"           { return createToken(TokenType.LT); }
     "<="          { return createToken(TokenType.LEQ); }
