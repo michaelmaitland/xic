@@ -24,11 +24,7 @@ public class SourceFileLexerTests {
 	
 	@Test
 	public void testEmptyLiteral() throws IOException {
-		List<Token> tokens = lex("empty literal", "''");
-		assertTrue(!tokens.isEmpty());
-		Token errorToken = tokens.get(0);
-		assertEquals(ERROR, errorToken.getType());
-		assertTrue(errorToken.toString().contains("error:"));
+		assertError("empty literal", "''");
 	}
 
 
@@ -102,6 +98,15 @@ public class SourceFileLexerTests {
 
 	private void assertSingleToken(TokenType tt, String input) throws IOException{
 		assertSingleToken(tt, null, input);
+	}
+	
+	private void assertError(String testName, String input) throws IOException {
+		List<Token> tokens = lex(testName, input);
+		assertTrue(!tokens.isEmpty());
+		Token errorToken = tokens.get(0);
+		assertEquals(ERROR, errorToken.getType());
+		assertTrue(errorToken.toString().contains("error:"));
+
 	}
 }
 
