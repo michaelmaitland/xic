@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ROOT_DIR=`dirname "$0"`
+
 # Dependencies
 mvn install:install-file \
    -Dfile=${ROOT_DIR}/lib/jflex-1.8.2/lib/jflex-full-1.8.2.jar \
