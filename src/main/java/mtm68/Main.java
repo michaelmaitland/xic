@@ -60,7 +60,7 @@ public class Main {
 			printHelpScreen(cmdParser);
 
 		for (String filename : sourceFiles) {
-			if(!filename.endsWith(".xi") || !filename.endsWith(".ixi")) {
+			if(!filename.endsWith(".xi") && !filename.endsWith(".ixi")) {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
