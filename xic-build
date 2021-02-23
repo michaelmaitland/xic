@@ -1,8 +1,8 @@
 #!/bin/bash
 ROOT_DIR=`dirname "$0"`
 
-rm -f src/main/java/mtm68/lexer/Lexer.java 
-./lib/jflex-1.8.2/bin/jflex src/main/java/mtm68/lexer/lexer.flex 
+rm -f ${ROOT_DIR}/src/main/java/mtm68/lexer/Lexer.java 
+${ROOT_DIR}/lib/jflex-1.8.2/bin/jflex ${ROOT_DIR}/src/main/java/mtm68/lexer/lexer.flex 
 
 # Dependencies
 mvn install:install-file \
@@ -12,15 +12,8 @@ mvn install:install-file \
    -Dversion=1.8.2 \
    -Dpackaging=jar \
    -DgeneratePom=true
-mvn install:install-file \
-   -Dfile=./lib/args4j-2.33.jar \
-   -DgroupId=args4j \
-   -DartifactId=args4j\
-   -Dversion=2.33 \
-   -Dpackaging=jar \
-   -DgeneratePom=true
 # Create jar
-mvn package -o
+mvn package -Dmaven.repo.local= ${ROOT_DIR}/lib package
 
 ## Create executable
 echo "java -cp ${ROOT_DIR}/target/xic-0.0.1-SNAPSHOT.jar mtm68.Main \$@" > xic
