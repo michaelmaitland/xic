@@ -45,6 +45,13 @@ public class SourceFileLexerTests {
 	}
 
 	@Test
+	public void testNewlineToString() throws IOException {
+		List<Token> tokens = lex("newline", "\"\\n\"");
+		String rep = tokens.get(0).toString();
+		assertEquals("1:1 string \\" + "n", rep);
+	}
+
+	@Test
 	public void testHexLiterals() throws IOException {
 		assertSingleToken(CHARACTER, '\uFFFF', "'\\xFFFF'");
 		assertSingleToken(CHARACTER, '\u0000', "'\\x0000'");

@@ -48,15 +48,17 @@ The key classes we created for this assignment are the following...
 
 ### Programming ###
 - Most of the challenges we faced in this assignment actually had to do with project setup (using Maven correctly and setting up our dependencies). Once that was sorted, designing and implementing our ideas were not met with any great challenges.
-- The following is the team coding breakdown for this assigment...
+- The following is the team coding breakdown for this assignment...
     - **Tobin:** Args4j command line parsing (Main.java)
     - **Maitland:** SourceFileLexer
     - **Bass:** StringUtils
-    - **Group (Bass in driving seat):** lexer.flex, other misc. changes
+    - **Group (Bass in driving seat):** lexer.flex, SourceFileLexerTests, other misc. changes
      
 ## Testing
 
-**TODO**
+In order to test our code, we utilized a suite of JUnit tests. These tests ensure that characters are lexed correctly and the output is formatted correctly. We are confident that we have comprehensive coverage of the input space. In order to accomplish this, we made sure that every single viable character is tested at least once to be certain it is lexed correctly. We then did edge case tests for interesting lex rules such as with integers, strings, and hex literals. We have also created tests for errors at the lexing level to make sure that they are formatted correctly as well.
+
+We do, however, believe we can improve our workflow by creating tests earlier in our design process (i.e. test-driven development). We did not face too great of a consequence for this assignment as it was relatively simple in nature but, as the assignments grow in complexity, this will likely help us a lot.
 
 ## Work plan
 
