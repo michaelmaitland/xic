@@ -20,7 +20,7 @@ mvn install:install-file \
    -Dpackaging=jar \
    -DgeneratePom=true
 # Create jar
-mvn package
+mvn package -o
 
 ## Create executable
 echo "java -cp ${ROOT_DIR}/target/xic-0.0.1-SNAPSHOT.jar mtm68.Main \$@" > xic
