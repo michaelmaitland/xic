@@ -37,3 +37,6 @@ dependency-reduced-pom.xml
 
 # xth test harness
 xth/**
+
+lib/**
+!lib/jflex-1.8.2/**
