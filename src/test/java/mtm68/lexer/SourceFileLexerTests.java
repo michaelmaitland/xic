@@ -1,6 +1,5 @@
 package mtm68.lexer;
 
-import static mtm68.lexer.Lexer.TokenType.IF;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,6 +26,23 @@ public class SourceFileLexerTests {
 		assertError("empty literal", "''");
 	}
 
+	@Test
+	public void testValidIdentifier() throws IOException {
+		List<Token> tokens = lex("valid_id", "a'_33");
+		assertEquals(new Token(ID, "a'_33", 1, 1), tokens.get(0));
+	}
+
+	@Test
+	public void testEmptyString() throws IOException {
+		List<Token> tokens = lex("empty_string", "\"\"");
+		assertEquals(new Token(STRING, "", 1, 1), tokens.get(0));
+	}
+
+	@Test
+	public void testLongestMatch() throws IOException {
+		List<Token> tokens = lex("longest_match", "iftrue");
+		assertEquals(new Token(ID, "iftrue", 1, 1), tokens.get(0));
+	}
 
 	@Test
 	public void testHexLiterals() throws IOException {

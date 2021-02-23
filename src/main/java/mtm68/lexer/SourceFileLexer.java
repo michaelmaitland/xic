@@ -28,7 +28,6 @@ public class SourceFileLexer {
 		this.lexer = new Lexer(reader);
 	}
 
-	// TODO: Throw LexerException
 	/**
 	 * Returns list of tokens lexed from the file on which the SourceFileLexer was instantiated on.
 	 * 
