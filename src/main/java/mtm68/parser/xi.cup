@@ -1,6 +1,6 @@
 // A stub for a Xi CUP specification.
 
-package your.pkg.name.here;
+package mtm68.parser
 
 // You might want to add types to these declarations.
 terminal IDENTIFIER;

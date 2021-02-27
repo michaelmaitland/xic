@@ -12,6 +12,7 @@ import mtm68.util.StringUtils;
 %pack
 %line
 %column
+%cup
 
 %{
 
