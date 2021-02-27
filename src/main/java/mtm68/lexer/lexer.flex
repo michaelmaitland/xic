@@ -1,163 +1,23 @@
 package mtm68.lexer;
 import mtm68.util.StringUtils;
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.Symbol;
+import java_cup.runtime.SymbolFactory;
 
 %%
 
 %public
 %class Lexer
-%type Token
-%function nextToken
+%cup
 
 %unicode
 %pack
 %line
 %column
-%cup
 
 %{
 
-// TODO: Better lex errors (maybe error token?)
-
-    public enum TokenType {
-		// Reserved
-		USE,
-		IF,
-		WHILE,
-		ELSE,
-		RETURN,
-		LENGTH,
-		INT_T("int"),
-		BOOL_T("bool"),
-		TRUE,
-		FALSE,
-
-		// Constants
-		ID,
-		INT("integer"),
-		CHARACTER,
-		STRING,
-		
-		// Punctuation
-		DOT("."),
-		OPEN_SQUARE("["),
-		CLOSE_SQUARE("]"),
-		OPEN_PAREN("("),
-		CLOSE_PAREN(")"),
-		OPEN_CURLY("{"),
-		CLOSE_CURLY("}"),
-		EXCLAMATION("!"),
-		COLON(":"),
-		SEMICOLON(";"),
-		COMMA(","),
-        EQ("="),
-        UNDERSCORE("_"),
-		
-		// Operators
-		ADD("+"),
-		SUB("-"),
-		MULT("*"),
-		DIV("/"),
-		MOD("%"),
-		HIGH_MULT("*>>"),
-		LT("<"),
-		LEQ("<="),
-		GT(">"),
-		GEQ(">="),
-		EQEQ("=="),
-		NEQ("!="),
-		AND("&"),
-		OR("|"),
-
-		// Error
-		ERROR;
-
-        private String pp;
-
-        private TokenType(String pp) {
-            this.pp = pp;
-        }
-
-        private TokenType() {
-            this.pp = name().toLowerCase();
-        }
-		
-		@Override
-		public String toString() {
-			return pp;
-		}
-    }
-    public static class Token {
-		private TokenType type;
-		private Object attribute;
-		private int lineNum;
-		private int column;
-		public Token(TokenType tt, Object attr, int lineNum, int column) {
-			type = tt; attribute = attr;
-			this.lineNum = lineNum;
-			this.column = column;
-		}
-		public String toString() {
-			return lineNum + ":" + column + " " + type + prettyPrintAttribute();
-		}
-
-        private String prettyPrintAttribute(){
-            if(attribute == null) return "";
-            
-            if(type == TokenType.ERROR) return ":" + attribute;
-            
-            if(attribute instanceof String) {
-                String str = (String) attribute;
-                return " " + str.replaceAll("[\n]", "\\\\n");
-            } else {
-            	return " " + attribute;
-			}
-        }
-		
-		public int getLineNum() {
-			return lineNum;
-		}
-
-		public int getColumn() {
-			return column;
-		}
-		
-		public TokenType getType() {
-			return type;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((attribute == null) ? 0 : attribute.hashCode());
-			result = prime * result + column;
-			result = prime * result + lineNum;
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Token other = (Token) obj;
-			if (attribute == null) {
-				if (other.attribute != null)
-					return false;
-			} else if (!attribute.equals(other.attribute))
-				return false;
-			if (column != other.column)
-				return false;
-			if (lineNum != other.lineNum)
-				return false;
-			if (type != other.type)
-				return false;
-			return true;
-		}
-    }
+	SymbolFactory sFactory = new ComplexSymbolFactory();
 
     StringBuffer string = new StringBuffer();
     int stringCol, stringLine;
@@ -166,17 +26,6 @@ import mtm68.util.StringUtils;
 
 	public int yycolumn() { return yycolumn + 1; }
 
-	public Token createToken(TokenType tt, Object attribute, int line, int col) {
-		return new Token(tt, attribute, line, col);	
-	}
-	
-	public Token createToken(TokenType tt, Object attribute) {
-		return createToken(tt, attribute, yyline(), yycolumn());
-	}
-
-	public Token createToken(TokenType tt) {
-		return createToken(tt, null);	
-	}
 %}
 
 LineTerminator = \r|\n|\r\n
@@ -193,6 +42,7 @@ IntegerLiteral = "\'" {InputCharacter} "\'"
 HexLiteral = "\'" {Hex} "\'" 
 
 %state STRING
+%state CHAR
 
 %%
 
@@ -201,61 +51,74 @@ HexLiteral = "\'" {Hex} "\'"
     {Whitespace}  { /* ignore */ }
     {Comment}     { /* ignore */ }
 
-    "use"         { return createToken(TokenType.USE); }
-    "if"		  { return createToken(TokenType.IF); }
-    "while"  	  { return createToken(TokenType.WHILE); }
-    "else"		  { return createToken(TokenType.ELSE); }
-    "return" 	  { return createToken(TokenType.RETURN); }
-    "length"      { return createToken(TokenType.LENGTH); }
-    "int"         { return createToken(TokenType.INT_T); }
-    "bool"        { return createToken(TokenType.BOOL_T); }
-    "true"        { return createToken(TokenType.TRUE); }
-    "false"       { return createToken(TokenType.FALSE); }
+    "use"         { return sFactory.newSymbol("use", sym.USE); }
+    "if"		  { return sFactory.newSymbol("if", sym.IF); }
+    "while"  	  { return sFactory.newSymbol("while", sym.WHILE); }
+    "else"		  { return sFactory.newSymbol("else", sym.ELSE); }
+    "return" 	  { return sFactory.newSymbol("return", sym.RETURN); }
+    "length"      { return sFactory.newSymbol("length", sym.LENGTH); }
+    "int"         { return sFactory.newSymbol("int", sym.INT_T); }
+    "bool"        { return sFactory.newSymbol("bool", sym.BOOL_T); }
+    "true"        { return sFactory.newSymbol("true", sym.TRUE); }
+    "false"       { return sFactory.newSymbol("false", sym.FALSE); }
 
-    "."           { return createToken(TokenType.DOT); }
-    "["           { return createToken(TokenType.OPEN_SQUARE); }
-    "]"           { return createToken(TokenType.CLOSE_SQUARE); }
-    "("           { return createToken(TokenType.OPEN_PAREN); }
-    ")"           { return createToken(TokenType.CLOSE_PAREN); }
-    "{"           { return createToken(TokenType.OPEN_CURLY); }
-    "}"           { return createToken(TokenType.CLOSE_CURLY); }
-    "!"           { return createToken(TokenType.EXCLAMATION); }
-    ":"           { return createToken(TokenType.COLON); }
-    ";"           { return createToken(TokenType.SEMICOLON); }
-    ","           { return createToken(TokenType.COMMA); }
-    "="           { return createToken(TokenType.EQ); }
-    "_"           { return createToken(TokenType.UNDERSCORE); }
+    "."           { return sFactory.newSymbol(".", sym.DOT); }
+    "["           { return sFactory.newSymbol("[", sym.OPEN_SQUARE); }
+    "]"           { return sFactory.newSymbol("]", sym.CLOSE_SQUARE); }
+    "("           { return sFactory.newSymbol("(", sym.OPEN_PAREN); }
+    ")"           { return sFactory.newSymbol(")", sym.CLOSE_PAREN); }
+    "{"           { return sFactory.newSymbol("{", sym.OPEN_CURLY); }
+    "}"           { return sFactory.newSymbol("}", sym.CLOSE_CURLY); }
+    "!"           { return sFactory.newSymbol("!", sym.EXCLAMATION); }
+    ":"           { return sFactory.newSymbol(":", sym.COLON); }
+    ";"           { return sFactory.newSymbol(";", sym.SEMICOLON); }
+    ","           { return sFactory.newSymbol(",", sym.COMMA); }
+    "="           { return sFactory.newSymbol("=", sym.EQ); }
+    "_"           { return sFactory.newSymbol("_", sym.UNDERSCORE); }
 
-    "+"           { return createToken(TokenType.ADD); }
-    "-"           { return createToken(TokenType.SUB); }
-    "*"           { return createToken(TokenType.MULT); }
-    "/"           { return createToken(TokenType.DIV); }
-    "%"           { return createToken(TokenType.MOD); }
-    "*>>"         { return createToken(TokenType.HIGH_MULT); }
-    "<"           { return createToken(TokenType.LT); }
-    "<="          { return createToken(TokenType.LEQ); }
-    ">"           { return createToken(TokenType.GT); }
-    ">="          { return createToken(TokenType.GEQ); }
-    "=="          { return createToken(TokenType.EQEQ); }
-    "!="          { return createToken(TokenType.NEQ); }
-    "&"           { return createToken(TokenType.AND); }
-    "|"           { return createToken(TokenType.OR); }
+    "+"           { return sFactory.newSymbol("+", sym.ADD); }
+    "-"           { return sFactory.newSymbol("-", sym.SUB); }
+    "*"           { return sFactory.newSymbol("*", sym.MULT); }
+    "/"           { return sFactory.newSymbol("/", sym.DIV); }
+    "%"           { return sFactory.newSymbol("%", sym.MOD); }
+    "*>>"         { return sFactory.newSymbol("*>>", sym.HIGH_MULT); }
+    "<"           { return sFactory.newSymbol("<", sym.LT); }
+    "<="          { return sFactory.newSymbol("<=", sym.LEQ); }
+    ">"           { return sFactory.newSymbol(">", sym.GT); }
+    ">="          { return sFactory.newSymbol(">=", sym.GEQ); }
+    "=="          { return sFactory.newSymbol("==", sym.EQEQ); }
+    "!="          { return sFactory.newSymbol("!=", sym.NEQ); }
+    "&"           { return sFactory.newSymbol("&", sym.AND); }
+    "|"           { return sFactory.newSymbol("|", sym.OR); }
 
-    {Identifier}  { return createToken(TokenType.ID, yytext()); }
-    {Integer}     { return createToken(TokenType.INT,
-                     Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
-    {IntegerLiteral}     { return createToken(TokenType.CHARACTER, yytext().charAt(1)); }  
-    {HexLiteral}     { return createToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+    {Identifier}  { return sFactory.newSymbol("id", sym.ID, yytext()); }
+    {Integer}     { return sFactory.newSymbol("integer", sym.INT, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
 
+    \'            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(CHAR); }
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return createToken(TokenType.ERROR, "Invalid character " + yytext()); }
+    [^]			 { return sFactory.newSymbol("error", sym.ERROR, "Invalid character " + yytext()); }
+}
+
+<CHAR> {
+
+	// TODO Check to make sure this regex works. I think we're missing the case of 'abc'
+
+    \'                             { yybegin(YYINITIAL); 
+    								 if(string.length() == 0) return sFactory.newSymbol("error", sym.error, "empty character literal");
+    								 else return sFactory.newSymbol("character", sym.CHAR, string.toString(), stringLine, stringCol); }
+
+    [^\n\'\\\"]+                   { string.append(yytext());}
+
+    {IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHARACTER, yytext().charAt(1)); }  
+
+    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 }
 
 <STRING> {
 
     \"                             { yybegin(YYINITIAL); 
-                                    return createToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
+                                    return sFactory.newSymbol(sym.STRING, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 
