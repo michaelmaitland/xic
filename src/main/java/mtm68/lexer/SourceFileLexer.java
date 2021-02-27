@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,12 @@ public class SourceFileLexer {
 
 	private List<Token> tokens;
 
+	//TODO test
+	public SourceFileLexer(String filename, Path sourcePath) throws FileNotFoundException {
+		this.filename = filename;
+		this.lexer = new Lexer(new FileReader(sourcePath.resolve(filename).toString()));
+	}
+	
 	public SourceFileLexer(String filename) throws FileNotFoundException {
 		this.filename = filename;
 		this.lexer = new Lexer(new FileReader(filename));

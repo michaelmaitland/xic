@@ -23,8 +23,14 @@ public class Main {
 	@Option(name = "--help", help = true, usage = "print help screen")
 	private boolean help = false;
 
-	@Option(name = "--lex", usage = "outputs lexed version of source file")
+	@Option(name = "--lex", usage = "saves lexed tokens from source file to <filename>.lexed")
 	private boolean lex;
+	
+	@Option(name = "--parse", usage = "saves AST generated from source file to <filename>.parsed")
+	private boolean parse;
+	
+	@Option(name = "-sourcepath", usage = "specify path to source files")
+	private Path sourcePath = Paths.get(System.getProperty("user.dir"));
 
 	@Option(name = "-D", usage = "specify location for generated diagnostic files")
 	private Path dPath = Paths.get(System.getProperty("user.dir"));
@@ -64,11 +70,13 @@ public class Main {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
-			SourceFileLexer lexer = new SourceFileLexer(filename);
+			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 			List<Token> tokens = lexer.getTokens();
 			if (lex) {
 				writeToFile(filename, tokens);
 			}
+			// Node ast = parse(tokens);
+			// if (parse) writeToFile(filename, ast);
 		}
 	}
 
