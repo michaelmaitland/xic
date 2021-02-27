@@ -14,14 +14,14 @@ mvn install:install-file \
    -DgeneratePom=true
 mvn install:install-file \
    -Dfile=${ROOT_DIR}/lib/java_cup.jar \
-   -DgroupId=mtm68.cup \
+   -DgroupId=cup \
    -DartifactId=cup \
    -Dversion=1.0 \
    -Dpackaging=jar \
    -DgeneratePom=true
 
 # Create jar
-mvn package -o -Dmaven.repo.local=${ROOT_DIR}/lib package
+mvn package 
 
 ## Create executable
 echo "java -cp ${ROOT_DIR}/target/xic-0.0.1-SNAPSHOT.jar mtm68.Main \$@" > xic
