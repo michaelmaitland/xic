@@ -40,3 +40,4 @@ xth/**
 
 lib/**
 !lib/jflex-1.8.2/**
+!lib/java_cup.jar
