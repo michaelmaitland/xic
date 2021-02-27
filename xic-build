@@ -14,12 +14,12 @@ mvn install:install-file \
    -DgeneratePom=true
 mvn install:install-file \
    -Dfile=${ROOT_DIR}/lib/java_cup.jar \
-   -DgroupId=java_cup \
-   -DartifactId=java_cup \
+   -DgroupId=mtm68.cup \
+   -DartifactId=cup \
    -Dversion=1.0 \
    -Dpackaging=jar \
    -DgeneratePom=true
-#
+
 # Create jar
 mvn package -o -Dmaven.repo.local=${ROOT_DIR}/lib package
 
