@@ -1,0 +1,122 @@
+terminal UMINUS
+
+precedence left '|'
+precedence left '&'
+precedence left '==', '!='
+precedence left '<', '<=', '>=', '>'
+precedence left '+', '-'
+precedence left '*', '*>>', '/', '%'
+precedence left UMINUS, '!'
+precedence left FUNAPP, INDEX
+
+precedence if
+precedence else
+
+top ::= XI prog
+    | IXI interface
+
+prog ::= use_star fdefn_plus
+
+interface ::= fdecl_star
+
+use_star ::= epsilon
+    | use id use_star
+    | use id ';' use_star
+
+fdecl_star ::= epsilon
+    | fdecl fdecl_star
+
+fdefn_plus ::= fdefn
+    | fdefn fdefn_plus
+
+exp ::= exp '|' exp
+    | exp '&' exp
+    | exp '==' exp
+    | exp '!=' exp
+    | exp '<' exp
+    | exp '<=' exp
+    | exp '>=' exp
+    | exp '>' exp
+    | exp '+' exp
+    | exp '-' exp
+    | exp '*' exp
+    | exp '*>>' exp
+    | exp '/' exp
+    | exp '%' exp
+    | '-' exp %prec UMINUS
+    | '!' exp
+    | n 
+    | fexp %prec FUNAPP
+    | exp '[' exp ']' %prec INDEX
+    | id 
+    | '(' exp ')' 
+    | '{' array_init '}'
+
+fexp ::= id '(' exp_list ')'
+
+exp_star ::= epsilon
+    | exp_plus
+
+exp_plus ::= exp
+    | exp ',' exp_plus
+
+array_init ::= exp_star
+    | exp_plus ','
+
+decl ::= id ':' ty
+
+opt_decl ::= id
+    | decl
+
+opt_decl_wild ::= opt_decl | '_'
+
+multiple_assign ::= opt_decl_wild
+    | opt_decl_wild ',' multiple_assign
+
+decl_list ::= decl
+    | decl ',' decl_list
+
+ty ::= int
+    | boolean
+    | ty '[' ']'
+
+ty_list ::= ty
+    | ty ',' ty_list
+
+f_type ::= epsilon
+    | ':' ty_list
+
+fdecl ::= id '(' decl_list ')' f_type 
+
+fdefn ::= fdecl block 
+
+stmt ::= assignment
+    | if exp then stmt 
+    | if exp then stmt else stmt
+    | while exp stmt 
+    | fexp
+    | decl
+    | block
+
+stmt_list ::= epsilon
+    | stmt stmt_list
+
+
+return_stmt ::= return exp_star
+
+// x:int = 5
+// x = 5
+// x:int, y:int = f()
+// x, y:int = f()
+// x:int, y = f()
+
+// TODO: reduce-reduce 
+// id '=' . fexp
+assignment ::= opt_decl '=' exp
+    | multiple_assign '=' fexp
+
+block ::= '{' stmt_list_ret '}'
+
+// TODO: shift-reduce
+stmt_list_ret ::= stmt_list
+    | stmt_list return_stmt
