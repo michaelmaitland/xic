@@ -32,6 +32,11 @@ xic
 # generated lexer
 src/main/java/mtm68/lexer/Lexer.java
 
+# generated cup files
+src/main/java/mtm68/parser/Parser.java
+src/main/java/mtm68/parser/Sym.java
+
+
 # the elusive reduced pom
 dependency-reduced-pom.xml
 
