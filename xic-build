@@ -6,7 +6,9 @@ rm -f ${ROOT_DIR}/src/main/java/mtm68/lexer/Lexer.java
 ${ROOT_DIR}/lib/jflex-1.8.2/bin/jflex ${ROOT_DIR}/src/main/java/mtm68/lexer/lexer.flex 
 
 # cup 
-./cup -destdir src/main/java/mtm68/parser -parser Parser src/main/java/mtm68/parser/xi.cup
+rm -f ${ROOT_DIR}/src/main/java/mtm68/parser/sym.java 
+rm -f ${ROOT_DIR}/src/main/java/mtm68/parser/Parser.java 
+./cup -destdir ${ROOT_DIR}/src/main/java/mtm68/parser -parser Parser ${ROOT_DIR}/src/main/java/mtm68/parser/xi.cup
 
 # Dependencies
 mvn install:install-file \

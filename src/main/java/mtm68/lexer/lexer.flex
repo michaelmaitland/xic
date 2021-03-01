@@ -98,7 +98,7 @@ HexLiteral = "\'" {Hex} "\'"
     \'            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(CHAR); }
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return sFactory.newSymbol("error", sym.ERROR, "Invalid character " + yytext()); }
+    [^]			 { return sFactory.newSymbol("error", sym.error, "Invalid character " + yytext()); }
 }
 
 <CHAR> {
@@ -111,9 +111,9 @@ HexLiteral = "\'" {Hex} "\'"
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 
-    {IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHARACTER, yytext().charAt(1)); }  
+    {IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHAR, yytext().charAt(1)); }  
 
-    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHAR, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 }
 
 <STRING> {
