@@ -52,7 +52,7 @@ exp ::= exp '|' exp
     | '(' exp ')' 
     | '{' array_init '}'
 
-fexp ::= id '(' exp_list ')'
+fexp ::= id '(' exp_star ')'
 
 exp_star ::= epsilon
     | exp_plus
@@ -63,13 +63,23 @@ exp_plus ::= exp
 array_init ::= exp_star
     | exp_plus ','
 
+// x:int
 decl ::= id ':' ty
 
+// x:int
+// x
 opt_decl ::= id
     | decl
 
+// x:int
+// x
+// _
 opt_decl_wild ::= opt_decl | '_'
 
+// x:int, y:int = f()
+// x, y = f()
+// x:int, y = f()
+// _, y:int = f()
 multiple_assign ::= opt_decl_wild
     | opt_decl_wild ',' multiple_assign
 
@@ -83,6 +93,8 @@ ty ::= int
 ty_list ::= ty
     | ty ',' ty_list
 
+// sort(x: int[]) { ... }
+// gcd(a: int, b : int) : int, bool { ... }
 f_type ::= epsilon
     | ':' ty_list
 
@@ -103,12 +115,6 @@ stmt_list ::= epsilon
 
 
 return_stmt ::= return exp_star
-
-// x:int = 5
-// x = 5
-// x:int, y:int = f()
-// x, y:int = f()
-// x:int, y = f()
 
 // TODO: reduce-reduce 
 // id '=' . fexp
