@@ -1,8 +1,12 @@
 #!/bin/bash
 ROOT_DIR=`dirname "$0"`
 
+# jflex
 rm -f ${ROOT_DIR}/src/main/java/mtm68/lexer/Lexer.java 
 ${ROOT_DIR}/lib/jflex-1.8.2/bin/jflex ${ROOT_DIR}/src/main/java/mtm68/lexer/lexer.flex 
+
+# cup 
+./cup -destdir src/main/java/mtm68/parser -parser Parser -symbols Sym src/main/java/mtm68/parser/xi.cup
 
 # Dependencies
 mvn install:install-file \

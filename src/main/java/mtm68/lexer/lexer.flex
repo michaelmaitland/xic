@@ -51,53 +51,53 @@ HexLiteral = "\'" {Hex} "\'"
     {Whitespace}  { /* ignore */ }
     {Comment}     { /* ignore */ }
 
-    "use"         { return sFactory.newSymbol("use", sym.USE); }
-    "if"		  { return sFactory.newSymbol("if", sym.IF); }
-    "while"  	  { return sFactory.newSymbol("while", sym.WHILE); }
-    "else"		  { return sFactory.newSymbol("else", sym.ELSE); }
-    "return" 	  { return sFactory.newSymbol("return", sym.RETURN); }
-    "length"      { return sFactory.newSymbol("length", sym.LENGTH); }
-    "int"         { return sFactory.newSymbol("int", sym.INT_T); }
-    "bool"        { return sFactory.newSymbol("bool", sym.BOOL_T); }
-    "true"        { return sFactory.newSymbol("true", sym.TRUE); }
-    "false"       { return sFactory.newSymbol("false", sym.FALSE); }
+    "use"         { return sFactory.newSymbol("use", Sym.USE); }
+    "if"		  { return sFactory.newSymbol("if", Sym.IF); }
+    "while"  	  { return sFactory.newSymbol("while", Sym.WHILE); }
+    "else"		  { return sFactory.newSymbol("else", Sym.ELSE); }
+    "return" 	  { return sFactory.newSymbol("return", Sym.RETURN); }
+    "length"      { return sFactory.newSymbol("length", Sym.LENGTH); }
+    "int"         { return sFactory.newSymbol("int", Sym.INT_T); }
+    "bool"        { return sFactory.newSymbol("bool", Sym.BOOL_T); }
+    "true"        { return sFactory.newSymbol("true", Sym.TRUE); }
+    "false"       { return sFactory.newSymbol("false", Sym.FALSE); }
 
-    "."           { return sFactory.newSymbol(".", sym.DOT); }
-    "["           { return sFactory.newSymbol("[", sym.OPEN_SQUARE); }
-    "]"           { return sFactory.newSymbol("]", sym.CLOSE_SQUARE); }
-    "("           { return sFactory.newSymbol("(", sym.OPEN_PAREN); }
-    ")"           { return sFactory.newSymbol(")", sym.CLOSE_PAREN); }
-    "{"           { return sFactory.newSymbol("{", sym.OPEN_CURLY); }
-    "}"           { return sFactory.newSymbol("}", sym.CLOSE_CURLY); }
-    "!"           { return sFactory.newSymbol("!", sym.EXCLAMATION); }
-    ":"           { return sFactory.newSymbol(":", sym.COLON); }
-    ";"           { return sFactory.newSymbol(";", sym.SEMICOLON); }
-    ","           { return sFactory.newSymbol(",", sym.COMMA); }
-    "="           { return sFactory.newSymbol("=", sym.EQ); }
-    "_"           { return sFactory.newSymbol("_", sym.UNDERSCORE); }
+    "."           { return sFactory.newSymbol(".", Sym.DOT); }
+    "["           { return sFactory.newSymbol("[", Sym.OPEN_SQUARE); }
+    "]"           { return sFactory.newSymbol("]", Sym.CLOSE_SQUARE); }
+    "("           { return sFactory.newSymbol("(", Sym.OPEN_PAREN); }
+    ")"           { return sFactory.newSymbol(")", Sym.CLOSE_PAREN); }
+    "{"           { return sFactory.newSymbol("{", Sym.OPEN_CURLY); }
+    "}"           { return sFactory.newSymbol("}", Sym.CLOSE_CURLY); }
+    "!"           { return sFactory.newSymbol("!", Sym.EXCLAMATION); }
+    ":"           { return sFactory.newSymbol(":", Sym.COLON); }
+    ";"           { return sFactory.newSymbol(";", Sym.SEMICOLON); }
+    ","           { return sFactory.newSymbol(",", Sym.COMMA); }
+    "="           { return sFactory.newSymbol("=", Sym.EQ); }
+    "_"           { return sFactory.newSymbol("_", Sym.UNDERSCORE); }
 
-    "+"           { return sFactory.newSymbol("+", sym.ADD); }
-    "-"           { return sFactory.newSymbol("-", sym.SUB); }
-    "*"           { return sFactory.newSymbol("*", sym.MULT); }
-    "/"           { return sFactory.newSymbol("/", sym.DIV); }
-    "%"           { return sFactory.newSymbol("%", sym.MOD); }
-    "*>>"         { return sFactory.newSymbol("*>>", sym.HIGH_MULT); }
-    "<"           { return sFactory.newSymbol("<", sym.LT); }
-    "<="          { return sFactory.newSymbol("<=", sym.LEQ); }
-    ">"           { return sFactory.newSymbol(">", sym.GT); }
-    ">="          { return sFactory.newSymbol(">=", sym.GEQ); }
-    "=="          { return sFactory.newSymbol("==", sym.EQEQ); }
-    "!="          { return sFactory.newSymbol("!=", sym.NEQ); }
-    "&"           { return sFactory.newSymbol("&", sym.AND); }
-    "|"           { return sFactory.newSymbol("|", sym.OR); }
+    "+"           { return sFactory.newSymbol("+", Sym.ADD); }
+    "-"           { return sFactory.newSymbol("-", Sym.SUB); }
+    "*"           { return sFactory.newSymbol("*", Sym.MULT); }
+    "/"           { return sFactory.newSymbol("/", Sym.DIV); }
+    "%"           { return sFactory.newSymbol("%", Sym.MOD); }
+    "*>>"         { return sFactory.newSymbol("*>>", Sym.HIGH_MULT); }
+    "<"           { return sFactory.newSymbol("<", Sym.LT); }
+    "<="          { return sFactory.newSymbol("<=", Sym.LEQ); }
+    ">"           { return sFactory.newSymbol(">", Sym.GT); }
+    ">="          { return sFactory.newSymbol(">=", Sym.GEQ); }
+    "=="          { return sFactory.newSymbol("==", Sym.EQEQ); }
+    "!="          { return sFactory.newSymbol("!=", Sym.NEQ); }
+    "&"           { return sFactory.newSymbol("&", Sym.AND); }
+    "|"           { return sFactory.newSymbol("|", Sym.OR); }
 
-    {Identifier}  { return sFactory.newSymbol("id", sym.ID, yytext()); }
-    {Integer}     { return sFactory.newSymbol("integer", sym.INT, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
+    {Identifier}  { return sFactory.newSymbol("id", Sym.ID, yytext()); }
+    {Integer}     { return sFactory.newSymbol("integer", Sym.INT, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
 
     \'            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(CHAR); }
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return sFactory.newSymbol("error", sym.ERROR, "Invalid character " + yytext()); }
+    [^]			 { return sFactory.newSymbol("error", Sym.ERROR, "Invalid character " + yytext()); }
 }
 
 <CHAR> {
@@ -105,20 +105,20 @@ HexLiteral = "\'" {Hex} "\'"
 	// TODO Check to make sure this regex works. I think we're missing the case of 'abc'
 
     \'                             { yybegin(YYINITIAL); 
-    								 if(string.length() == 0) return sFactory.newSymbol("error", sym.error, "empty character literal");
-    								 else return sFactory.newSymbol("character", sym.CHAR, string.toString(), stringLine, stringCol); }
+    								 if(string.length() == 0) return sFactory.newSymbol("error", Sym.error, "empty character literal");
+    								 else return sFactory.newSymbol("character", Sym.CHAR, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 
-    {IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHARACTER, yytext().charAt(1)); }  
+    {IntegerLiteral}     { return sFactory.newSymbol("character", Sym.CHARACTER, yytext().charAt(1)); }  
 
-    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+    {HexLiteral}     { return sFactory.newSymbol("character", Sym.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 }
 
 <STRING> {
 
     \"                             { yybegin(YYINITIAL); 
-                                    return sFactory.newSymbol(sym.STRING, string.toString(), stringLine, stringCol); }
+                                    return sFactory.newSymbol(Sym.STRING, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 
