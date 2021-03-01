@@ -112,7 +112,7 @@ if [ -n "$ext" ]; then
 fi
 
 
-classpath="$dir/classes:$dir/java_cup.jar"
+classpath="$dir/lib/classes:$dir/lib/java_cup.jar"
 classpath="$classpath:$extra_cp"
 classpath=`fixclasspath "$classpath"`
 
