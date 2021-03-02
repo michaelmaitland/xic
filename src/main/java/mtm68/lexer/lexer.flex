@@ -43,7 +43,6 @@ IntegerLiteral = "\'" {InputCharacter} "\'"
 HexLiteral = "\'" {Hex} "\'" 
 
 %state STRING
-%state CHAR
 
 %%
 
