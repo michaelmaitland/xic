@@ -95,25 +95,12 @@ HexLiteral = "\'" {Hex} "\'"
     {Identifier}  { return sFactory.newSymbol("id", sym.ID, yytext()); }
     {Integer}     { return sFactory.newSymbol("integer", sym.INT, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
 
-    \'            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(CHAR); }
+	{IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHAR, yytext().charAt(1)); }  
+    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHAR, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
     [^]			 { return sFactory.newSymbol("error", sym.error, "Invalid character " + yytext()); }
-}
-
-<CHAR> {
-
-	// TODO Check to make sure this regex works. I think we're missing the case of 'abc'
-
-    \'                             { yybegin(YYINITIAL); 
-    								 if(string.length() == 0) return sFactory.newSymbol("error", sym.error, "empty character literal");
-    								 else return sFactory.newSymbol("character", sym.CHAR, string.toString(), stringLine, stringCol); }
-
-    [^\n\'\\\"]+                   { string.append(yytext());}
-
-    {IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHAR, yytext().charAt(1)); }  
-
-    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHAR, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 }
 
 <STRING> {
