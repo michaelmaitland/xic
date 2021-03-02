@@ -8,8 +8,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import mtm68.lexer.Lexer.Token;
-import mtm68.lexer.Lexer.TokenType;
+import java_cup.sym;
+import java_cup.runtime.Symbol;
+
 
 public class SourceFileLexer {
 
@@ -17,7 +18,7 @@ public class SourceFileLexer {
 
 	private Lexer lexer;
 
-	private List<Token> tokens;
+	private List<Symbol> tokens;
 
 	//TODO test
 	public SourceFileLexer(String filename, Path sourcePath) throws FileNotFoundException {
@@ -41,13 +42,13 @@ public class SourceFileLexer {
 	 * @return list of tokens
 	 * @throws IOException
 	 */
-	public List<Token> getTokens() throws IOException {
+	public List<Symbol> getTokens() throws IOException {
 		if (tokens == null) {
 			tokens = new ArrayList<>();
 
-			for (Token token = lexer.nextToken(); token != null; token = lexer.nextToken()) {
+			for (Symbol token = lexer.next_token(); token != null; token = lexer.next_token()) {
 				tokens.add(token);
-				if (token.getType() == TokenType.ERROR)
+				if (token.sym == sym.error)
 					break;
 			}
 			lexer.yyclose();

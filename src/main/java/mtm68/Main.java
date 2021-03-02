@@ -15,7 +15,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
-import mtm68.lexer.Lexer.Token;
+import java_cup.runtime.Symbol;
 import mtm68.lexer.SourceFileLexer;
 
 public class Main {
@@ -71,7 +71,7 @@ public class Main {
 				continue;
 			}
 			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
-			List<Token> tokens = lexer.getTokens();
+			List<Symbol> tokens = lexer.getTokens();
 			if (lex) {
 				writeToFile(filename, tokens);
 			}
@@ -87,7 +87,7 @@ public class Main {
 	 * @param filename the name of the file lexed
 	 * @param tokens   the list of lexed tokens
 	 */
-	public void writeToFile(String filename, List<Token> tokens) {
+	public void writeToFile(String filename, List<Symbol> tokens) {
 		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".lexed");
 		Path outpath = dPath.resolve(outfile);
 		try {
