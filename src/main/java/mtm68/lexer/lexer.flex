@@ -18,26 +18,27 @@ import java_cup.runtime.SymbolFactory;
 
 %{
 
-  /** Data to manage string state */
-  StringBuffer string = new StringBuffer();
-  int stringCol, stringLine;
+    /** Data to manage string state */
+    StringBuffer string = new StringBuffer();
+    int stringCol, stringLine;
 
 	public int yyline() { return yyline + 1; }
 
 	public int yycolumn() { return yycolumn + 1; }
 
+	TokenFactory tFactory = new TokenFactory();
 
-  private Token newToken(TokenType type) {
-    return new TokenFactory().newToken(type, yyline(), yycolumn());
-  }
+    private Token newToken(TokenType type) {
+      return tFactory.newToken(type, yyline(), yycolumn());
+    }
 
-  private Token newToken(TokenType type, Object value) {
-    return new TokenFactory().newToken(type, value, yyline(), yycolumn());
-  }
+    private Token newToken(TokenType type, Object value) {
+      return tFactory.newToken(type, value, yyline(), yycolumn());
+    }
 
-  private Token newToken(TokenType type, Object value, int line, int column) {
-    return new TokenFactory().newToken(type, value, line, column);
-  }
+    private Token newToken(TokenType type, Object value, int line, int column) {
+		return tFactory.newToken(type, value, line, column);
+	}
 
 %}
 

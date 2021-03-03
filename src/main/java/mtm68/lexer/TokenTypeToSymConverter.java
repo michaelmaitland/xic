@@ -10,6 +10,7 @@ public class TokenTypeToSymConverter {
 				return i;
 			}
 		}
-		return -1;
+		throw new RuntimeException("TokenType " + type.toString() 
+		+ " could not be converted to sym. Make sure xi.cup has same types as TokenType.");
 	}
 }
