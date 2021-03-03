@@ -5,10 +5,10 @@ package mtm68.parser;
 // You might want to add types to these declarations.
 terminal ID;
 terminal STRING;
-terminal CHAR;
-terminal INT;
+terminal CHARACTER;
+terminal INTEGER;
 
-terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT_T, BOOL_T, TRUE, FALSE; 
+terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT, BOOL, TRUE, FALSE; 
 terminal DOT, OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_CURLY,
 	EXCLAMATION, COLON, SEMICOLON, COMMA, EQ, UNDERSCORE;
 terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, OR; 

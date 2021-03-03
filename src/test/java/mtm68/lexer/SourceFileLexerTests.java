@@ -10,12 +10,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import mtm68.lexer.Lexer.Token;
-import mtm68.lexer.Lexer.TokenType;
-import static mtm68.lexer.Lexer.TokenType.*;
+import static mtm68.lexer.TokenType.*;
 
 public class SourceFileLexerTests {
 	
+	private TokenFactory tFactory = new TokenFactory();
 	@Test
 	public void testEmpty() throws IOException {
 		assertTrue(lex("empty", "").isEmpty());
@@ -29,19 +28,22 @@ public class SourceFileLexerTests {
 	@Test
 	public void testValidIdentifier() throws IOException {
 		List<Token> tokens = lex("valid_id", "a'_33");
-		assertEquals(new Token(ID, "a'_33", 1, 1), tokens.get(0));
+		Token t = tFactory.newToken(ID, "a'_33", 1, 1);
+		assertEquals(t , tokens.get(0));
 	}
 
 	@Test
 	public void testEmptyString() throws IOException {
 		List<Token> tokens = lex("empty_string", "\"\"");
-		assertEquals(new Token(STRING, "", 1, 1), tokens.get(0));
+		Token t = tFactory.newToken(STRING, "", 1, 1);
+		assertEquals(t, tokens.get(0));
 	}
 
 	@Test
 	public void testLongestMatch() throws IOException {
 		List<Token> tokens = lex("longest_match", "iftrue");
-		assertEquals(new Token(ID, "iftrue", 1, 1), tokens.get(0));
+		Token t = tFactory.newToken(ID, "iftrue", 1, 1);
+		assertEquals(t, tokens.get(0));
 	}
 
 	@Test
@@ -68,13 +70,13 @@ public class SourceFileLexerTests {
 		assertSingleToken(ELSE, "else");
 		assertSingleToken(RETURN, "return");
 		assertSingleToken(LENGTH, "length");
-		assertSingleToken(INT_T, "int");
-		assertSingleToken(BOOL_T, "bool");
+		assertSingleToken(INT, "int");
+		assertSingleToken(BOOL, "bool");
 		assertSingleToken(TRUE, "true");
 		assertSingleToken(FALSE, "false");
 
 		assertSingleToken(ID, "hello", "hello");
-		assertSingleToken(INT, 56L, "56");
+		assertSingleToken(INTEGER, 56L, "56");
 		assertSingleToken(CHARACTER, 'c', "'c'");
 		assertSingleToken(STRING, "hello", "\"hello\"");
 
@@ -114,7 +116,8 @@ public class SourceFileLexerTests {
 	
 	private void assertSingleToken(TokenType tt, Object attribute, String input) throws IOException{
 		List<Token> lexed = lex("single", input);
-		List<Token> expected = Arrays.asList(new Token(tt, attribute, 1, 1));
+		Token t = tFactory.newToken(tt, attribute, 1, 1);
+		List<Token> expected = Arrays.asList(t);
 
 		assertEquals(expected, lexed);
 	}
@@ -127,7 +130,7 @@ public class SourceFileLexerTests {
 		List<Token> tokens = lex(testName, input);
 		assertTrue(!tokens.isEmpty());
 		Token errorToken = tokens.get(0);
-		assertEquals(ERROR, errorToken.getType());
+		assertEquals(error, errorToken.getType());
 		assertTrue(errorToken.toString().contains("error:"));
 
 	}

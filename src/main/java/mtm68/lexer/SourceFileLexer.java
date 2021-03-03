@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java_cup.sym;
-import java_cup.runtime.Symbol;
-
 
 public class SourceFileLexer {
 
@@ -18,7 +16,7 @@ public class SourceFileLexer {
 
 	private Lexer lexer;
 
-	private List<Symbol> tokens;
+	private List<Token> tokens;
 
 	//TODO test
 	public SourceFileLexer(String filename, Path sourcePath) throws FileNotFoundException {
@@ -42,11 +40,11 @@ public class SourceFileLexer {
 	 * @return list of tokens
 	 * @throws IOException
 	 */
-	public List<Symbol> getTokens() throws IOException {
+	public List<Token> getTokens() throws IOException {
 		if (tokens == null) {
 			tokens = new ArrayList<>();
 
-			for (Symbol token = lexer.next_token(); token != null; token = lexer.next_token()) {
+			for (Token token = (Token) lexer.next_token(); token != null; token = (Token) lexer.next_token()) {
 				tokens.add(token);
 				if (token.sym == sym.error)
 					break;
