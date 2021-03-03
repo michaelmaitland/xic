@@ -27,16 +27,16 @@ import java_cup.runtime.SymbolFactory;
 	public int yycolumn() { return yycolumn + 1; }
 
 
-  private Token newToken(int id) {
-    return new TokenFactory().newToken(id, yyline(), yycolumn());
+  private Token newToken(TokenType type) {
+    return new TokenFactory().newToken(type, yyline(), yycolumn());
   }
 
-  private Token newToken(int id, Object value) {
-    return new TokenFactory().newToken(id, value, yyline(), yycolumn());
+  private Token newToken(TokenType type, Object value) {
+    return new TokenFactory().newToken(type, value, yyline(), yycolumn());
   }
 
-  private Token newToken(int id, Object value, int line, int column) {
-    return new TokenFactory().newToken(id, value, line, column);
+  private Token newToken(TokenType type, Object value, int line, int column) {
+    return new TokenFactory().newToken(type, value, line, column);
   }
 
 %}
@@ -63,61 +63,61 @@ HexLiteral = "\'" {Hex} "\'"
     {Whitespace}  { /* ignore */ }
     {Comment}     { /* ignore */ }
 
-    "use"         { return newToken(sym.USE); }
-    "if"		  { return newToken(sym.IF); }
-    "while"  	  { return newToken(sym.WHILE); }
-    "else"		  { return newToken(sym.ELSE); }
-    "return" 	  { return newToken(sym.RETURN); }
-    "length"      { return newToken(sym.LENGTH); }
-    "int"         { return newToken(sym.INT); }
-    "bool"        { return newToken(sym.BOOL); }
-    "true"        { return newToken(sym.TRUE); }
-    "false"       { return newToken(sym.FALSE); }
+    "use"         { return newToken(TokenType.USE); }
+    "if"		  { return newToken(TokenType.IF); }
+    "while"  	  { return newToken(TokenType.WHILE); }
+    "else"		  { return newToken(TokenType.ELSE); }
+    "return" 	  { return newToken(TokenType.RETURN); }
+    "length"      { return newToken(TokenType.LENGTH); }
+    "int"         { return newToken(TokenType.INT); }
+    "bool"        { return newToken(TokenType.BOOL); }
+    "true"        { return newToken(TokenType.TRUE); }
+    "false"       { return newToken(TokenType.FALSE); }
 
-    "."           { return newToken(sym.DOT); }
-    "["           { return newToken(sym.OPEN_SQUARE); }
-    "]"           { return newToken(sym.CLOSE_SQUARE); }
-    "("           { return newToken(sym.OPEN_PAREN); }
-    ")"           { return newToken(sym.CLOSE_PAREN); }
-    "{"           { return newToken(sym.OPEN_CURLY); }
-    "}"           { return newToken(sym.CLOSE_CURLY); }
-    "!"           { return newToken(sym.EXCLAMATION); }
-    ":"           { return newToken(sym.COLON); }
-    ";"           { return newToken(sym.SEMICOLON); }
-    ","           { return newToken(sym.COMMA); }
-    "="           { return newToken(sym.EQ); }
-    "_"           { return newToken(sym.UNDERSCORE); }
+    "."           { return newToken(TokenType.DOT); }
+    "["           { return newToken(TokenType.OPEN_SQUARE); }
+    "]"           { return newToken(TokenType.CLOSE_SQUARE); }
+    "("           { return newToken(TokenType.OPEN_PAREN); }
+    ")"           { return newToken(TokenType.CLOSE_PAREN); }
+    "{"           { return newToken(TokenType.OPEN_CURLY); }
+    "}"           { return newToken(TokenType.CLOSE_CURLY); }
+    "!"           { return newToken(TokenType.EXCLAMATION); }
+    ":"           { return newToken(TokenType.COLON); }
+    ";"           { return newToken(TokenType.SEMICOLON); }
+    ","           { return newToken(TokenType.COMMA); }
+    "="           { return newToken(TokenType.EQ); }
+    "_"           { return newToken(TokenType.UNDERSCORE); }
 
-    "+"           { return newToken(sym.ADD); }
-    "-"           { return newToken(sym.SUB); }
-    "*"           { return newToken(sym.MULT); }
-    "/"           { return newToken(sym.DIV); }
-    "%"           { return newToken(sym.MOD); }
-    "*>>"         { return newToken(sym.HIGH_MULT); }
-    "<"           { return newToken(sym.LT); }
-    "<="          { return newToken(sym.LEQ); }
-    ">"           { return newToken(sym.GT); }
-    ">="          { return newToken(sym.GEQ); }
-    "=="          { return newToken(sym.EQEQ); }
-    "!="          { return newToken(sym.NEQ); }
-    "&"           { return newToken(sym.AND); }
-    "|"           { return newToken(sym.OR); }
+    "+"           { return newToken(TokenType.ADD); }
+    "-"           { return newToken(TokenType.SUB); }
+    "*"           { return newToken(TokenType.MULT); }
+    "/"           { return newToken(TokenType.DIV); }
+    "%"           { return newToken(TokenType.MOD); }
+    "*>>"         { return newToken(TokenType.HIGH_MULT); }
+    "<"           { return newToken(TokenType.LT); }
+    "<="          { return newToken(TokenType.LEQ); }
+    ">"           { return newToken(TokenType.GT); }
+    ">="          { return newToken(TokenType.GEQ); }
+    "=="          { return newToken(TokenType.EQEQ); }
+    "!="          { return newToken(TokenType.NEQ); }
+    "&"           { return newToken(TokenType.AND); }
+    "|"           { return newToken(TokenType.OR); }
 
-    {Identifier}  { return newToken(sym.ID, yytext()); }
-    {Integer}     { return newToken(sym.INTEGER, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
+    {Identifier}  { return newToken(TokenType.ID, yytext()); }
+    {Integer}     { return newToken(TokenType.INTEGER, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
 
-	  {IntegerLiteral}     { return newToken(sym.CHARACTER, yytext().charAt(1)); }  
-    {HexLiteral}     { return newToken(sym.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+	  {IntegerLiteral}     { return newToken(TokenType.CHARACTER, yytext().charAt(1)); }  
+    {HexLiteral}     { return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return newToken(sym.error, "Invalid character " + yytext()); }
+    [^]			 { return newToken(TokenType.error, "Invalid character " + yytext()); }
 }
 
 <STRING> {
 
     \"                             { yybegin(YYINITIAL); 
-                                    return newToken(sym.STRING, string.toString(), stringLine, stringCol); }
+                                    return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 
