@@ -10,7 +10,7 @@ precedence left UMINUS, '!'
 precedence left FUNAPP, INDEX
 
 precedence if
-precedence else
+precedence ELSE
 
 top ::= XI prog
     | IXI interface
@@ -104,7 +104,7 @@ fdefn ::= fdecl block
 
 stmt ::= assignment
     | if exp then stmt 
-    | if exp then stmt else stmt
+    | if exp then stmt ELSE stmt
     | while exp stmt 
     | fexp
     | decl

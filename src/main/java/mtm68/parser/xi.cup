@@ -2,14 +2,6 @@
 
 package mtm68.parser;
 
-parser code {:
-	List<Symbol> tokens;
-	Parser(List<Symbol> tokens) {this.tokens = tokens; }
-:}
-
-//init with {: s.init() :};
-scan with {: return tokens.remove(0);:};
-
 // You might want to add types to these declarations.
 terminal ID;
 terminal STRING;

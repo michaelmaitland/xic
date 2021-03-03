@@ -76,6 +76,8 @@ public class Main {
 			if (lex) {
 				writeToFile(filename, tokens);
 			}
+			
+			
 			// Node ast = parse(tokens);
 			// if (parse) writeToFile(filename, ast);
 		}
