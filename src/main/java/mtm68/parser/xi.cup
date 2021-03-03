@@ -2,21 +2,217 @@
 
 package mtm68.parser;
 
+parser code {:
+	List<Symbol> tokens;
+	Parser(List<Symbol> tokens) {this.tokens = tokens; }
+:}
+
+//init with {: s.init() :};
+scan with {: return tokens.remove(0);:};
+
 // You might want to add types to these declarations.
 terminal ID;
 terminal STRING;
 terminal CHAR;
 terminal INT;
+terminal FUNAPP;
+terminal INDEX;
 
 terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT_T, BOOL_T, TRUE, FALSE; 
-terminal DOT, OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_CURLY,
+terminal OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_CURLY,
 	EXCLAMATION, COLON, SEMICOLON, COMMA, EQ, UNDERSCORE;
-terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, OR; 
+terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, OR, UMINUS; 
 
 // You might want to add types to these declarations.
-nonterminal program;
+nonterminal prog;
+nonterminal top;
+nonterminal interface;
+nonterminal use_star;
+nonterminal fdecl_star;
+nonterminal fdefn_plus;
+nonterminal exp;
+nonterminal fexp;
+nonterminal exp_star;
+nonterminal exp_plus;
+nonterminal array_init;
+nonterminal decl;
+nonterminal opt_decl;
+nonterminal opt_decl_wild;
+nonterminal multiple_assign;
+nonterminal decl_list;
+nonterminal ty;
+nonterminal ty_list;
+nonterminal f_type;
+nonterminal fdecl;
+nonterminal fdefn;
+nonterminal stmt;
+nonterminal stmt_list;
+nonterminal return_stmt;
+nonterminal assignment;
+nonterminal block;
+nonterminal stmt_list_ret;
+
 // Add more nonterminals here...
 
-start with program;
+precedence left OR;
+precedence left AND;
+precedence left EQEQ, NEQ;
+precedence left LT, LEQ, GEQ, GT;
+precedence left ADD, SUB;
+precedence left MULT, HIGH_MULT, DIV, MOD;
+precedence left UMINUS, EXCLAMATION;
+precedence left FUNAPP, INDEX;
 
-program ::= USE;
+precedence nonassoc IF;
+precedence nonassoc ELSE;
+
+// HACKY???
+precedence right COMMA;
+
+start with prog;
+
+//program ::= USE;
+
+//top ::= XI prog
+//    | IXI interface
+//    ;
+
+prog ::= use_star fdefn_plus
+;
+
+interface ::= fdecl_star
+;
+
+use_star ::= /* epsilon */
+    | USE ID use_star
+    | USE ID SEMICOLON use_star
+    ;
+
+fdecl_star ::= /* epsilon */
+    | fdecl fdecl_star
+    ;
+
+fdefn_plus ::= fdefn
+    | fdefn fdefn_plus
+    ;
+
+exp ::= exp OR exp
+    | exp AND exp
+    | exp EQEQ exp
+    | exp NEQ exp
+    | exp LT exp
+    | exp LEQ exp
+    | exp GEQ exp
+    | exp GT exp
+    | exp ADD exp
+    | exp SUB exp
+    | exp MULT exp
+    | exp HIGH_MULT exp
+    | exp DIV exp
+    | exp MOD exp
+    | SUB exp %prec UMINUS
+    | EXCLAMATION exp
+    | INT 
+    | fexp %prec FUNAPP
+    | exp OPEN_SQUARE exp CLOSE_SQUARE %prec INDEX
+    | ID 
+    | OPEN_PAREN exp CLOSE_PAREN 
+    | OPEN_CURLY array_init CLOSE_CURLY
+    | TRUE
+    | FALSE
+    | CHAR
+    | STRING
+    | LENGTH OPEN_PAREN exp CLOSE_PAREN
+    ;
+
+fexp ::= ID OPEN_PAREN exp_star CLOSE_PAREN;
+
+exp_star ::= /* epsilon */
+    | exp_plus
+    ;
+
+exp_plus ::= exp
+    | exp COMMA exp_plus
+    ;
+
+array_init ::= exp_star
+    | exp_plus COMMA
+    ;
+
+// x:int
+decl ::= ID COLON ty
+;
+
+// x:int
+// x
+opt_decl ::= ID
+    | decl
+    ;
+
+// x:int
+// x
+// _
+opt_decl_wild ::= opt_decl | UNDERSCORE;
+
+// x:int, y:int = f()
+// x, y = f()
+// x:int, y = f()
+// _, y:int = f()
+multiple_assign ::= opt_decl_wild COMMA opt_decl_wild
+    | opt_decl_wild COMMA multiple_assign
+    ;
+
+decl_list ::= decl
+    | decl COMMA decl_list
+    ;
+
+ty ::= INT_T
+    | BOOL_T
+    | ty OPEN_SQUARE CLOSE_SQUARE
+    ;
+
+ty_list ::= ty
+    | ty COMMA ty_list
+    ;
+
+// sort(x: int[]) { ... }
+// gcd(a: int, b : int) : int, bool { ... }
+f_type ::= /* epsilon */
+    | COLON ty_list
+    ;
+
+fdecl ::= ID OPEN_PAREN decl_list CLOSE_PAREN f_type 
+;
+
+fdefn ::= fdecl block 
+;
+
+stmt ::= assignment
+    | IF exp stmt 
+    | IF exp stmt ELSE stmt
+    | WHILE exp stmt 
+    | fexp
+    | decl
+    | block
+    ;
+
+stmt_list ::= /* epsilon */
+    | stmt stmt_list
+;
+
+return_stmt ::= RETURN exp_star
+;
+
+// TODO: reduce-reduce 
+// ID EQ . fexp
+assignment ::= opt_decl EQ exp
+    | multiple_assign EQ fexp
+    ;
+
+block ::= OPEN_CURLY stmt_list_ret CLOSE_CURLY
+;
+
+// TODO: shift-reduce
+stmt_list_ret ::= stmt_list
+    | stmt_list return_stmt
+    ;
