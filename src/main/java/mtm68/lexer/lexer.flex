@@ -18,14 +18,27 @@ import java_cup.runtime.SymbolFactory;
 
 %{
 
-	SymbolFactory sFactory = new ComplexSymbolFactory();
-
+    /** Data to manage string state */
     StringBuffer string = new StringBuffer();
     int stringCol, stringLine;
 
 	public int yyline() { return yyline + 1; }
 
 	public int yycolumn() { return yycolumn + 1; }
+
+	TokenFactory tFactory = new TokenFactory();
+
+    private Token newToken(TokenType type) {
+      return tFactory.newToken(type, yyline(), yycolumn());
+    }
+
+    private Token newToken(TokenType type, Object value) {
+      return tFactory.newToken(type, value, yyline(), yycolumn());
+    }
+
+    private Token newToken(TokenType type, Object value, int line, int column) {
+		return tFactory.newToken(type, value, line, column);
+	}
 
 %}
 
@@ -51,61 +64,61 @@ HexLiteral = "\'" {Hex} "\'"
     {Whitespace}  { /* ignore */ }
     {Comment}     { /* ignore */ }
 
-    "use"         { return sFactory.newSymbol("use", sym.USE); }
-    "if"		  { return sFactory.newSymbol("if", sym.IF); }
-    "while"  	  { return sFactory.newSymbol("while", sym.WHILE); }
-    "else"		  { return sFactory.newSymbol("else", sym.ELSE); }
-    "return" 	  { return sFactory.newSymbol("return", sym.RETURN); }
-    "length"      { return sFactory.newSymbol("length", sym.LENGTH); }
-    "int"         { return sFactory.newSymbol("int", sym.INT_T); }
-    "bool"        { return sFactory.newSymbol("bool", sym.BOOL_T); }
-    "true"        { return sFactory.newSymbol("true", sym.TRUE); }
-    "false"       { return sFactory.newSymbol("false", sym.FALSE); }
+    "use"         { return newToken(TokenType.USE); }
+    "if"		  { return newToken(TokenType.IF); }
+    "while"  	  { return newToken(TokenType.WHILE); }
+    "else"		  { return newToken(TokenType.ELSE); }
+    "return" 	  { return newToken(TokenType.RETURN); }
+    "length"      { return newToken(TokenType.LENGTH); }
+    "int"         { return newToken(TokenType.INT); }
+    "bool"        { return newToken(TokenType.BOOL); }
+    "true"        { return newToken(TokenType.TRUE); }
+    "false"       { return newToken(TokenType.FALSE); }
 
-    "."           { return sFactory.newSymbol(".", sym.DOT); }
-    "["           { return sFactory.newSymbol("[", sym.OPEN_SQUARE); }
-    "]"           { return sFactory.newSymbol("]", sym.CLOSE_SQUARE); }
-    "("           { return sFactory.newSymbol("(", sym.OPEN_PAREN); }
-    ")"           { return sFactory.newSymbol(")", sym.CLOSE_PAREN); }
-    "{"           { return sFactory.newSymbol("{", sym.OPEN_CURLY); }
-    "}"           { return sFactory.newSymbol("}", sym.CLOSE_CURLY); }
-    "!"           { return sFactory.newSymbol("!", sym.EXCLAMATION); }
-    ":"           { return sFactory.newSymbol(":", sym.COLON); }
-    ";"           { return sFactory.newSymbol(";", sym.SEMICOLON); }
-    ","           { return sFactory.newSymbol(",", sym.COMMA); }
-    "="           { return sFactory.newSymbol("=", sym.EQ); }
-    "_"           { return sFactory.newSymbol("_", sym.UNDERSCORE); }
+    "."           { return newToken(TokenType.DOT); }
+    "["           { return newToken(TokenType.OPEN_SQUARE); }
+    "]"           { return newToken(TokenType.CLOSE_SQUARE); }
+    "("           { return newToken(TokenType.OPEN_PAREN); }
+    ")"           { return newToken(TokenType.CLOSE_PAREN); }
+    "{"           { return newToken(TokenType.OPEN_CURLY); }
+    "}"           { return newToken(TokenType.CLOSE_CURLY); }
+    "!"           { return newToken(TokenType.EXCLAMATION); }
+    ":"           { return newToken(TokenType.COLON); }
+    ";"           { return newToken(TokenType.SEMICOLON); }
+    ","           { return newToken(TokenType.COMMA); }
+    "="           { return newToken(TokenType.EQ); }
+    "_"           { return newToken(TokenType.UNDERSCORE); }
 
-    "+"           { return sFactory.newSymbol("+", sym.ADD); }
-    "-"           { return sFactory.newSymbol("-", sym.SUB); }
-    "*"           { return sFactory.newSymbol("*", sym.MULT); }
-    "/"           { return sFactory.newSymbol("/", sym.DIV); }
-    "%"           { return sFactory.newSymbol("%", sym.MOD); }
-    "*>>"         { return sFactory.newSymbol("*>>", sym.HIGH_MULT); }
-    "<"           { return sFactory.newSymbol("<", sym.LT); }
-    "<="          { return sFactory.newSymbol("<=", sym.LEQ); }
-    ">"           { return sFactory.newSymbol(">", sym.GT); }
-    ">="          { return sFactory.newSymbol(">=", sym.GEQ); }
-    "=="          { return sFactory.newSymbol("==", sym.EQEQ); }
-    "!="          { return sFactory.newSymbol("!=", sym.NEQ); }
-    "&"           { return sFactory.newSymbol("&", sym.AND); }
-    "|"           { return sFactory.newSymbol("|", sym.OR); }
+    "+"           { return newToken(TokenType.ADD); }
+    "-"           { return newToken(TokenType.SUB); }
+    "*"           { return newToken(TokenType.MULT); }
+    "/"           { return newToken(TokenType.DIV); }
+    "%"           { return newToken(TokenType.MOD); }
+    "*>>"         { return newToken(TokenType.HIGH_MULT); }
+    "<"           { return newToken(TokenType.LT); }
+    "<="          { return newToken(TokenType.LEQ); }
+    ">"           { return newToken(TokenType.GT); }
+    ">="          { return newToken(TokenType.GEQ); }
+    "=="          { return newToken(TokenType.EQEQ); }
+    "!="          { return newToken(TokenType.NEQ); }
+    "&"           { return newToken(TokenType.AND); }
+    "|"           { return newToken(TokenType.OR); }
 
-    {Identifier}  { return sFactory.newSymbol("id", sym.ID, yytext()); }
-    {Integer}     { return sFactory.newSymbol("integer", sym.INT, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
+    {Identifier}  { return newToken(TokenType.ID, yytext()); }
+    {Integer}     { return newToken(TokenType.INTEGER, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
 
-	{IntegerLiteral}     { return sFactory.newSymbol("character", sym.CHAR, yytext().charAt(1)); }  
-    {HexLiteral}     { return sFactory.newSymbol("character", sym.CHAR, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+	  {IntegerLiteral}     { return newToken(TokenType.CHARACTER, yytext().charAt(1)); }  
+    {HexLiteral}     { return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
 
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return sFactory.newSymbol("error", sym.error, "Invalid character " + yytext()); }
+    [^]			 { return newToken(TokenType.error, "Invalid character " + yytext()); }
 }
 
 <STRING> {
 
     \"                             { yybegin(YYINITIAL); 
-                                    return sFactory.newSymbol(sym.STRING, string.toString(), stringLine, stringCol); }
+                                    return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+                   { string.append(yytext());}
 

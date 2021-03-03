@@ -17,6 +17,7 @@ import org.kohsuke.args4j.ParserProperties;
 
 import java_cup.runtime.Symbol;
 import mtm68.lexer.SourceFileLexer;
+import mtm68.lexer.Token;
 
 public class Main {
 
@@ -71,7 +72,7 @@ public class Main {
 				continue;
 			}
 			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
-			List<Symbol> tokens = lexer.getTokens();
+			List<Token> tokens = lexer.getTokens();
 			if (lex) {
 				writeToFile(filename, tokens);
 			}
@@ -87,7 +88,7 @@ public class Main {
 	 * @param filename the name of the file lexed
 	 * @param tokens   the list of lexed tokens
 	 */
-	public void writeToFile(String filename, List<Symbol> tokens) {
+	public void writeToFile(String filename, List<Token> tokens) {
 		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".lexed");
 		Path outpath = dPath.resolve(outfile);
 		try {
