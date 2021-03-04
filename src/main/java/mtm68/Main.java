@@ -1,5 +1,6 @@
 package mtm68;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -15,9 +16,12 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
-import java_cup.runtime.Symbol;
+import java_cup.runtime.ComplexSymbolFactory;
+import mtm68.ast.nodes.Expr;
+import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
 import mtm68.lexer.Token;
+import mtm68.parser.Parser;
 
 public class Main {
 
@@ -43,6 +47,7 @@ public class Main {
 		try {
 			new Main().parseCmdLine(args);
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("xic died: " + e.getMessage());
 		}
 	}
@@ -61,6 +66,7 @@ public class Main {
 			System.out.println(e.getMessage());
 			printHelpScreen(cmdParser);
 		}
+		
 
 		// Act on command arguments
 		if (help || sourceFiles.isEmpty())
@@ -71,6 +77,11 @@ public class Main {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
+			Lexer lexx = new Lexer(new FileReader(filename));
+			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
+			Expr expr = (Expr)parser.parse().value;
+			System.out.println("Expr: " + expr);
+
 			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 			List<Token> tokens = lexer.getTokens();
 			if (lex) {

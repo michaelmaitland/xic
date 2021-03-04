@@ -12,8 +12,8 @@ public class sym {
   public static final int MULT = 32;
   public static final int CHAR = 4;
   public static final int UMINUS = 44;
-  public static final int BOOL_T = 15;
-  public static final int INT = 5;
+  public static final int INTEGER = 5;
+  public static final int INT = 14;
   public static final int CLOSE_SQUARE = 19;
   public static final int AND = 42;
   public static final int SEMICOLON = 26;
@@ -21,13 +21,13 @@ public class sym {
   public static final int USE = 8;
   public static final int CLOSE_PAREN = 21;
   public static final int OR = 43;
+  public static final int BOOL = 15;
   public static final int COMMA = 27;
   public static final int FUNAPP = 6;
   public static final int DIV = 33;
   public static final int GEQ = 39;
   public static final int OPEN_SQUARE = 18;
   public static final int OPEN_CURLY = 22;
-  public static final int INT_T = 14;
   public static final int IF = 9;
   public static final int EXCLAMATION = 24;
   public static final int ID = 2;
@@ -59,7 +59,7 @@ public class sym {
   "ID",
   "STRING",
   "CHAR",
-  "INT",
+  "INTEGER",
   "FUNAPP",
   "INDEX",
   "USE",
@@ -68,8 +68,8 @@ public class sym {
   "WHILE",
   "RETURN",
   "LENGTH",
-  "INT_T",
-  "BOOL_T",
+  "INT",
+  "BOOL",
   "TRUE",
   "FALSE",
   "OPEN_SQUARE",

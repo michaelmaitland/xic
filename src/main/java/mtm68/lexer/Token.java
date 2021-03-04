@@ -15,7 +15,7 @@ public class Token extends ComplexSymbol {
 	}
 
 	public Token(TokenType type, String name, int id, Location left, Object value) {
-		super(name, id, left, null, value);
+		super(name, id, left, left, value);
 		assert left != null;
 		this.type = type;
 	}

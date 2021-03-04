@@ -1,16 +1,17 @@
 // A stub for a Xi CUP specification.
 
 package mtm68.parser;
+import mtm68.ast.nodes.*;
 
 // You might want to add types to these declarations.
 terminal ID;
 terminal STRING;
 terminal CHAR;
-terminal INT;
+terminal Long INTEGER;
 terminal FUNAPP;
 terminal INDEX;
 
-terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT_T, BOOL_T, TRUE, FALSE; 
+terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT, BOOL, TRUE, FALSE; 
 terminal OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_CURLY,
 	EXCLAMATION, COLON, SEMICOLON, COMMA, EQ, UNDERSCORE;
 terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, OR, UMINUS; 
@@ -22,7 +23,7 @@ nonterminal interface;
 nonterminal use_star;
 nonterminal fdecl_star;
 nonterminal fdefn_plus;
-nonterminal exp;
+nonterminal Expr exp;
 nonterminal fexp;
 nonterminal exp_star;
 nonterminal exp_plus;
@@ -61,7 +62,7 @@ precedence nonassoc ELSE;
 // HACKY???
 precedence right COMMA;
 
-start with prog;
+start with exp;
 
 //program ::= USE;
 
@@ -88,33 +89,33 @@ fdefn_plus ::= fdefn
     | fdefn fdefn_plus
     ;
 
-exp ::= exp OR exp
-    | exp AND exp
-    | exp EQEQ exp
-    | exp NEQ exp
-    | exp LT exp
-    | exp LEQ exp
-    | exp GEQ exp
-    | exp GT exp
-    | exp ADD exp
-    | exp SUB exp
-    | exp MULT exp
-    | exp HIGH_MULT exp
-    | exp DIV exp
-    | exp MOD exp
-    | SUB exp %prec UMINUS
-    | EXCLAMATION exp
-    | INT 
-    | fexp %prec FUNAPP
-    | exp OPEN_SQUARE exp CLOSE_SQUARE %prec INDEX
-    | ID 
-    | OPEN_PAREN exp CLOSE_PAREN 
-    | OPEN_CURLY array_init CLOSE_CURLY
-    | TRUE
-    | FALSE
-    | CHAR
-    | STRING
-    | LENGTH OPEN_PAREN exp CLOSE_PAREN
+exp ::= exp:e1 OR exp:e2           {: RESULT = new BinExpr(Binop.OR, e1, e2); :}
+    | exp:e1 AND exp:e2            {: RESULT = new BinExpr(Binop.AND, e1, e2); :}
+    | exp:e1 EQEQ exp:e2           {: RESULT = new BinExpr(Binop.EQEQ, e1, e2); :}
+    | exp:e1 NEQ exp:e2            {: RESULT = new BinExpr(Binop.NEQ, e1, e2); :}
+    | exp:e1 LT exp:e2             {: RESULT = new BinExpr(Binop.LT, e1, e2); :}
+    | exp:e1 LEQ exp:e2            {: RESULT = new BinExpr(Binop.LEQ, e1, e2); :}
+    | exp:e1 GEQ exp:e2            {: RESULT = new BinExpr(Binop.GEQ, e1, e2); :}
+    | exp:e1 GT exp:e2             {: RESULT = new BinExpr(Binop.GT, e1, e2); :}
+    | exp:e1 ADD exp:e2            {: RESULT = new BinExpr(Binop.ADD, e1, e2); :}
+    | exp:e1 SUB exp:e2            {: RESULT = new BinExpr(Binop.SUB, e1, e2); :}
+    | exp:e1 MULT exp:e2           {: RESULT = new BinExpr(Binop.MULT, e1, e2); :}
+    | exp:e1 HIGH_MULT exp:e2      {: RESULT = new BinExpr(Binop.HIGH_MULT, e1, e2); :}
+    | exp:e1 DIV exp:e2            {: RESULT = new BinExpr(Binop.DIV, e1, e2); :}
+    | exp:e1 MOD exp:e2            {: RESULT = new BinExpr(Binop.MOD, e1, e2); :}
+//    | SUB exp %prec UMINUS
+//    | EXCLAMATION exp
+    | INTEGER:n                    {: RESULT = new IntLiteral(n); :}
+//    | fexp %prec FUNAPP
+//    | exp OPEN_SQUARE exp CLOSE_SQUARE %prec INDEX
+//    | ID 
+//    | OPEN_PAREN exp CLOSE_PAREN 
+//    | OPEN_CURLY array_init CLOSE_CURLY
+//    | TRUE
+//    | FALSE
+//    | CHAR
+//    | STRING
+//    | LENGTH OPEN_PAREN exp CLOSE_PAREN
     ;
 
 fexp ::= ID OPEN_PAREN exp_star CLOSE_PAREN;
@@ -158,8 +159,8 @@ decl_list ::= decl
     | decl COMMA decl_list
     ;
 
-ty ::= INT_T
-    | BOOL_T
+ty ::= INT
+    | BOOL
     | ty OPEN_SQUARE CLOSE_SQUARE
     ;
 

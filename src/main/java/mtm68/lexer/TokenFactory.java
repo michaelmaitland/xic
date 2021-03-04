@@ -2,7 +2,7 @@ package mtm68.lexer;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
 
-public class TokenFactory  {
+public class TokenFactory { 
 	
 	public Token newToken(TokenType type, int line, int column) {
 		return newToken(type, null, line, column);
