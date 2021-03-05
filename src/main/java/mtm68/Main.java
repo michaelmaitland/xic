@@ -82,11 +82,11 @@ public class Main {
 			Expr expr = (Expr)parser.parse().value;
 			System.out.println("Expr: " + expr);
 
-//			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
-//			List<Token> tokens = lexer.getTokens();
-//			if (lex) {
-//				writeToFile(filename, tokens);
-//			}
+			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
+			List<Token> tokens = lexer.getTokens();
+			if (lex) {
+				writeToFile(filename, tokens);
+			}
 			
 			
 			// Node ast = parse(tokens);

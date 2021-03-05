@@ -44,7 +44,7 @@ public class SourceFileLexer {
 		if (tokens == null) {
 			tokens = new ArrayList<>();
 
-			for (Token token = (Token) lexer.next_token(); token != null; token = (Token) lexer.next_token()) {
+			for (Token token = (Token) lexer.next_token(); token.getType() != TokenType.EOF; token = (Token) lexer.next_token()) {
 				tokens.add(token);
 				if (token.sym == sym.error)
 					break;
