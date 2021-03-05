@@ -51,7 +51,10 @@ public enum TokenType {
 	OR("|"),
 
 	// Error
-	error;
+	error,
+	
+	//EOF
+	EOF;
 
 	private String pp;
 

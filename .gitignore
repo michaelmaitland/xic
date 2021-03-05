@@ -34,7 +34,7 @@ src/main/java/mtm68/lexer/Lexer.java
 
 # generated cup files
 src/main/java/mtm68/parser/Parser.java
-src/main/java/mtm68/parser/Sym.java
+src/main/java/mtm68/parser/sym.java
 
 
 # the elusive reduced pom

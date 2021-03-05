@@ -11,4 +11,9 @@ public class BinExpr extends Expr {
 		this.left = left;
 		this.right = right;
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + left + " " + op + " " + right + ")";
+	}
 }

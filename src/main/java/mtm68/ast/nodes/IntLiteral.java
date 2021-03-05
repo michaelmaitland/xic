@@ -11,5 +11,10 @@ public class IntLiteral extends Literal {
 	public long getValue() {
 		return value;
 	}
+	
+	@Override
+	public String toString() {
+		return "" + value;
+	}
 
 }

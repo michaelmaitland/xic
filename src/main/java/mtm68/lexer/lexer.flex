@@ -16,6 +16,10 @@ import java_cup.runtime.SymbolFactory;
 %line
 %column
 
+%eofval{
+  return newToken(TokenType.EOF);
+%eofval}
+
 %{
 
     /** Data to manage string state */
