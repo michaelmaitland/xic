@@ -2,11 +2,13 @@
 
 package mtm68.parser;
 import mtm68.ast.nodes.*;
+import mtm68.ast.nodes.binary.*;
+import java.util.*;
 
 // You might want to add types to these declarations.
-terminal ID;
-terminal STRING;
-terminal CHAR;
+terminal String ID;
+terminal String STRING;
+terminal Character CHARACTER;
 terminal Long INTEGER;
 terminal FUNAPP;
 terminal INDEX;
@@ -24,10 +26,10 @@ nonterminal use_star;
 nonterminal fdecl_star;
 nonterminal fdefn_plus;
 nonterminal Expr exp;
-nonterminal fexp;
-nonterminal exp_star;
-nonterminal exp_plus;
-nonterminal array_init;
+nonterminal FExpr fexp;
+nonterminal List<Expr> exp_star;
+nonterminal List<Expr> exp_plus;
+nonterminal List<Expr> array_init;
 nonterminal decl;
 nonterminal opt_decl;
 nonterminal opt_decl_wild;
@@ -44,6 +46,7 @@ nonterminal return_stmt;
 nonterminal assignment;
 nonterminal block;
 nonterminal stmt_list_ret;
+nonterminal opt_comma;
 
 // Add more nonterminals here...
 
@@ -89,47 +92,54 @@ fdefn_plus ::= fdefn
     | fdefn fdefn_plus
     ;
 
-exp ::= exp:e1 OR exp:e2           {: RESULT = new BinExpr(Binop.OR, e1, e2); :}
-    | exp:e1 AND exp:e2            {: RESULT = new BinExpr(Binop.AND, e1, e2); :}
-    | exp:e1 EQEQ exp:e2           {: RESULT = new BinExpr(Binop.EQEQ, e1, e2); :}
-    | exp:e1 NEQ exp:e2            {: RESULT = new BinExpr(Binop.NEQ, e1, e2); :}
-    | exp:e1 LT exp:e2             {: RESULT = new BinExpr(Binop.LT, e1, e2); :}
-    | exp:e1 LEQ exp:e2            {: RESULT = new BinExpr(Binop.LEQ, e1, e2); :}
-    | exp:e1 GEQ exp:e2            {: RESULT = new BinExpr(Binop.GEQ, e1, e2); :}
-    | exp:e1 GT exp:e2             {: RESULT = new BinExpr(Binop.GT, e1, e2); :}
-    | exp:e1 ADD exp:e2            {: RESULT = new BinExpr(Binop.ADD, e1, e2); :}
-    | exp:e1 SUB exp:e2            {: RESULT = new BinExpr(Binop.SUB, e1, e2); :}
-    | exp:e1 MULT exp:e2           {: RESULT = new BinExpr(Binop.MULT, e1, e2); :}
-    | exp:e1 HIGH_MULT exp:e2      {: RESULT = new BinExpr(Binop.HIGH_MULT, e1, e2); :}
-    | exp:e1 DIV exp:e2            {: RESULT = new BinExpr(Binop.DIV, e1, e2); :}
-    | exp:e1 MOD exp:e2            {: RESULT = new BinExpr(Binop.MOD, e1, e2); :}
-//    | SUB exp %prec UMINUS
-//    | EXCLAMATION exp
+exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
+    | exp:e1 AND exp:e2            {: RESULT = new And(e1, e2); :}
+    | exp:e1 EQEQ exp:e2           {: RESULT = new EqEq(e1, e2); :}
+    | exp:e1 NEQ exp:e2            {: RESULT = new NotEqual(e1, e2); :}
+    | exp:e1 LT exp:e2             {: RESULT = new LessThan(e1, e2); :}
+    | exp:e1 LEQ exp:e2            {: RESULT = new LessThanOrEqual(e1, e2); :}
+    | exp:e1 GEQ exp:e2            {: RESULT = new GreaterThanOrEqual(e1, e2); :}
+    | exp:e1 GT exp:e2             {: RESULT = new GreaterThan(e1, e2); :}
+    | exp:e1 ADD exp:e2            {: RESULT = new Add(e1, e2); :}
+    | exp:e1 SUB exp:e2            {: RESULT = new Sub(e1, e2); :}
+    | exp:e1 MULT exp:e2           {: RESULT = new Mult(e1, e2); :}
+    | exp:e1 HIGH_MULT exp:e2      {: RESULT = new HighMult(e1, e2); :}
+    | exp:e1 DIV exp:e2            {: RESULT = new Div(e1, e2); :}
+    | exp:e1 MOD exp:e2            {: RESULT = new Mod(e1, e2); :}
+    | SUB exp:e                    {: RESULT = new Negate(e); :}  %prec UMINUS
+    | EXCLAMATION exp:e            {: RESULT = new Not(e); :}  %prec EXCLAMATION
     | INTEGER:n                    {: RESULT = new IntLiteral(n); :}
-//    | fexp %prec FUNAPP
-//    | exp OPEN_SQUARE exp CLOSE_SQUARE %prec INDEX
-//    | ID 
-//    | OPEN_PAREN exp CLOSE_PAREN 
-//    | OPEN_CURLY array_init CLOSE_CURLY
-//    | TRUE
-//    | FALSE
-//    | CHAR
-//    | STRING
-//    | LENGTH OPEN_PAREN exp CLOSE_PAREN
+    | fexp:e                       {: RESULT = e; :} %prec FUNAPP
+    | exp:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
+    | ID:id                        {: RESULT = new Var(id); :}
+    | OPEN_PAREN exp:e CLOSE_PAREN   {: RESULT = e; :}
+    | OPEN_CURLY array_init:args CLOSE_CURLY {: RESULT = new ArrayInit(args); :}
+    | TRUE                         {: RESULT = new BoolLiteral(true); :}
+    | FALSE                        {: RESULT = new BoolLiteral(false); :}
+    | CHARACTER:c                  {: RESULT = new CharLiteral(c); :}
+    | STRING:s                     {: RESULT = new StringLiteral(s); :}
+    | LENGTH OPEN_PAREN exp:e CLOSE_PAREN {: RESULT = new ArrayLength(e); :}
     ;
 
-fexp ::= ID OPEN_PAREN exp_star CLOSE_PAREN;
+fexp ::= ID:id OPEN_PAREN exp_star:args CLOSE_PAREN     {: RESULT = new FExpr(id, args); :} 
+;
 
-exp_star ::= /* epsilon */
-    | exp_plus
+exp_star ::= /* epsilon */  {: RESULT = new ArrayList<Expr>(); :}
+    | exp_plus:e            {: RESULT = e; :}
     ;
 
-exp_plus ::= exp
-    | exp COMMA exp_plus
+exp_plus ::= exp:e               {: List<Expr> list = new ArrayList<Expr>();
+                                    list.add(e);
+                                    RESULT = list; :}
+    | exp_plus:es COMMA exp:e    {: es.add(e); RESULT = es; :}
     ;
 
-array_init ::= exp_star
-    | exp_plus COMMA
+array_init ::= /* epsilon */           {: RESULT = new ArrayList<Expr>(); :}
+    | exp_plus:e opt_comma             {: RESULT = e; :}
+    ;
+
+opt_comma ::= /* epsilon */
+    | COMMA
     ;
 
 // x:int

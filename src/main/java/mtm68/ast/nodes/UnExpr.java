@@ -1,5 +1,11 @@
 package mtm68.ast.nodes;
 
-public class UnExpr extends Expr {
+public abstract class UnExpr extends Expr {
 
+	protected Expr expr;
+	
+	public UnExpr(Expr expr) {
+		this.expr = expr;
+	}
+	
 }

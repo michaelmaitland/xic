@@ -10,11 +10,11 @@ public class sym {
   /* terminals */
   public static final int OPEN_PAREN = 20;
   public static final int MULT = 32;
-  public static final int CHAR = 4;
   public static final int UMINUS = 44;
   public static final int INTEGER = 5;
   public static final int INT = 14;
   public static final int CLOSE_SQUARE = 19;
+  public static final int CHARACTER = 4;
   public static final int AND = 42;
   public static final int SEMICOLON = 26;
   public static final int LT = 36;
@@ -58,7 +58,7 @@ public class sym {
   "error",
   "ID",
   "STRING",
-  "CHAR",
+  "CHARACTER",
   "INTEGER",
   "FUNAPP",
   "INDEX",

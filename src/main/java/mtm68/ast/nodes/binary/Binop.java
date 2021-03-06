@@ -1,4 +1,4 @@
-package mtm68.ast.nodes;
+package mtm68.ast.nodes.binary;
 
 import mtm68.ast.types.Type;
 import static mtm68.ast.types.Types.*;

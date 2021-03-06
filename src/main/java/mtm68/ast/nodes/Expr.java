@@ -1,5 +1,5 @@
 package mtm68.ast.nodes;
 
-public class Expr extends Node {
+public abstract class Expr extends Node {
 
 }

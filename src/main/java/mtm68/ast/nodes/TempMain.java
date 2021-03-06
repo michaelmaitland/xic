@@ -1,5 +1,8 @@
 package mtm68.ast.nodes;
 
+import mtm68.ast.nodes.binary.BinExpr;
+import mtm68.ast.nodes.binary.Binop;
+
 public class TempMain {
 	
 	public static void main(String[] args) {

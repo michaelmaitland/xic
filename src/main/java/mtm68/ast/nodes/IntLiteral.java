@@ -1,20 +1,8 @@
 package mtm68.ast.nodes;
 
-public class IntLiteral extends Literal {
-	
-	private long value;
+public class IntLiteral extends Literal<Long> {
 	
 	public IntLiteral(long value) {
-		this.value = value;
+		super(value);
 	}
-	
-	public long getValue() {
-		return value;
-	}
-	
-	@Override
-	public String toString() {
-		return "" + value;
-	}
-
 }
