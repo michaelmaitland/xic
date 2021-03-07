@@ -1,6 +1,11 @@
 package mtm68.ast.nodes;
 
-public class Var extends Expr {
+import java.util.Optional;
+
+import mtm68.ast.nodes.stmts.SingleAssignLHS;
+import mtm68.ast.types.Type;
+
+public class Var extends Expr implements SingleAssignLHS {
 	
 	private String id;
 	
@@ -11,6 +16,16 @@ public class Var extends Expr {
 	@Override
 	public String toString() {
 		return id;
+	}
+
+	@Override
+	public String getName() {
+		return id;
+	}
+
+	@Override
+	public Optional<Type> getType() {
+		return Optional.empty();
 	}
 
 }

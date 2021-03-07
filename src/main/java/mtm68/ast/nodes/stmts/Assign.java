@@ -1,4 +1,4 @@
-package mtm68.ast.nodes;
+package mtm68.ast.nodes.stmts;
 
 public abstract class Assign extends Statement {
 
@@ -6,6 +6,6 @@ public abstract class Assign extends Statement {
 	// single assign - LHS + RHS
 	// multiple assign - List<LHS + wildcard> + fexp
 	//
-	// LHS -> id | arrayIdx | id : ty | arrayIdx : ty
+	// LHS -> id | arrayIdx | ty_decl 
 	// RHS -> Optional exp 
 }
