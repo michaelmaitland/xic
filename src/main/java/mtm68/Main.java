@@ -47,8 +47,8 @@ public class Main {
 		try {
 			new Main().parseCmdLine(args);
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("xic died: " + e.getMessage());
+			System.out.println("Failed to compile: xic exit code 1");
+			System.exit(1);
 		}
 	}
 	

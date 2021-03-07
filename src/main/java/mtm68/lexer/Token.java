@@ -32,6 +32,20 @@ public class Token extends ComplexSymbol {
 		return type;
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Token other = (Token) obj;
+		if(!toString().equals(other.toString()))
+			return false;
+		return true;
+	}
+
 	private String prettyPrintAttribute(){
         if(value == null) return "";
         
