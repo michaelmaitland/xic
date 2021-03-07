@@ -15,4 +15,8 @@ public class SimpleDecl extends Decl {
 		return type;
 	}
 
+	@Override
+	public String toString() {
+		return "SimpleDecl [type=" + type + ", id=" + id + "]";
+	}
 }

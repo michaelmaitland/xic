@@ -23,12 +23,13 @@ terminal OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_C
 terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, OR, UMINUS; 
 
 // You might want to add types to these declarations.
-nonterminal prog;
+nonterminal Program prog;
 nonterminal top;
 nonterminal interface;
-nonterminal use_star;
+nonterminal Use use;
+nonterminal List<Use> use_star;
 nonterminal fdecl_star;
-nonterminal fdefn_plus;
+nonterminal List<FunctionDefn> fdefn_plus;
 nonterminal Expr exp;
 nonterminal FExpr fexp;
 nonterminal List<Expr> exp_star;
@@ -43,9 +44,9 @@ nonterminal Type ty;
 nonterminal DeclType ty_decl;
 nonterminal List<Type> ty_list;
 nonterminal SingleAssignLHS assign_single_lhs;
-nonterminal Optional<List<Type>> f_type;
-nonterminal fdecl;
-nonterminal fdefn;
+nonterminal List<Type> f_type;
+nonterminal FunctionDecl fdecl;
+nonterminal FunctionDefn fdefn;
 nonterminal Statement stmt;
 nonterminal List<Statement> stmt_list;
 nonterminal Return return_stmt;
@@ -72,7 +73,7 @@ precedence nonassoc ELSE;
 // HACKY???
 precedence right COMMA;
 
-start with stmt;
+start with prog;
 
 //program ::= USE;
 
@@ -80,23 +81,25 @@ start with stmt;
 //    | IXI interface
 //    ;
 
-prog ::= use_star fdefn_plus
+prog ::= use_star:us fdefn_plus:ds   {: RESULT = new Program(us, ds); :}
 ;
 
 interface ::= fdecl_star
 ;
 
-use_star ::= /* epsilon */
-    | USE ID use_star
-    | USE ID SEMICOLON use_star
+use ::= USE ID:id opt_semi {: RESULT = new Use(id); :}
+;
+
+use_star ::= /* epsilon */        {: RESULT = ArrayUtils.empty(); :}
+    | use_star:us use:u           {: RESULT = ArrayUtils.append(us, u); :}
     ;
 
 fdecl_star ::= /* epsilon */
     | fdecl fdecl_star
     ;
 
-fdefn_plus ::= fdefn
-    | fdefn fdefn_plus
+fdefn_plus ::= fdefn:d        {: RESULT = ArrayUtils.singleton(d); :}
+    | fdefn_plus:ds fdefn:d   {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
 exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
@@ -172,7 +175,8 @@ multiple_assign ::= ext_decl_wild:d1 COMMA ext_decl_wild:d2  {: RESULT = ArrayUt
     | multiple_assign:ds COMMA ext_decl_wild:d               {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
-decl_list ::= decl:d                  {: RESULT = ArrayUtils.singleton(d); :}
+decl_list ::=  /* epsilon */          {: RESULT = ArrayUtils.empty(); :}
+    | decl:d                          {: RESULT = ArrayUtils.singleton(d); :}
     | decl_list:ds COMMA decl:d       {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
@@ -194,14 +198,14 @@ ty_list ::= ty:t              {: RESULT = ArrayUtils.singleton(t); :}
 
 // sort(x: int[]) { ... }
 // gcd(a: int, b : int) : int, bool { ... }
-f_type ::= /* epsilon */   {: RESULT = Optional.empty(); :}
-    | COLON ty_list:ts     {: RESULT = Optional.of(ts); :}
+f_type ::= /* epsilon */   {: RESULT = ArrayUtils.empty(); :}
+    | COLON ty_list:ts     {: RESULT = ts; :}
     ;
 
-fdecl ::= ID OPEN_PAREN decl_list CLOSE_PAREN f_type 
+fdecl ::= ID:id OPEN_PAREN decl_list:args CLOSE_PAREN f_type:rets  {: RESULT = new FunctionDecl(id, args, rets); :}
 ;
 
-fdefn ::= fdecl block 
+fdefn ::= fdecl:d block:b  {: RESULT = new FunctionDefn(d, b); :}
 ;
 
 stmt ::= assignment:s               {: RESULT = s; :}
