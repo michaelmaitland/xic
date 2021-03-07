@@ -1,8 +1,8 @@
-package mtm68.ast.nodes;
+package mtm68.ast.nodes.stmts;
 
 import java.util.Optional;
 
-import mtm68.ast.nodes.stmts.Statement;
+import mtm68.ast.nodes.Expr;
 
 public class If extends Statement {
 	
