@@ -25,6 +25,163 @@ public class SourceFileLexerTests {
 		assertError("empty literal", "''");
 	}
 
+	// xic-ref (--lex [basic test]): char02.xi 
+	@Test
+	public void testSingleQuoteChar() throws IOException {
+	List<Token> tokens = lex("single quote char", "'\\''");
+		Token t = tFactory.newToken(CHARACTER, "'", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): char03.xi
+	@Test
+	public void testDoubleQuoteChar() throws IOException {
+	List<Token> tokens = lex("double quote char", "'\\\"'");
+		Token t = tFactory.newToken(CHARACTER, "\"", 1, 1);
+		assertEquals(t , tokens.get(0));
+
+	}
+
+	// xic-ref (--lex [basic test]): int06.xi
+	@Test
+	public void testMinInt() throws IOException {
+	List<Token> tokens = lex("min int", "-9223372036854775808");
+		Token t = tFactory.newToken(INTEGER, -9223372036854775808L, 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): string01.xi
+		@Test
+	public void testEscapedDoubleQuoteString() throws IOException {
+	List<Token> tokens = lex("double quote char", "\"\"\"");
+		Token t = tFactory.newToken(STRING, "\"", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): string03.xi
+	@Test
+	public void testSingleQuoteString() throws IOException {
+	List<Token> tokens = lex("single quote String", "\"'\"");
+		Token t = tFactory.newToken(STRING, "'", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): string05.xi
+	@Test
+	public void testDoubleQuoteWithTextString() throws IOException {
+	List<Token> tokens = lex("double quote with text", "\"\" This should work \"");
+		Token t = tFactory.newToken(STRING, "\" This should work", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): string09.xi
+	@Test
+	public void testEscapedBackslashEscapedDoubleQuoteString() throws IOException {
+	List<Token> tokens = lex("escaped backslash escaped double quote string", "\"\\\"\"");
+		Token t = tFactory.newToken(STRING, "\\\"", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic-error test]): char05.xi
+	@Test
+	public void testCharLiteralWithManyQuotesProducesError() throws IOException {
+		assertError("char literal with many quotes ", "''''''''''''''''''''''''''''''''''''''''");
+	}
+
+	// xic-ref (--lex [basic-error test]): string01.xi
+	@Test
+	public void stringWithUnescapedBackslashProducesError() throws IOException {
+		assertError("string with unescaped back slash", "\"\\\"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string02.xi
+	@Test
+	public void doubleQuoteProducesError() throws IOException {
+		assertError("double quote", "\"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string03.xi
+	@Test
+	public void invalidCharEscapedInString() throws IOException {
+		assertError("invalid char escaped in string", "\"\\q\"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string04.xi
+	@Test
+	public void invalidHexEscapedInString() throws IOException {
+		assertError("invalid char escaped in string", "\"\\x\"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string05.xi
+	@Test
+	public void escapedBackslashAndUnescapedBackslashProducesError() throws IOException {
+		assertError("escaped Backslash And Unescaped Backslash", "\"\\\\\\\"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string06.xi
+	@Test
+	public void backslashSpaceProducesError() throws IOException {
+		assertError("backslash space", "\"\\ \\ \\ \"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string07.xi
+	@Test
+	public void testStringWithManyUnescapedQuotesProducesError() throws IOException {
+		assertError("string with many double quotes ", "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"");
+	}
+
+	// xic-ref (--lex [basic-error test]): string08.xi
+	// xic-ref (--lex [basic-error test]): string09.xi
+	@Test
+	public void testStringThatDoesNotCloseProducesError() throws IOException {
+		assertError("string that does not close", "\"abcdef");
+	}
+
+	// xic-ref (--lex [combo test]): medley01.xi
+	@Test
+	public void testMedley() throws IOException {
+		List<Token> tokens = lex("medley", "bool''''x'x'x'x_x2451'x:bool=5+5<=5555bool5:int[]=\"55bool\\x2F\";'5';'\\'';\n"
+				+ "//at694_cjb328_dbd64_ecp84");
+		Token t = tFactory.newToken(CHARACTER, "\\'", 1, 68);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [combo test]): string05.xi
+	@Test
+	public void testEscapedStrings() throws IOException {
+		List<Token> tokens = lex("escaped strings", "\"Hello \"\"\\\"World\\\"\"\"; x = \"\"\\\\\""); 
+		Token t = tFactory.newToken(STRING, "\"World\"", 1, 9);
+		assertEquals(t , tokens.get(1));
+	}
+	
+	// xic-ref (--lex [extension-error test (might succeed)]): string01.xi
+	@Test
+	public void testMultiLineString() throws IOException {
+		assertError("multi line string", "\"This might\nnot work\"");
+	}
+	
+	// xic-ref (--lex [extension-error test (might succeed)]): string02.xi
+	@Test
+	public void testMultiLineEmptyString() throws IOException {
+		assertError("multi line empty string", "\"\n\"");
+	}
+
+	// xic-ref (Test --lex): lex05.xi
+	@Test
+	public void testEscapedSingleQuoteCharLiteralInMedley() throws IOException {
+		List<Token> tokens = lex("Escaped single quote char literal in medley", "if ( a >= '\\'' ) return x else return y");
+		Token t = tFactory.newToken(CHARACTER, "\\'", 1, 11);
+		assertEquals(t, tokens.get(4));
+	}
+
+	// xic-ref (Test --lex): largeintliteral.xi
+	@Test
+	public void testLargeIntLiteralInMedley() throws IOException {
+		assertError("LargeIntLiteralInMedley", "main(args: int[][]) {\n"
+				+ "    b: int = 1000000000000000000000000000000;\n"
+				+ "}");
+	}
+
 	@Test
 	public void testValidIdentifier() throws IOException {
 		List<Token> tokens = lex("valid_id", "a'_33");
@@ -80,7 +237,6 @@ public class SourceFileLexerTests {
 		assertSingleToken(CHARACTER, 'c', "'c'");
 		assertSingleToken(STRING, "hello", "\"hello\"");
 
-		assertSingleToken(DOT, ".");
 		assertSingleToken(OPEN_SQUARE, "[");
 		assertSingleToken(CLOSE_SQUARE, "]");
 		assertSingleToken(OPEN_PAREN, "(");

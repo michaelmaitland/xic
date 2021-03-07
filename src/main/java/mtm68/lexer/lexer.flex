@@ -79,7 +79,6 @@ HexLiteral = "\'" {Hex} "\'"
     "true"        { return newToken(TokenType.TRUE); }
     "false"       { return newToken(TokenType.FALSE); }
 
-    "."           { return newToken(TokenType.DOT); }
     "["           { return newToken(TokenType.OPEN_SQUARE); }
     "]"           { return newToken(TokenType.CLOSE_SQUARE); }
     "("           { return newToken(TokenType.OPEN_PAREN); }

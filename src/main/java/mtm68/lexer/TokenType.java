@@ -20,7 +20,6 @@ public enum TokenType {
 	STRING,
 	
 	// Punctuation
-	DOT("."),
 	OPEN_SQUARE("["),
 	CLOSE_SQUARE("]"),
 	OPEN_PAREN("("),
