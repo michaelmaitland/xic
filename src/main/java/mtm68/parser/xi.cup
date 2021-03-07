@@ -215,6 +215,7 @@ stmt ::= assignment:s               {: RESULT = s; :}
     | fexp:e                        {: RESULT = new FunctionCall(e); :}
     | ext_decl:d                    {: RESULT = d; :}
     | block:b                       {: RESULT = b; :}
+    | error                         {: RESULT = new ErrorStatement("Parse error"); :}
     ;
 
 stmt_list ::= /* epsilon */         {: RESULT = ArrayUtils.empty(); :}
