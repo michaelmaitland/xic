@@ -2,7 +2,9 @@
 
 package mtm68.parser;
 import mtm68.ast.nodes.*;
+import mtm68.ast.types.*;
 import mtm68.ast.nodes.binary.*;
+import mtm68.exception.*;
 import java.util.*;
 
 // You might want to add types to these declarations.
@@ -35,7 +37,8 @@ nonterminal opt_decl;
 nonterminal opt_decl_wild;
 nonterminal multiple_assign;
 nonterminal decl_list;
-nonterminal ty;
+nonterminal Type ty;
+nonterminal DeclType ty_decl;
 nonterminal ty_list;
 nonterminal f_type;
 nonterminal fdecl;
@@ -65,7 +68,7 @@ precedence nonassoc ELSE;
 // HACKY???
 precedence right COMMA;
 
-start with exp;
+start with ty_decl;
 
 //program ::= USE;
 
@@ -169,9 +172,16 @@ decl_list ::= decl
     | decl COMMA decl_list
     ;
 
-ty ::= INT
-    | BOOL
-    | ty OPEN_SQUARE CLOSE_SQUARE
+ty ::= INT                            {: RESULT = Types.INT; :}
+    | BOOL                            {: RESULT = Types.BOOL; :}
+    | ty:t OPEN_SQUARE CLOSE_SQUARE   {: RESULT = Types.ARRAY(t); :}
+    ;
+
+ty_decl ::= INT                                  {: RESULT = new DeclType(Types.INT); :}
+    | BOOL                                       {: RESULT = new DeclType(Types.BOOL); :}
+    | ty_decl:t OPEN_SQUARE exp:e CLOSE_SQUARE   {: if(t.canAddMoreIndices()) { t.addArrayLayer(); t.addIndexExpr(e); RESULT = t; }
+                                                    else { report_error("Invalid array indices in decl", null); RESULT = t; } :}
+    | ty_decl:t OPEN_SQUARE CLOSE_SQUARE         {: t.addArrayLayer(); RESULT = t; :}
     ;
 
 ty_list ::= ty

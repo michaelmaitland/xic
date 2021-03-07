@@ -79,8 +79,8 @@ public class Main {
 			}
 			Lexer lexx = new Lexer(new FileReader(filename));
 			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
-			Expr expr = (Expr)parser.parse().value;
-			System.out.println("Expr: " + expr);
+			Object parsed = parser.parse().value;
+			System.out.println("Result: " + parsed);
 
 			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 			List<Token> tokens = lexer.getTokens();

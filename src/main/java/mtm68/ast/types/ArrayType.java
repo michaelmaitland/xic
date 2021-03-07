@@ -13,6 +13,15 @@ public class ArrayType implements Type {
 	public TypeType getTypeType() {
 		return TypeType.ARRAY;
 	}
+	
+	public Type getType() {
+		return type;
+	}
+	
+	@Override
+	public String toString() {
+		return type.toString() + "[]";
+	}
 
 	@Override
 	public boolean equals(Object obj) {
