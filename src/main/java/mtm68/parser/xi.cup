@@ -4,7 +4,9 @@ package mtm68.parser;
 import mtm68.ast.nodes.*;
 import mtm68.ast.types.*;
 import mtm68.ast.nodes.binary.*;
+import mtm68.ast.nodes.stmts.*;
 import mtm68.exception.*;
+import mtm68.util.*;
 import java.util.*;
 
 // You might want to add types to these declarations.
@@ -32,24 +34,26 @@ nonterminal FExpr fexp;
 nonterminal List<Expr> exp_star;
 nonterminal List<Expr> exp_plus;
 nonterminal List<Expr> array_init;
-nonterminal decl;
-nonterminal opt_decl;
-nonterminal opt_decl_wild;
-nonterminal multiple_assign;
-nonterminal decl_list;
+nonterminal SimpleDecl decl;
+nonterminal ExtendedDecl ext_decl;
+nonterminal Optional<ExtendedDecl> ext_decl_wild;
+nonterminal List<Optional<ExtendedDecl>> multiple_assign;
+nonterminal List<SimpleDecl> decl_list;
 nonterminal Type ty;
 nonterminal DeclType ty_decl;
-nonterminal ty_list;
-nonterminal f_type;
+nonterminal List<Type> ty_list;
+nonterminal SingleAssignLHS assign_single_lhs;
+nonterminal Optional<List<Type>> f_type;
 nonterminal fdecl;
 nonterminal fdefn;
-nonterminal stmt;
-nonterminal stmt_list;
-nonterminal return_stmt;
-nonterminal assignment;
-nonterminal block;
-nonterminal stmt_list_ret;
+nonterminal Statement stmt;
+nonterminal List<Statement> stmt_list;
+nonterminal Return return_stmt;
+nonterminal Assign assignment;
+nonterminal Block block;
+nonterminal Block stmt_list_ret;
 nonterminal opt_comma;
+nonterminal opt_semi;
 
 // Add more nonterminals here...
 
@@ -68,7 +72,7 @@ precedence nonassoc ELSE;
 // HACKY???
 precedence right COMMA;
 
-start with ty_decl;
+start with stmt;
 
 //program ::= USE;
 
@@ -131,9 +135,7 @@ exp_star ::= /* epsilon */  {: RESULT = new ArrayList<Expr>(); :}
     | exp_plus:e            {: RESULT = e; :}
     ;
 
-exp_plus ::= exp:e               {: List<Expr> list = new ArrayList<Expr>();
-                                    list.add(e);
-                                    RESULT = list; :}
+exp_plus ::= exp:e               {: RESULT = ArrayUtils.singleton(e); :}
     | exp_plus:es COMMA exp:e    {: es.add(e); RESULT = es; :}
     ;
 
@@ -146,30 +148,32 @@ opt_comma ::= /* epsilon */
     ;
 
 // x:int
-decl ::= ID COLON ty
+decl ::= ID:id COLON ty:t   {: RESULT = new SimpleDecl(id, t); :}
+;
+
+ext_decl ::= ID:id COLON ty_decl:t {: RESULT = new ExtendedDecl(id, t); :} 
 ;
 
 // x:int
 // x
-opt_decl ::= ID
-    | decl
+assign_single_lhs ::= ID:id   {: RESULT = new Var(id); :}
+    | ext_decl:d              {: RESULT = d; :}
     ;
 
-// x:int
-// x
-// _
-opt_decl_wild ::= opt_decl | UNDERSCORE;
+ext_decl_wild ::= ext_decl:d    {: RESULT = Optional.of(d); :}
+    | UNDERSCORE                {: RESULT = Optional.empty(); :}
+    ;
 
 // x:int, y:int = f()
 // x, y = f()
 // x:int, y = f()
 // _, y:int = f()
-multiple_assign ::= opt_decl_wild COMMA opt_decl_wild
-    | opt_decl_wild COMMA multiple_assign
+multiple_assign ::= ext_decl_wild:d1 COMMA ext_decl_wild:d2  {: RESULT = ArrayUtils.append(ArrayUtils.singleton(d1), d2); :}
+    | multiple_assign:ds COMMA ext_decl_wild:d               {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
-decl_list ::= decl
-    | decl COMMA decl_list
+decl_list ::= decl:d                  {: RESULT = ArrayUtils.singleton(d); :}
+    | decl_list:ds COMMA decl:d       {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
 ty ::= INT                            {: RESULT = Types.INT; :}
@@ -184,14 +188,14 @@ ty_decl ::= INT                                  {: RESULT = new DeclType(Types.
     | ty_decl:t OPEN_SQUARE CLOSE_SQUARE         {: t.addArrayLayer(); RESULT = t; :}
     ;
 
-ty_list ::= ty
-    | ty COMMA ty_list
+ty_list ::= ty:t              {: RESULT = ArrayUtils.singleton(t); :}
+    | ty_list:ts COMMA ty:t   {: RESULT = ArrayUtils.append(ts, t); :}
     ;
 
 // sort(x: int[]) { ... }
 // gcd(a: int, b : int) : int, bool { ... }
-f_type ::= /* epsilon */
-    | COLON ty_list
+f_type ::= /* epsilon */   {: RESULT = Optional.empty(); :}
+    | COLON ty_list:ts     {: RESULT = Optional.of(ts); :}
     ;
 
 fdecl ::= ID OPEN_PAREN decl_list CLOSE_PAREN f_type 
@@ -200,32 +204,33 @@ fdecl ::= ID OPEN_PAREN decl_list CLOSE_PAREN f_type
 fdefn ::= fdecl block 
 ;
 
-stmt ::= assignment
-    | IF exp stmt 
-    | IF exp stmt ELSE stmt
-    | WHILE exp stmt 
-    | fexp
-    | decl
-    | block
+stmt ::= assignment:s               {: RESULT = s; :}
+    | IF exp:e stmt:s               {: RESULT = new If(e, s); :}
+    | IF exp:e stmt:s1 ELSE stmt:s2 {: RESULT = new If(e, s1, s2); :}
+    | WHILE exp:e stmt:s            {: RESULT = new While(e, s); :} 
+    | fexp:e                        {: RESULT = new FunctionCall(e); :}
+    | ext_decl:d                    {: RESULT = d; :}
+    | block:b                       {: RESULT = b; :}
     ;
 
-stmt_list ::= /* epsilon */
-    | stmt stmt_list
+stmt_list ::= /* epsilon */         {: RESULT = ArrayUtils.empty(); :}
+    | stmt_list:ss opt_semi stmt:s  {: RESULT = ArrayUtils.append(ss, s); :}
 ;
 
-return_stmt ::= RETURN exp_star
-;
-
-// TODO: reduce-reduce 
-// ID EQ . fexp
-assignment ::= opt_decl EQ exp
-    | multiple_assign EQ fexp
+opt_semi ::= /* epsilon */
+    | SEMICOLON
     ;
 
-block ::= OPEN_CURLY stmt_list_ret CLOSE_CURLY
+return_stmt ::= RETURN exp_star:es   {: RESULT = new Return(es); :}
 ;
 
-// TODO: shift-reduce
-stmt_list_ret ::= stmt_list
-    | stmt_list return_stmt
+assignment ::= assign_single_lhs:lhs EQ exp:e  {: RESULT = new SingleAssign(lhs, e); :}
+    | multiple_assign:m EQ fexp:e              {: RESULT = new MultipleAssign(m, e); :}
+    ;
+
+block ::= OPEN_CURLY stmt_list_ret:b CLOSE_CURLY {: RESULT = b; :}
+;
+
+stmt_list_ret ::= stmt_list:ss opt_semi            {: RESULT = new Block(ss); :}
+    | stmt_list:ss opt_semi return_stmt:s opt_semi {: RESULT = new Block(ss, s); :}
     ;
