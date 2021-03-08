@@ -52,6 +52,10 @@ public enum TokenType {
 	// Error
 	error,
 	
+	// File Type
+	XI,
+	IXI,
+	
 	//EOF
 	EOF;
 

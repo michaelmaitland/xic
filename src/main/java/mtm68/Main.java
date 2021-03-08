@@ -24,6 +24,7 @@ import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.lexer.Lexer;
+import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.SourceFileLexer;
 import mtm68.lexer.Token;
 import mtm68.parser.Parser;
@@ -82,7 +83,7 @@ public class Main {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
-			Lexer lexx = new Lexer(new FileReader(filename));
+			Lexer lexx = new FileTypeLexer(new FileReader(filename), FileType.parseFileType(filename));
 			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
 			Node parsed = (Node)(parser.parse().value);
 			SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));

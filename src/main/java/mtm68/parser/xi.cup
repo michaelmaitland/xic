@@ -16,6 +16,7 @@ terminal Character CHARACTER;
 terminal Long INTEGER;
 terminal FUNAPP;
 terminal INDEX;
+terminal IXI, XI;
 
 terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT, BOOL, TRUE, FALSE; 
 terminal OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_CURLY,
@@ -24,11 +25,11 @@ terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, 
 
 // You might want to add types to these declarations.
 nonterminal Program prog;
-nonterminal top;
-nonterminal interface;
+nonterminal Root top;
+nonterminal Interface interface;
 nonterminal Use use;
 nonterminal List<Use> use_star;
-nonterminal fdecl_star;
+nonterminal List<FunctionDecl> fdecl_star;
 nonterminal List<FunctionDefn> fdefn_plus;
 nonterminal Expr exp;
 nonterminal Expr exp0;
@@ -74,18 +75,16 @@ precedence nonassoc ELSE;
 // HACKY???
 precedence right COMMA;
 
-start with prog;
+start with top;
 
-//program ::= USE;
-
-//top ::= XI prog
-//    | IXI interface
-//    ;
+top ::= XI prog:p       {: RESULT = p; :}
+    | IXI interface:i   {: RESULT = i; :}
+    ;
 
 prog ::= use_star:us fdefn_plus:ds   {: RESULT = new Program(us, ds); :}
 ;
 
-interface ::= fdecl_star
+interface ::= fdecl_star:ds  {: RESULT = new Interface(ds); :}
 ;
 
 use ::= USE ID:id opt_semi {: RESULT = new Use(id); :}
@@ -95,8 +94,8 @@ use_star ::= /* epsilon */        {: RESULT = ArrayUtils.empty(); :}
     | use_star:us use:u           {: RESULT = ArrayUtils.append(us, u); :}
     ;
 
-fdecl_star ::= /* epsilon */
-    | fdecl fdecl_star
+fdecl_star ::= /* epsilon */   {: RESULT = ArrayUtils.empty(); :}
+    | fdecl_star:ds fdecl:d    {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
 fdefn_plus ::= fdefn:d        {: RESULT = ArrayUtils.singleton(d); :}

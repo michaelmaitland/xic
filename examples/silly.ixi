@@ -1,0 +1,5 @@
+// It does something
+doSomething()
+
+// And then it does it again
+doItAgain(x: int[]) : int

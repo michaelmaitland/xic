@@ -4,7 +4,7 @@ import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
-public class Interface extends Node {
+public class Interface extends Node implements Root {
 	
 	private List<FunctionDecl> fDecls;
 

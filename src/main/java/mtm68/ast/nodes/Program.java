@@ -4,7 +4,7 @@ import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
-public class Program extends Node {
+public class Program extends Node implements Root {
 	
 	private List<Use> useStmts;
 	private List<FunctionDefn> fDefns;
