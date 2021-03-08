@@ -3,6 +3,8 @@ package mtm68.ast.nodes.stmts;
 import java.util.List;
 import java.util.Optional;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
+
 public class Block extends Statement {
 	
 	private List<Statement> stmts;
@@ -22,4 +24,15 @@ public class Block extends Statement {
 	public String toString() {
 		return "Block [stmts=" + stmts + ", returnStmt=" + returnStmt + "]";
 	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.startUnifiedList();
+		for(Statement stmt : stmts) stmt.prettyPrint(p);
+		
+		if(returnStmt.isPresent()) returnStmt.get().prettyPrint(p);
+		p.endList();
+	}
+	
+	
 }

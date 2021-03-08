@@ -1,5 +1,7 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
+
 public class ArrayIndex extends Expr {
 	
 	private Expr arr;
@@ -14,5 +16,17 @@ public class ArrayIndex extends Expr {
 	public String toString() {
 		return "(" + arr.toString() + "[" + index.toString() + "])";
 	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.startList();
+		p.printAtom("[");
+		p.printAtom("]");
+		arr.prettyPrint(p);
+		index.prettyPrint(p);
+		p.endList();
+	}
+	
+	
 
 }

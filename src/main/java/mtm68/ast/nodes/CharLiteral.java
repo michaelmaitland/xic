@@ -1,7 +1,9 @@
 package mtm68.ast.nodes;
 
-public class CharLiteral extends Literal<Character>{
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
+public class CharLiteral extends Literal<Character>{
+	
 	public CharLiteral(Character value) {
 		super(value);
 	}
@@ -9,5 +11,10 @@ public class CharLiteral extends Literal<Character>{
 	@Override
 	public String toString() {
 		return "'" + value + "'";
+	}
+	
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.printAtom("'" + value + "'");
 	}
 }

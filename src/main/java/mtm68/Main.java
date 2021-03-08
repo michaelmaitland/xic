@@ -2,6 +2,8 @@ package mtm68;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,8 +18,11 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
+import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Node;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
 import mtm68.lexer.Token;
@@ -79,7 +84,10 @@ public class Main {
 			}
 			Lexer lexx = new Lexer(new FileReader(filename));
 			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
-			Object parsed = parser.parse().value;
+			Node parsed = (Node)(parser.parse().value);
+			SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+			parsed.prettyPrint(printer);
+			printer.flush();
 			System.out.println("Result: " + parsed);
 
 			SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);

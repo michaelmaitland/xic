@@ -16,4 +16,9 @@ public class BoolType implements Type {
 	public String toString() {
 		return "bool";
 	}
+
+	@Override
+	public String getPP() {
+		return this.toString();
+	}
 }

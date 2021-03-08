@@ -4,4 +4,5 @@ public interface Type {
 	
 	TypeType getTypeType();
 
+	String getPP();
 }

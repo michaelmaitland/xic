@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 
 public class While extends Statement {
@@ -16,4 +17,15 @@ public class While extends Statement {
 	public String toString() {
 		return "While [condition=" + condition + ", body=" + body + "]";
 	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.startList();
+		p.printAtom("while");
+		condition.prettyPrint(p);
+		body.prettyPrint(p);
+		p.endList();
+	}
+	
+	
 }

@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.binary;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 
 public class BinExpr extends Expr {
@@ -17,5 +18,14 @@ public class BinExpr extends Expr {
 	@Override
 	public String toString() {
 		return "(" + left + " " + op + " " + right + ")";
+	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.startList();
+		p.printAtom(op.toString());
+		left.prettyPrint(p);
+		right.prettyPrint(p);
+		p.endList();
 	}
 }

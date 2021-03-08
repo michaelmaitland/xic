@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FExpr;
 
 public class FunctionCall extends Statement {
@@ -14,4 +15,11 @@ public class FunctionCall extends Statement {
 	public String toString() {
 		return "FunctionCall [fexp=" + fexp + "]";
 	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		fexp.prettyPrint(p);
+	}
+	
+	
 }

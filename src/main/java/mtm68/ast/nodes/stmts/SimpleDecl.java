@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 
 public class SimpleDecl extends Decl {
@@ -19,4 +20,14 @@ public class SimpleDecl extends Decl {
 	public String toString() {
 		return "SimpleDecl [type=" + type + ", id=" + id + "]";
 	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.startList();
+		p.printAtom(id);
+		p.printAtom(type.getPP());
+		p.endList();
+	}
+	
+	
 }

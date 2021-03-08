@@ -52,5 +52,9 @@ public class DeclType {
 	public String toString() {
 		return "DeclType [type=" + type + ", indices=" + indices + "]";
 	}
+	
+	public String getTypePP() {		
+		return type.getPP();
+	}
 
 }

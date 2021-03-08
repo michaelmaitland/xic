@@ -2,6 +2,8 @@ package mtm68.ast.nodes;
 
 import java.util.List;
 
+import edu.cornell.cs.cs4120.util.SExpPrinter;
+
 public class FExpr extends Expr {
 	
 	private String id;
@@ -16,4 +18,13 @@ public class FExpr extends Expr {
 	public String toString() {
 		return "FExpr [id=" + id + ", args=" + args + "]";
 	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.startList();
+		p.printAtom(id);
+		for(Expr arg: args) arg.prettyPrint(p);
+		p.endList();
+	}
+	
 }

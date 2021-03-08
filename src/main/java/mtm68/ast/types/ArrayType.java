@@ -39,4 +39,9 @@ public class ArrayType implements Type {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String getPP() {
+		return "([] " + type.getPP() + ")";
+	}
 }
