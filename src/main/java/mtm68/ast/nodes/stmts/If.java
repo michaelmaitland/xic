@@ -46,4 +46,16 @@ public class If extends Statement {
 		}
 		p.endList();
 	}
+
+	public Expr getCondition() {
+		return condition;
+	}
+
+	public Statement getIfBranch() {
+		return ifBranch;
+	}
+
+	public Optional<Statement> getElseBranch() {
+		return elseBranch;
+	}
 }

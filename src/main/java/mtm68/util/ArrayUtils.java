@@ -11,6 +11,19 @@ public class ArrayUtils {
 		return ret;
 	}
 
+	public static <T> List<T> elems(T... elems) {
+		List<T> ret = new ArrayList<T>(); 
+		for(T elem : elems) {
+			ret.add(elem);
+		}
+		return ret;
+	}
+	
+	public static <T> List<T> concat(List<T> one, List<T> two) {
+		one.addAll(two);
+		return one;
+	}
+
 	public static <T> List<T> append(List<T> list, T elem) {
 		list.add(elem);
 		return list;

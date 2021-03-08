@@ -1,0 +1,90 @@
+1:1 use
+1:5 id io
+1:7 ;
+2:1 use
+2:5 id random
+4:1 id f
+4:2 (
+4:3 )
+4:5 {
+5:2 if
+5:5 integer 3
+5:7 %
+5:9 string hi
+5:14 id x
+5:16 =
+5:18 integer 3
+6:1 }
+8:1 id doSomething
+8:12 (
+8:13 )
+9:1 {
+10:2 id z
+10:3 :
+10:5 [
+10:6 ]
+10:7 [
+10:8 integer 3
+10:9 ]
+11:2 id x
+11:3 :
+11:4 int
+11:8 =
+11:10 string hi
+11:15 id y
+11:17 =
+11:19 string hello
+11:27 while
+11:33 true
+11:38 id x
+11:39 :
+11:40 int
+11:44 if
+11:47 false
+11:53 id y
+11:54 :
+11:55 bool
+11:60 else
+11:65 if
+11:68 true
+11:73 id z
+11:74 =
+11:75 string hi
+11:80 return
+11:87 integer 3
+12:1 }
+14:1 id doSomethingElse
+14:16 (
+14:17 id x
+14:18 :
+14:19 int
+14:22 ,
+14:24 id z
+14:25 :
+14:27 bool
+14:31 [
+14:32 ]
+14:33 )
+14:35 :
+14:37 int
+14:40 ,
+14:42 int
+14:45 ,
+14:47 bool
+14:51 [
+14:52 ]
+14:53 ,
+14:55 int
+14:58 [
+14:59 ]
+15:1 {
+16:2 return
+16:9 integer 3
+16:11 +
+16:13 integer 3
+16:14 ,
+16:16 integer 4
+16:17 *
+16:18 integer 2
+16:19 ;
+17:1 }

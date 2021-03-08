@@ -7,16 +7,16 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 public class Program extends Node implements Root {
 	
 	private List<Use> useStmts;
-	private List<FunctionDefn> fDefns;
+	private List<FunctionDefn> functionDefns;
 
 	public Program(List<Use> useStmts, List<FunctionDefn> fDefns) {
 		this.useStmts = useStmts;
-		this.fDefns = fDefns;
+		this.functionDefns = fDefns;
 	}
 
 	@Override
 	public String toString() {
-		return "Program [useStmts=" + useStmts + ", fDefns=" + fDefns + "]";
+		return "Program [useStmts=" + useStmts + ", fDefns=" + functionDefns + "]";
 	}
 
 	@Override
@@ -30,12 +30,18 @@ public class Program extends Node implements Root {
 		
 		// Func Decls
 		p.startUnifiedList();
-		for(FunctionDefn defn : fDefns) defn.prettyPrint(p);
+		for(FunctionDefn defn : functionDefns) defn.prettyPrint(p);
 		p.endList();
 		
 		p.printAtom("\n");
 		p.endList();
 	}
 	
+	public List<Use> getUseStmts() {
+		return useStmts;
+	}
 	
+	public List<FunctionDefn> getFunctionDefns() {
+		return functionDefns;
+	}
 }

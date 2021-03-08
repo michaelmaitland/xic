@@ -34,5 +34,11 @@ public class Block extends Statement {
 		p.endList();
 	}
 	
+	public List<Statement> getStmts() {
+		return stmts;
+	}
 	
+	public Optional<Return> getReturnStmt() {
+		return returnStmt;
+	}
 }

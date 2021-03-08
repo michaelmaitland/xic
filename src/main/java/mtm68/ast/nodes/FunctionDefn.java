@@ -5,25 +5,33 @@ import mtm68.ast.nodes.stmts.Block;
 
 public class FunctionDefn extends Node {
 	
-	private FunctionDecl fDecl;
+	private FunctionDecl functionDecl;
 	private Block body;
 
 	public FunctionDefn(FunctionDecl fDecl, Block body) {
-		this.fDecl = fDecl;
+		this.functionDecl = fDecl;
 		this.body = body;
 	}
 
 	@Override
 	public String toString() {
-		return "FunctionDefn [fDecl=" + fDecl + ", body=" + body + "]";
+		return "FunctionDefn [fDecl=" + functionDecl + ", body=" + body + "]";
 	}
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startList();
-		fDecl.prettyPrint(p);
+		functionDecl.prettyPrint(p);
 		body.prettyPrint(p);
 		p.endList();
+	}
+	
+	public FunctionDecl getFunctionDecl() {
+		return functionDecl;
+	}
+	
+	public Block getBody() {
+		return body;
 	}
 
 }

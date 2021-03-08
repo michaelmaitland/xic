@@ -1,6 +1,10 @@
 use io;
 use random
 
+f() {
+	if 3 % "hi" x = 3
+}
+
 doSomething()
 {
 	z: [][3]
