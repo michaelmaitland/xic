@@ -1,10 +1,7 @@
 package mtm68.ast.nodes;
 
-import java.util.Optional;
-
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SingleAssignLHS;
-import mtm68.ast.types.Type;
 
 public class Var extends Expr implements SingleAssignLHS {
 	
@@ -17,16 +14,6 @@ public class Var extends Expr implements SingleAssignLHS {
 	@Override
 	public String toString() {
 		return id;
-	}
-
-	@Override
-	public String getName() {
-		return id;
-	}
-
-	@Override
-	public Optional<Type> getType() {
-		return Optional.empty();
 	}
 
 	@Override

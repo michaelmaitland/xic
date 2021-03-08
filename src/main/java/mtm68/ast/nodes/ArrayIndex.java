@@ -1,8 +1,9 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.stmts.SingleAssignLHS;
 
-public class ArrayIndex extends Expr {
+public class ArrayIndex extends Expr implements SingleAssignLHS {
 	
 	private Expr arr;
 	private Expr index;
@@ -26,7 +27,5 @@ public class ArrayIndex extends Expr {
 		index.prettyPrint(p);
 		p.endList();
 	}
-	
-	
 
 }

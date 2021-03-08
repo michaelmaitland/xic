@@ -1,12 +1,9 @@
 package mtm68.ast.nodes.stmts;
 
-import java.util.Optional;
-
-import mtm68.ast.types.Type;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 public interface SingleAssignLHS {
 	
-	String getName();
-	Optional<Type> getType();
-
+	void prettyPrint(SExpPrinter printer);
+	
 }

@@ -1,11 +1,8 @@
 package mtm68.ast.nodes.stmts;
 
-import java.util.Optional;
-
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.types.DeclType;
-import mtm68.ast.types.Type;
 
 public class ExtendedDecl extends Decl implements SingleAssignLHS {
 
@@ -18,16 +15,6 @@ public class ExtendedDecl extends Decl implements SingleAssignLHS {
 
 	public DeclType getExtendedType() {
 		return type;
-	}
-
-	@Override
-	public String getName() {
-		return id;
-	}
-
-	@Override
-	public Optional<Type> getType() {
-		return Optional.of(type.getType());
 	}
 
 	@Override

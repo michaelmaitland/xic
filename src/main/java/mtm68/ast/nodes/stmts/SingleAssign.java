@@ -23,8 +23,7 @@ public class SingleAssign extends Assign {
 		p.startList();
 		p.printAtom("=");
 		p.startList();
-		String lhsString = lhs.getType().isPresent() ? lhs.getName() + " " + lhs.getType().get() : lhs.getName();
-		p.printAtom(lhsString);
+		lhs.prettyPrint(p);
 		p.endList();
 		
 		rhs.prettyPrint(p);

@@ -31,6 +31,7 @@ nonterminal List<Use> use_star;
 nonterminal fdecl_star;
 nonterminal List<FunctionDefn> fdefn_plus;
 nonterminal Expr exp;
+nonterminal Expr exp0;
 nonterminal FExpr fexp;
 nonterminal List<Expr> exp_star;
 nonterminal List<Expr> exp_plus;
@@ -157,10 +158,16 @@ decl ::= ID:id COLON ty:t   {: RESULT = new SimpleDecl(id, t); :}
 ext_decl ::= ID:id COLON ty_decl:t {: RESULT = new ExtendedDecl(id, t); :} 
 ;
 
+exp0 ::= exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
+    | fexp:e                                     {: RESULT = e; :}
+    | ID:id                                      {: RESULT = new Var(id); :}
+;
+
 // x:int
 // x
 assign_single_lhs ::= ID:id   {: RESULT = new Var(id); :}
     | ext_decl:d              {: RESULT = d; :}
+    | exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
     ;
 
 ext_decl_wild ::= ext_decl:d    {: RESULT = Optional.of(d); :}
