@@ -21,6 +21,8 @@ We found that accounting for all the different possible legal syntax to be chall
 - Empty file spec?
 
 ## Design and Implementation 
+One of the important parts of this assignment was creating a grammar to capture the xi language and put it into our cup spec. Luckily enough, after designing our grammar by hand, there turned out to be no original shift-reduce or reduce-reduce conflicts. We did, however, run into a few later down the road as we tweaked our grammar. One example was when we were building our possible array initializer list (which allows for a trailing comma). We initially used a right recursive approach but then there was an error where, if the list was ended with a trailing comma, the parser didn't know to shift and look for another expression or reduce and end the list. Upon some research and a few different remodeling attempts, we found that changing the list to build left-recursively fixed the problem with no real downside.
+
 ### Architecture ###
 The key classes and packages we created or updated for this assignment are the following...
  
