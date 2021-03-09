@@ -20,7 +20,15 @@ public class Interface extends Node implements Root {
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startUnifiedList();
-		for(FunctionDecl fDecl : fDecls) fDecl.prettyPrint(p);
+		p.startUnifiedList();
+
+		for(FunctionDecl fDecl : fDecls) {
+			p.startList();
+			fDecl.prettyPrint(p);
+			p.endList();
+		}
+		
+		p.endList();
 		p.endList();
 	}
 }
