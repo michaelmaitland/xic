@@ -27,7 +27,6 @@ public class ExtendedDecl extends Decl implements SingleAssignLHS {
 		p.startList();
 		p.printAtom(id);
 		p.printAtom(type.getTypePP());
-		for(Expr index : type.getIndices()) index.prettyPrint(p);
 		p.endList();
 	}
 	

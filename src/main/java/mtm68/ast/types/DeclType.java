@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Var;
+import mtm68.util.ArrayUtils;
 
 public class DeclType {
 	
@@ -54,7 +56,16 @@ public class DeclType {
 	}
 	
 	public String getTypePP() {		
-		return type.getPP();
+		return addIndicesToPP(type.getPP(), indices, 0);
 	}
-
+	
+	public static String addIndicesToPP(String typePP, List<Expr> indices, int n) {
+		if(n == indices.size()) {
+			return typePP;
+		}
+		String outerBracket = typePP.substring(0, 4);
+		String nestedType = typePP.substring(4, typePP.length()-1);
+		
+		return  outerBracket + addIndicesToPP(nestedType, indices, n+1) + " " + indices.get(n) + ")";
+	}
 }

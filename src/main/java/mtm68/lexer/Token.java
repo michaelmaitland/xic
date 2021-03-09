@@ -2,6 +2,7 @@ package mtm68.lexer;
 
 import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
+import mtm68.util.StringUtils;
 
 /**
  * A Token is a <code>ComplexSymbol</code> whose <code>xleft</code> location is not null.
@@ -53,7 +54,7 @@ public class Token extends ComplexSymbol {
         
         if(value instanceof String) {
             String str = (String) value;
-            return " " + str.replaceAll("[\n]", "\\\\n");
+            return " " + StringUtils.preserveNewlines(str);
         } else {
         	return " " + value;
 		}

@@ -25,4 +25,15 @@ public class StringUtils {
 		String digits = hex.substring(2); // chop off \x
 		return Long.parseLong(digits, 16);
 	}
+	
+	/**
+	 * Takes a string with potential '\n' char literals and escapes each instance
+	 * to preserve the literal '\n' when printing.
+	 * 
+	 * @param s        a string
+	 * @return         the string with '\n' instancees escaped
+	 */
+	public static String preserveNewlines(String s) {
+		return s.replaceAll("[\n]", "\\\\n");
+	}
 }
