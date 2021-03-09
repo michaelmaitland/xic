@@ -10,8 +10,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory;
+import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Program;
+import mtm68.ast.nodes.Var;
+import mtm68.ast.nodes.stmts.ErrorStatement;
 import mtm68.ast.nodes.stmts.If;
+import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.Statement;
 import mtm68.lexer.MockLexer;
 import mtm68.lexer.Token;
@@ -22,6 +26,54 @@ public class ParserTests {
 	
 	private ComplexSymbolFactory symFac = new ComplexSymbolFactory();
 	private TokenFactory tokenFac = new TokenFactory();
+
+	@Test
+	void testSingleAssign() throws Exception {
+		List<Token> tokens = elems(token(ID, "x"), token(EQ), token(INTEGER, 3L));
+		Program prog = parseProgFromStmt(tokens);
+		
+		assertTrue(firstStatement(prog) instanceof SingleAssign);
+		
+		SingleAssign assignStmt = (SingleAssign) firstStatement(prog);
+		
+		assertTrue(assignStmt.getLhs() instanceof Var);
+	}
+
+	@Test
+	void testSingleAssignArrayIndex() throws Exception {
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(OPEN_SQUARE), 
+				token(INTEGER, 0L), 
+				token(CLOSE_SQUARE), 
+				token(EQ), 
+				token(INTEGER, 3L));
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		assertTrue(firstStatement(prog) instanceof SingleAssign);
+		
+		SingleAssign assignStmt = (SingleAssign) firstStatement(prog);
+		
+		assertTrue(assignStmt.getLhs() instanceof ArrayIndex);
+	}
+
+	@Test
+	void testSingleAssignNoParentheses() throws Exception {
+		List<Token> tokens = elems(
+				token(OPEN_PAREN), 
+				token(ID, "x"), 
+				token(CLOSE_PAREN), 
+				token(OPEN_SQUARE), 
+				token(INTEGER, 0L), 
+				token(CLOSE_SQUARE), 
+				token(EQ), 
+				token(INTEGER, 3L));
+
+		assertThrows(Exception.class, () -> {
+			parseProgFromStmt(tokens);
+		});
+	}
 	
 	@Test
 	void testParseIfNoElse() throws Exception {
@@ -54,6 +106,33 @@ public class ParserTests {
 		
 		assertTrue(ifStmt.getElseBranch().isPresent());
 	}
+
+	@Test
+	void testParseIfWithParens() throws Exception {
+		List<Token> ifTokens = elems(token(IF));
+		ifTokens.add(token(OPEN_PAREN));
+		ifTokens.addAll(arbitraryExp());
+		ifTokens.add(token(CLOSE_PAREN));
+		ifTokens.addAll(arbitraryStmt());
+
+		Program prog = parseProgFromStmt(ifTokens);
+		
+		assertTrue(firstStatement(prog) instanceof If);
+		
+		If ifStmt = (If) firstStatement(prog);
+		
+		assertEquals(Optional.empty(), ifStmt.getElseBranch());
+	}
+
+	@Test
+	void testParseErrorStatement() throws Exception {
+		List<Token> tokens = elems(token(STRING, "fail"));
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		assertTrue(firstStatement(prog) instanceof ErrorStatement);
+	}
+
 	
 	// f () { [INSERT HERE] }
 	

@@ -8,6 +8,23 @@ import mtm68.ast.nodes.stmts.*;
 import mtm68.exception.*;
 import mtm68.util.*;
 import java.util.*;
+import java_cup.runtime.*;
+
+parser code {:
+    List<SyntaxErrorInfo> syntaxErrors = new ArrayList<>();
+
+    @Override
+    public void syntax_error(Symbol cur_token) {
+        syntaxErrors.add(new SyntaxErrorInfo(cur_token));
+    }
+
+    /* @Override */
+    /* public void unrecovered_syntax_error(Symbol cur_token) {} */
+
+    public List<SyntaxErrorInfo> getSyntaxErrors() {
+        return syntaxErrors;
+    }
+:}
 
 // You might want to add types to these declarations.
 terminal String ID;
@@ -120,7 +137,7 @@ exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
     | EXCLAMATION exp:e            {: RESULT = new Not(e); :}  %prec EXCLAMATION
     | INTEGER:n                    {: RESULT = new IntLiteral(n); :}
     | fexp:e                       {: RESULT = e; :} %prec FUNAPP
-    | exp:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
+    | exp:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX  
     | ID:id                        {: RESULT = new Var(id); :}
     | OPEN_PAREN exp:e CLOSE_PAREN   {: RESULT = e; :}
     | OPEN_CURLY array_init:args CLOSE_CURLY {: RESULT = new ArrayInit(args); :}
@@ -154,16 +171,24 @@ opt_comma ::= /* epsilon */
 decl ::= ID:id COLON ty:t   {: RESULT = new SimpleDecl(id, t); :}
 ;
 
+// x: int[gcd(a,b)]
 ext_decl ::= ID:id COLON ty_decl:t {: RESULT = new ExtendedDecl(id, t); :} 
 ;
 
+// f
+// f()
+// f[3]
 exp0 ::= exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
     | fexp:e                                     {: RESULT = e; :}
     | ID:id                                      {: RESULT = new Var(id); :}
 ;
 
-// x:int
-// x
+// x:int[2][2] = { {1, 0}, {0, 1}}
+// x = 3
+// e1[e2] = 3
+// [0]
+// true[0]
+// f(x)[0]
 assign_single_lhs ::= ID:id   {: RESULT = new Var(id); :}
     | ext_decl:d              {: RESULT = d; :}
     | exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
@@ -174,9 +199,8 @@ ext_decl_wild ::= ext_decl:d    {: RESULT = Optional.of(d); :}
     ;
 
 // x:int, y:int = f()
-// x, y = f()
-// x:int, y = f()
 // _, y:int = f()
+// _ = f()
 multiple_assign ::= ext_decl_wild:d1 COMMA ext_decl_wild:d2  {: RESULT = ArrayUtils.append(ArrayUtils.singleton(d1), d2); :}
     | multiple_assign:ds COMMA ext_decl_wild:d               {: RESULT = ArrayUtils.append(ds, d); :}
     ;

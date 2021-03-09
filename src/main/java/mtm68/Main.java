@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.kohsuke.args4j.Argument;
@@ -21,10 +22,12 @@ import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.Node;
-import mtm68.lexer.Lexer;
+import mtm68.exception.SyntaxErrorInfo;
 import mtm68.lexer.FileTypeLexer;
+import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
 import mtm68.lexer.Token;
+import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 
 public class Main {
@@ -83,7 +86,19 @@ public class Main {
 			}
 			Lexer lexx = new FileTypeLexer(new FileReader(filename), FileType.parseFileType(filename));
 			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
-			Node ast = (Node)(parser.parse().value);
+			
+			ParseResult parseResult = new ParseResult(parser);
+			printSyntaxErrors(parseResult);
+			
+			if(parseResult.isValidAST()) {
+				Node ast = parseResult.getNode().get();
+				if(parse) writeToFile(filename, ast);
+				
+				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+				ast.prettyPrint(printer);
+				printer.flush();
+				System.out.println("Result: " + ast);
+			} 
 			
 			//Persist
 			if (lex) {
@@ -91,15 +106,12 @@ public class Main {
 				List<Token> tokens = lexer.getTokens();	
 				writeToFile(filename, tokens);
 			}
-			if(parse) writeToFile(filename, ast);
-			
-			SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-			ast.prettyPrint(printer);
-			printer.flush();
-			System.out.println("Result: " + ast);
-
-
-			
+		}
+	}
+	
+	private void printSyntaxErrors(ParseResult parseResult) {
+		for(SyntaxErrorInfo errorInfo : parseResult.getSyntaxErrors()) {
+			System.out.println(errorInfo);
 		}
 	}
 

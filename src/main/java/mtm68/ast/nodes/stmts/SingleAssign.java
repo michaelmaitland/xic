@@ -28,7 +28,11 @@ public class SingleAssign extends Assign {
 		p.endList();
 	}
 	
+	public SingleAssignLHS getLhs() {
+		return lhs;
+	}
 	
-	
-	
+	public Expr getRhs() {
+		return rhs;
+	}
 }
