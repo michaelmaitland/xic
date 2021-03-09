@@ -28,4 +28,13 @@ public class SyntaxErrorInfo {
 			return "Syntax error: Unexpected symbol " + symbol;
 		}
 	}
+	
+	public String toFileString() {
+		if(symbol instanceof Token) {
+			Token token = (Token) symbol;
+			return token.getLine() + ":" + token.getColumn() + " error:Unexpected token " + token.getName();
+		} else {
+			return "Syntax error: Unexpected symbol " + symbol;
+		}
+	}
 }

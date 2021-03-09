@@ -171,7 +171,7 @@ public class PrettyPrintTests {
 	@Test
 	void testAddErr() {
 		String prog = "+++";
-		String expected = "1:1 error:Unexpected token";
+		String expected = "1:1 error:Unexpected token +";
 		
 		testPrettyPrint(setUpParser(prog, FileType.XI), expected);
 	}
@@ -190,7 +190,7 @@ public class PrettyPrintTests {
 			assertEquals(superTrim(expected), superTrim(output.toString()));
 		}
 		else {
-			assertEquals(expected, result.getFirstSyntaxError().toString());
+			assertEquals(expected, result.getFirstSyntaxError().toFileString());
 		}
 	}
 	
