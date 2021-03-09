@@ -265,6 +265,7 @@ return_stmt ::= RETURN exp_star:es opt_semi   {: RESULT = new Return(es); :}
 
 assignment ::= assign_single_lhs:lhs EQ exp:e  {: RESULT = new SingleAssign(lhs, e); :}
     | multiple_assign:m EQ fexp:e              {: RESULT = new MultipleAssign(m, e); :}
+    | UNDERSCORE EQ fexp:e                     {: RESULT = new MultipleAssign(ArrayUtils.singleton(Optional.empty()), e); :}
     ;
 
 block ::= OPEN_CURLY stmt_list_ret:b CLOSE_CURLY {: RESULT = b; :}

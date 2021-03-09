@@ -14,6 +14,7 @@ import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.stmts.If;
+import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.Statement;
 import mtm68.exception.SyntaxErrorInfo;
@@ -74,9 +75,31 @@ public class ParserTests {
 				token(EQ), 
 				token(INTEGER, 3L));
 
-		assertThrows(Exception.class, () -> {
-			parseProgFromStmt(tokens);
-		});
+		assertSyntaxError(OPEN_PAREN, parseErrorFromStmt(tokens));
+	}
+
+	@Test
+	void testMultipleAssignOneWildcardSyntaxError() throws Exception {
+		List<Token> tokens = elems(
+				token(UNDERSCORE), 
+				token(EQ), 
+				token(INTEGER, 3L));
+
+		assertSyntaxError(INTEGER, parseErrorFromStmt(tokens));
+	}
+
+	@Test
+	void testMultipleAssignOneWildcardValid() throws Exception {
+		List<Token> tokens = elems(
+				token(UNDERSCORE), 
+				token(EQ), 
+				token(ID, "g"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN) 
+				);
+
+		Program prog = parseProgFromStmt(tokens);
+		assertTrue(firstStatement(prog) instanceof MultipleAssign);
 	}
 	
 	//-------------------------------------------------------------------------------- 
@@ -137,14 +160,16 @@ public class ParserTests {
 		List<Token> tokens = elems(token(SEMICOLON));
 		
 		SyntaxErrorInfo error = parseErrorFromStmt(tokens);
-		Token token = tokenFromError(error);
-		
-		assertEquals(TokenType.SEMICOLON, token.getType());
+		assertSyntaxError(SEMICOLON, error);
 	}
 
 	
 	// f () { [INSERT HERE] }
 	
+	private void assertSyntaxError(TokenType expected, SyntaxErrorInfo actual) {
+		assertEquals(expected, tokenFromError(actual).getType());
+	}
+
 	private Token tokenFromError(SyntaxErrorInfo errorInfo) {
 		return (Token) errorInfo.getSymbol();
 	}
