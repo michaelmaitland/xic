@@ -13,10 +13,10 @@ import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Var;
-import mtm68.ast.nodes.stmts.ErrorStatement;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.Statement;
+import mtm68.exception.SyntaxErrorInfo;
 import mtm68.lexer.MockLexer;
 import mtm68.lexer.Token;
 import mtm68.lexer.TokenFactory;
@@ -26,6 +26,10 @@ public class ParserTests {
 	
 	private ComplexSymbolFactory symFac = new ComplexSymbolFactory();
 	private TokenFactory tokenFac = new TokenFactory();
+	
+	//-------------------------------------------------------------------------------- 
+	//- Assign Statement 
+	//-------------------------------------------------------------------------------- 
 
 	@Test
 	void testSingleAssign() throws Exception {
@@ -75,6 +79,10 @@ public class ParserTests {
 		});
 	}
 	
+	//-------------------------------------------------------------------------------- 
+	//- If Statement 
+	//-------------------------------------------------------------------------------- 
+
 	@Test
 	void testParseIfNoElse() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
@@ -123,25 +131,36 @@ public class ParserTests {
 		
 		assertEquals(Optional.empty(), ifStmt.getElseBranch());
 	}
-
+	
 	@Test
-	void testParseErrorStatement() throws Exception {
-		List<Token> tokens = elems(token(STRING, "fail"));
-
-		Program prog = parseProgFromStmt(tokens);
+	void parseBlockSingleSemiSyntaxError() throws Exception {
+		List<Token> tokens = elems(token(SEMICOLON));
 		
-		assertTrue(firstStatement(prog) instanceof ErrorStatement);
+		SyntaxErrorInfo error = parseErrorFromStmt(tokens);
+		Token token = tokenFromError(error);
+		
+		assertEquals(TokenType.SEMICOLON, token.getType());
 	}
 
 	
 	// f () { [INSERT HERE] }
 	
+	private Token tokenFromError(SyntaxErrorInfo errorInfo) {
+		return (Token) errorInfo.getSymbol();
+	}
+
 	private Statement firstStatement(Program program) {
 		return program.getFunctionDefns().get(0).getBody().getStmts().get(0);
 	}
 	
 	private Program parseProgFromStmt(List<Token> stmt) throws Exception {
-		return (Program) setupParser(stmtToProg(stmt)).parse().value;
+		ParseResult parseResult = new ParseResult(setupParser(stmtToProg(stmt)));
+		return (Program) parseResult.getNode().get();
+	}
+
+	private SyntaxErrorInfo parseErrorFromStmt(List<Token> stmt) throws Exception {
+		ParseResult parseResult = new ParseResult(setupParser(stmtToProg(stmt)));
+		return parseResult.getFirstSyntaxError();
 	}
 	
 	private Parser setupParser(List<Token> tokens) {

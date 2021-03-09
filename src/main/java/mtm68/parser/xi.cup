@@ -67,6 +67,7 @@ nonterminal List<Type> f_type;
 nonterminal FunctionDecl fdecl;
 nonterminal FunctionDefn fdefn;
 nonterminal Statement stmt;
+nonterminal Statement stmt_semi;
 nonterminal List<Statement> stmt_list;
 nonterminal Return return_stmt;
 nonterminal Assign assignment;
@@ -248,15 +249,18 @@ stmt ::= assignment:s               {: RESULT = s; :}
     | error                         {: RESULT = new ErrorStatement("Parse error"); :}
     ;
 
+stmt_semi ::= stmt:s opt_semi       {: RESULT = s; :}
+;
+
 stmt_list ::= /* epsilon */         {: RESULT = ArrayUtils.empty(); :}
-    | stmt_list:ss opt_semi stmt:s  {: RESULT = ArrayUtils.append(ss, s); :}
+    | stmt_list:ss stmt_semi:s  {: RESULT = ArrayUtils.append(ss, s); :}
 ;
 
 opt_semi ::= /* epsilon */
     | SEMICOLON
     ;
 
-return_stmt ::= RETURN exp_star:es   {: RESULT = new Return(es); :}
+return_stmt ::= RETURN exp_star:es opt_semi   {: RESULT = new Return(es); :}
 ;
 
 assignment ::= assign_single_lhs:lhs EQ exp:e  {: RESULT = new SingleAssign(lhs, e); :}
@@ -266,6 +270,6 @@ assignment ::= assign_single_lhs:lhs EQ exp:e  {: RESULT = new SingleAssign(lhs,
 block ::= OPEN_CURLY stmt_list_ret:b CLOSE_CURLY {: RESULT = b; :}
 ;
 
-stmt_list_ret ::= stmt_list:ss opt_semi            {: RESULT = new Block(ss); :}
-    | stmt_list:ss opt_semi return_stmt:s opt_semi {: RESULT = new Block(ss, s); :}
+stmt_list_ret ::= stmt_list:ss   {: RESULT = new Block(ss); :}
+    | stmt_list:ss return_stmt:s {: RESULT = new Block(ss, s); :}
     ;
