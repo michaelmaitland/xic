@@ -27,5 +27,13 @@ public class ArrayIndex extends Expr implements SingleAssignLHS {
 		index.prettyPrint(p);
 		p.endList();
 	}
+	
+	public Expr getArr() {
+		return arr;
+	}
+	
+	public Expr getIndex() {
+		return index;
+	}
 
 }

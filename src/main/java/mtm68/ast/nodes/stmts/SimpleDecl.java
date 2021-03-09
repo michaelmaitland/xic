@@ -3,7 +3,7 @@ package mtm68.ast.nodes.stmts;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 
-public class SimpleDecl extends Decl {
+public class SimpleDecl extends Decl implements SingleAssignLHS {
 	
 	private Type type;
 	

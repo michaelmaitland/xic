@@ -40,7 +40,7 @@ public class ParseResult {
 	
 	private void sortSyntaxErrors() {
 		syntaxErrors.sort((e1, e2) -> {
-			return e1.getSymbol().left - e2.getSymbol().left;
+			return e1.getToken().left - e2.getToken().left; 
 		});
 	}
 }

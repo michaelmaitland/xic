@@ -7,6 +7,7 @@ import mtm68.ast.nodes.binary.*;
 import mtm68.ast.nodes.stmts.*;
 import mtm68.exception.*;
 import mtm68.util.*;
+import mtm68.lexer.*;
 import java.util.*;
 import java_cup.runtime.*;
 
@@ -15,7 +16,7 @@ parser code {:
 
     @Override
     public void syntax_error(Symbol cur_token) {
-        syntaxErrors.add(new SyntaxErrorInfo(cur_token));
+        syntaxErrors.add(new SyntaxErrorInfo((Token)cur_token));
     }
 
     /* @Override */
@@ -56,11 +57,16 @@ nonterminal List<Expr> exp_plus;
 nonterminal List<Expr> array_init;
 nonterminal SimpleDecl decl;
 nonterminal ExtendedDecl ext_decl;
-nonterminal Optional<ExtendedDecl> ext_decl_wild;
-nonterminal List<Optional<ExtendedDecl>> multiple_assign;
+nonterminal Optional<SimpleDecl> decl_wild;
+nonterminal List<Optional<SimpleDecl>> multiple_assign;
 nonterminal List<SimpleDecl> decl_list;
 nonterminal Type ty;
-nonterminal DeclType ty_decl;
+nonterminal Type prim_ty;
+nonterminal DeclType ext_ty;
+nonterminal Expr filled_bracket;
+nonterminal List<Expr> filled_bracket_plus;
+nonterminal empty_bracket;
+nonterminal Integer empty_bracket_star;
 nonterminal List<Type> ty_list;
 nonterminal SingleAssignLHS assign_single_lhs;
 nonterminal List<Type> f_type;
@@ -173,7 +179,7 @@ decl ::= ID:id COLON ty:t   {: RESULT = new SimpleDecl(id, t); :}
 ;
 
 // x: int[gcd(a,b)]
-ext_decl ::= ID:id COLON ty_decl:t {: RESULT = new ExtendedDecl(id, t); :} 
+ext_decl ::= ID:id COLON ext_ty:t {: RESULT = new ExtendedDecl(id, t); :} 
 ;
 
 // f
@@ -191,19 +197,19 @@ exp0 ::= exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, 
 // true[0]
 // f(x)[0]
 assign_single_lhs ::= ID:id   {: RESULT = new Var(id); :}
-    | ext_decl:d              {: RESULT = d; :}
+    | decl:d                  {: RESULT = d; :}
     | exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
     ;
 
-ext_decl_wild ::= ext_decl:d    {: RESULT = Optional.of(d); :}
-    | UNDERSCORE                {: RESULT = Optional.empty(); :}
+decl_wild ::= decl:d    {: RESULT = Optional.of(d); :}
+    | UNDERSCORE        {: RESULT = Optional.empty(); :}
     ;
 
 // x:int, y:int = f()
 // _, y:int = f()
 // _ = f()
-multiple_assign ::= ext_decl_wild:d1 COMMA ext_decl_wild:d2  {: RESULT = ArrayUtils.append(ArrayUtils.singleton(d1), d2); :}
-    | multiple_assign:ds COMMA ext_decl_wild:d               {: RESULT = ArrayUtils.append(ds, d); :}
+multiple_assign ::= decl_wild:d1 COMMA decl_wild:d2  {: RESULT = ArrayUtils.append(ArrayUtils.singleton(d1), d2); :}
+    | multiple_assign:ds COMMA decl_wild:d           {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
 decl_list ::=  /* epsilon */          {: RESULT = ArrayUtils.empty(); :}
@@ -211,16 +217,34 @@ decl_list ::=  /* epsilon */          {: RESULT = ArrayUtils.empty(); :}
     | decl_list:ds COMMA decl:d       {: RESULT = ArrayUtils.append(ds, d); :}
     ;
 
-ty ::= INT                            {: RESULT = Types.INT; :}
-    | BOOL                            {: RESULT = Types.BOOL; :}
-    | ty:t OPEN_SQUARE CLOSE_SQUARE   {: RESULT = Types.ARRAY(t); :}
+prim_ty ::= INT {: RESULT = Types.INT; :}
+    | BOOL      {: RESULT = Types.BOOL; :}
     ;
 
-ty_decl ::= INT                                  {: RESULT = new DeclType(Types.INT); :}
-    | BOOL                                       {: RESULT = new DeclType(Types.BOOL); :}
-    | ty_decl:t OPEN_SQUARE exp:e CLOSE_SQUARE   {: if(t.canAddMoreIndices()) { t.addArrayLayer(); t.addIndexExpr(e); RESULT = t; }
-                                                    else { report_error("Invalid array indices in decl", null); RESULT = t; } :}
-    | ty_decl:t OPEN_SQUARE CLOSE_SQUARE         {: t.addArrayLayer(); RESULT = t; :}
+ty ::= prim_ty:t empty_bracket_star:n {: RESULT = Types.addArrayDims(t, n); :}
+    ;
+
+// x[][3]
+// x[3][3][][]
+//
+// ty_decl = (int | bool)([e])+([])*
+// ty = (int | bool)([])*
+//
+ext_ty ::= prim_ty:t filled_bracket_plus:es empty_bracket_star:n {: RESULT = new DeclType(t, es, n); :}
+    ;
+
+filled_bracket ::= OPEN_SQUARE exp:e CLOSE_SQUARE {: RESULT = e; :}
+;
+
+filled_bracket_plus ::= filled_bracket:e      {: RESULT = ArrayUtils.singleton(e); :}
+    | filled_bracket_plus:es filled_bracket:e {: RESULT = ArrayUtils.append(es, e); :} 
+    ;
+
+empty_bracket ::= OPEN_SQUARE CLOSE_SQUARE
+;
+
+empty_bracket_star ::= /* epsilon */     {: RESULT = 0; :}
+    | empty_bracket empty_bracket_star:n {: RESULT = n + 1; :}
     ;
 
 ty_list ::= ty:t              {: RESULT = ArrayUtils.singleton(t); :}
@@ -245,6 +269,7 @@ stmt ::= assignment:s               {: RESULT = s; :}
     | WHILE exp:e stmt:s            {: RESULT = new While(e, s); :} 
     | fexp:e                        {: RESULT = new FunctionCall(e); :}
     | ext_decl:d                    {: RESULT = d; :}
+    | decl:d                        {: RESULT = d; :}
     | block:b                       {: RESULT = b; :}
     | error                         {: RESULT = new ErrorStatement("Parse error"); :}
     ;

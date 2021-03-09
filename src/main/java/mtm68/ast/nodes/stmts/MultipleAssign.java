@@ -8,10 +8,10 @@ import mtm68.ast.nodes.FExpr;
 
 public class MultipleAssign extends Assign {
 	
-	private List<Optional<ExtendedDecl>> decls;
+	private List<Optional<SimpleDecl>> decls;
 	private FExpr rhs;
 	
-	public MultipleAssign(List<Optional<ExtendedDecl>> decls, FExpr rhs) {
+	public MultipleAssign(List<Optional<SimpleDecl>> decls, FExpr rhs) {
 		this.decls = decls;
 		this.rhs = rhs;
 	}
@@ -26,7 +26,7 @@ public class MultipleAssign extends Assign {
 		p.startList();
 		p.printAtom("=");
 		p.startList();
-		for(Optional<ExtendedDecl> optDecl : decls)
+		for(Optional<SimpleDecl> optDecl : decls)
 			if(optDecl.isPresent()) optDecl.get().prettyPrint(p);
 			else p. printAtomNoSpace("_ ");
 		p.endList();

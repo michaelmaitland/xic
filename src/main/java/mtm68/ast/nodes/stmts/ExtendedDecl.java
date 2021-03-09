@@ -4,7 +4,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.types.DeclType;
 
-public class ExtendedDecl extends Decl implements SingleAssignLHS {
+public class ExtendedDecl extends Decl {
 
 	private DeclType type;
 	

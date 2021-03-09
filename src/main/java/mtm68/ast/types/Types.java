@@ -11,4 +11,9 @@ public class Types {
 		return new ArrayType(type);
 	}
 
+	public static Type addArrayDims(Type type, int numDimensions) {
+		if(numDimensions == 0) return type;
+		return addArrayDims(ARRAY(type), numDimensions - 1);
+	}
+
 }

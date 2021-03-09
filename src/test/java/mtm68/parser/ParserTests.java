@@ -2,7 +2,8 @@ package mtm68.parser;
 
 import static mtm68.lexer.TokenType.*;
 import static mtm68.util.ArrayUtils.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,12 +12,15 @@ import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
+import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.Statement;
+import mtm68.ast.types.Types;
 import mtm68.exception.SyntaxErrorInfo;
 import mtm68.lexer.MockLexer;
 import mtm68.lexer.Token;
@@ -33,19 +37,53 @@ public class ParserTests {
 	//-------------------------------------------------------------------------------- 
 
 	@Test
-	void testSingleAssign() throws Exception {
-		List<Token> tokens = elems(token(ID, "x"), token(EQ), token(INTEGER, 3L));
+	void singleAssign() throws Exception {
+		// x = 3
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(EQ), 
+				token(INTEGER, 3L));
 		Program prog = parseProgFromStmt(tokens);
 		
-		assertTrue(firstStatement(prog) instanceof SingleAssign);
-		
-		SingleAssign assignStmt = (SingleAssign) firstStatement(prog);
-		
-		assertTrue(assignStmt.getLhs() instanceof Var);
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(Var.class, assignStmt.getLhs());
 	}
 
 	@Test
-	void testSingleAssignArrayIndex() throws Exception {
+	void singleAssignWithDecl() throws Exception {
+		// x:int = 3
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(COLON), 
+				token(INT), 
+				token(EQ), 
+				token(INTEGER, 3L));
+		Program prog = parseProgFromStmt(tokens);
+		
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		SimpleDecl decl = assertInstanceOfAndReturn(SimpleDecl.class, assignStmt.getLhs());
+		assertEquals(Types.INT, decl.getType());
+	}
+
+	@Test
+	void singleAssignWithArrayDecl() throws Exception {
+		// x:int[3] = 0 
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(COLON), 
+				token(INT), 
+				token(OPEN_SQUARE),
+				token(INTEGER, 3L),
+				token(CLOSE_SQUARE),
+				token(EQ), 
+				token(INTEGER, 0L));
+
+		assertSyntaxError(EQ, parseErrorFromStmt(tokens));
+	}
+
+	@Test
+	void singleAssignArrayIndex() throws Exception {
+		// x[0] = 3
 		List<Token> tokens = elems(
 				token(ID, "x"), 
 				token(OPEN_SQUARE), 
@@ -56,15 +94,50 @@ public class ParserTests {
 
 		Program prog = parseProgFromStmt(tokens);
 		
-		assertTrue(firstStatement(prog) instanceof SingleAssign);
-		
-		SingleAssign assignStmt = (SingleAssign) firstStatement(prog);
-		
-		assertTrue(assignStmt.getLhs() instanceof ArrayIndex);
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(ArrayIndex.class, assignStmt.getLhs());
 	}
 
 	@Test
-	void testSingleAssignNoParentheses() throws Exception {
+	void singleAssignArrayIndexNoExpressionError() throws Exception {
+		// x[] = 3
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(OPEN_SQUARE), 
+				token(CLOSE_SQUARE), 
+				token(EQ), 
+				token(INTEGER, 3L));
+
+		assertSyntaxError(CLOSE_SQUARE, parseErrorFromStmt(tokens));
+	}
+
+	@Test
+	void singleAssignArrayMultipleIndices() throws Exception {
+		// x[true]["hello"][3] = 3
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(OPEN_SQUARE), 
+				token(TRUE),
+				token(CLOSE_SQUARE), 
+				token(OPEN_SQUARE), 
+				token(STRING, "hello"),
+				token(CLOSE_SQUARE), 
+				token(OPEN_SQUARE), 
+				token(INTEGER, 3L),
+				token(CLOSE_SQUARE), 
+				token(EQ), 
+				token(INTEGER, 3L));
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog)) ;
+		ArrayIndex ai = assertInstanceOfAndReturn(ArrayIndex.class, assignStmt.getLhs());
+		assertInstanceOf(IntLiteral.class, ai.getIndex());
+	}
+
+	@Test
+	void singleAssignNoParentheses() throws Exception {
+		// (x)[0] = 3
 		List<Token> tokens = elems(
 				token(OPEN_PAREN), 
 				token(ID, "x"), 
@@ -79,7 +152,8 @@ public class ParserTests {
 	}
 
 	@Test
-	void testMultipleAssignOneWildcardSyntaxError() throws Exception {
+	void multipleAssignOneWildcardSyntaxError() throws Exception {
+		// _ = 3
 		List<Token> tokens = elems(
 				token(UNDERSCORE), 
 				token(EQ), 
@@ -89,7 +163,8 @@ public class ParserTests {
 	}
 
 	@Test
-	void testMultipleAssignOneWildcardValid() throws Exception {
+	void multipleAssignOneWildcardValid() throws Exception {
+		// _ = g()
 		List<Token> tokens = elems(
 				token(UNDERSCORE), 
 				token(EQ), 
@@ -99,6 +174,46 @@ public class ParserTests {
 				);
 
 		Program prog = parseProgFromStmt(tokens);
+		assertInstanceOf(MultipleAssign.class, firstStatement(prog));
+	}
+
+	@Test
+	void multipleAssignNotAllDeclsError() throws Exception {
+		// x: bool, y = g()
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(COLON), 
+				token(BOOL), 
+				token(COMMA),
+				token(ID, "y"),
+				token(EQ), 
+				token(ID, "g"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN) 
+				);
+
+		assertSyntaxError(EQ, parseErrorFromStmt(tokens));
+	}
+
+	@Test
+	void multipleAssignValid() throws Exception {
+		// x: bool, y:int = g()
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(COLON), 
+				token(BOOL), 
+				token(COMMA),
+				token(ID, "y"),
+				token(COLON), 
+				token(INT), 
+				token(EQ), 
+				token(ID, "g"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN) 
+				);
+
+		Program prog = parseProgFromStmt(tokens);
+		assertInstanceOf(MultipleAssign.class, firstStatement(prog));
 		assertTrue(firstStatement(prog) instanceof MultipleAssign);
 	}
 	
@@ -107,22 +222,19 @@ public class ParserTests {
 	//-------------------------------------------------------------------------------- 
 
 	@Test
-	void testParseIfNoElse() throws Exception {
+	void parseIfNoElse() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.addAll(arbitraryExp());
 		ifTokens.addAll(arbitraryStmt());
 
 		Program prog = parseProgFromStmt(ifTokens);
 		
-		assertTrue(firstStatement(prog) instanceof If);
-		
-		If ifStmt = (If) firstStatement(prog);
-		
+		If ifStmt = assertInstanceOfAndReturn(If.class, firstStatement(prog));
 		assertEquals(Optional.empty(), ifStmt.getElseBranch());
 	}
 
 	@Test
-	void testParseIfWithElse() throws Exception {
+	void parseIfWithElse() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.addAll(arbitraryExp());
 		ifTokens.addAll(arbitraryStmt());
@@ -131,15 +243,12 @@ public class ParserTests {
 
 		Program prog = parseProgFromStmt(ifTokens);
 		
-		assertTrue(firstStatement(prog) instanceof If);
-		
-		If ifStmt = (If) firstStatement(prog);
-		
+		If ifStmt = assertInstanceOfAndReturn(If.class, firstStatement(prog));
 		assertTrue(ifStmt.getElseBranch().isPresent());
 	}
 
 	@Test
-	void testParseIfWithParens() throws Exception {
+	void parseIfWithParens() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.add(token(OPEN_PAREN));
 		ifTokens.addAll(arbitraryExp());
@@ -148,10 +257,8 @@ public class ParserTests {
 
 		Program prog = parseProgFromStmt(ifTokens);
 		
-		assertTrue(firstStatement(prog) instanceof If);
 		
-		If ifStmt = (If) firstStatement(prog);
-		
+		If ifStmt = assertInstanceOfAndReturn(If.class, firstStatement(prog));
 		assertEquals(Optional.empty(), ifStmt.getElseBranch());
 	}
 	
@@ -171,7 +278,7 @@ public class ParserTests {
 	}
 
 	private Token tokenFromError(SyntaxErrorInfo errorInfo) {
-		return (Token) errorInfo.getSymbol();
+		return errorInfo.getToken();
 	}
 
 	private Statement firstStatement(Program program) {
@@ -225,6 +332,17 @@ public class ParserTests {
 
 	private Token token(TokenType t, Object data) {
 		return tokenFac.newToken(t, data, 0, 0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T> T assertInstanceOfAndReturn(Class<T> clazz, Object obj) {
+		assertTrue(obj.getClass() + " is not an instanceof " + clazz , clazz.isAssignableFrom(obj.getClass()));
+		return (T) obj;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void assertInstanceOf(Class<T> clazz, Object obj) {
+		assertInstanceOfAndReturn(clazz, obj);
 	}
 
 }
