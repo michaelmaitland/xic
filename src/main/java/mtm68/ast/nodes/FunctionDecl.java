@@ -35,7 +35,7 @@ public class FunctionDecl extends Node {
 		//Return Types
 		p.printAtomNoSpace("(");
 		String typeString = "";
-		for(Type type: returnTypes) typeString += type + " "; 
+		for(Type type: returnTypes) typeString += type.getPP() + " "; 
 		p.printAtomNoSpace(typeString.trim());
 		p.endList();
 	}
