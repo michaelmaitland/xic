@@ -1,6 +1,9 @@
 package mtm68;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -54,6 +57,7 @@ public class Main {
 		try {
 			new Main().parseCmdLine(args);
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Failed to compile: xic exit code 1");
 			System.exit(1);
 		}
@@ -90,9 +94,10 @@ public class Main {
 			ParseResult parseResult = new ParseResult(parser);
 			printSyntaxErrors(parseResult);
 			
+			if(parse) writeToFile(filename, parseResult);
+			
 			if(parseResult.isValidAST()) {
 				Node ast = parseResult.getNode().get();
-				if(parse) writeToFile(filename, ast);
 				
 				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
 				ast.prettyPrint(printer);
@@ -142,15 +147,25 @@ public class Main {
 	 * @param filename the name of the file parsed
 	 * @param ast      the root node of the ast
 	 */
-	public void writeToFile(String filename, Node ast) {
+	public void writeToFile(String filename, ParseResult result) {
 		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".parsed");
 		Path outpath = dPath.resolve(outfile);
 		try {
 			Files.createDirectories(outpath.getParent());
-			SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(outpath.toFile()));
-			ast.prettyPrint(printer);
-			printer.close();
+			if(result.isValidAST()) {
+				Node ast = result.getNode().get();
+				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(outpath.toFile()));
+				ast.prettyPrint(printer);
+				printer.close();
+			}
+			else {
+				String error = result.getFirstSyntaxError().toFileString();
+				BufferedWriter writer = new BufferedWriter(new FileWriter(outpath.toString()));
+			    writer.write(error);
+			    writer.close();
+			}
 		} catch (IOException e) {
+			e.printStackTrace();
 			System.out.println("Failed writing parser results to " + dPath.resolve(outfile) + " for " + filename);
 		}
 	}

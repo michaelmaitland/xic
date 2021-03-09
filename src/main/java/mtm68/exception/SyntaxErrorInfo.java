@@ -22,4 +22,13 @@ public class SyntaxErrorInfo {
 	public String toString() {
 		return "Syntax error: Unexpected token \"" + token.getType() + "\" at location " + token.getLine() + ":" + token.getColumn();
 	}
+	
+	public String toFileString() {
+		if(symbol instanceof Token) {
+			Token token = (Token) symbol;
+			return token.getLine() + ":" + token.getColumn() + " error:Unexpected token " + token.getName();
+		} else {
+			return "Syntax error: Unexpected symbol " + symbol;
+		}
+	}
 }
