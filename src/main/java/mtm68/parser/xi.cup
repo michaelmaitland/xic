@@ -32,8 +32,6 @@ terminal String ID;
 terminal String STRING;
 terminal Character CHARACTER;
 terminal Long INTEGER;
-terminal FUNAPP;
-terminal INDEX;
 terminal IXI, XI;
 
 terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT, BOOL, TRUE, FALSE; 
@@ -91,7 +89,7 @@ precedence left LT, LEQ, GEQ, GT;
 precedence left ADD, SUB;
 precedence left MULT, HIGH_MULT, DIV, MOD;
 precedence left UMINUS, EXCLAMATION;
-precedence left FUNAPP, INDEX;
+precedence left OPEN_PAREN, OPEN_SQUARE;
 
 precedence nonassoc IF;
 precedence nonassoc ELSE;
@@ -141,10 +139,10 @@ exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
     | exp:e1 DIV exp:e2            {: RESULT = new Div(e1, e2); :}
     | exp:e1 MOD exp:e2            {: RESULT = new Mod(e1, e2); :}
     | SUB exp:e                    {: RESULT = new Negate(e); :}  %prec UMINUS
-    | EXCLAMATION exp:e            {: RESULT = new Not(e); :}  %prec EXCLAMATION
+    | EXCLAMATION exp:e            {: RESULT = new Not(e); :}
     | INTEGER:n                    {: RESULT = new IntLiteral(n); :}
-    | fexp:e                       {: RESULT = e; :} %prec FUNAPP
-    | exp:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX  
+    | fexp:e                       {: RESULT = e; :}
+    | exp:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :}
     | ID:id                        {: RESULT = new Var(id); :}
     | OPEN_PAREN exp:e CLOSE_PAREN   {: RESULT = e; :}
     | OPEN_CURLY array_init:args CLOSE_CURLY {: RESULT = new ArrayInit(args); :}
@@ -185,7 +183,7 @@ ext_decl ::= ID:id COLON ext_ty:t {: RESULT = new ExtendedDecl(id, t); :}
 // f
 // f()
 // f[3]
-exp0 ::= exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
+exp0 ::= exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} 
     | fexp:e                                     {: RESULT = e; :}
     | ID:id                                      {: RESULT = new Var(id); :}
 ;
@@ -198,7 +196,7 @@ exp0 ::= exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, 
 // f(x)[0]
 assign_single_lhs ::= ID:id   {: RESULT = new Var(id); :}
     | decl:d                  {: RESULT = d; :}
-    | exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :} %prec INDEX 
+    | exp0:e1 OPEN_SQUARE exp:e2 CLOSE_SQUARE {: RESULT = new ArrayIndex(e1, e2); :}  
     ;
 
 decl_wild ::= decl:d    {: RESULT = Optional.of(d); :}

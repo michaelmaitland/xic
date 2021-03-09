@@ -12,9 +12,11 @@ import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Var;
+import mtm68.ast.nodes.binary.LessThan;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.SimpleDecl;
@@ -270,6 +272,24 @@ public class ParserTests {
 		assertSyntaxError(SEMICOLON, error);
 	}
 
+	//-------------------------------------------------------------------------------- 
+	//- Precedence 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void arrayIndexHigherPrecedence() throws Exception {
+		List<Token> tokens = elems(
+				token(STRING, "hi"),
+				token(LT),
+				token(ID, "a"),
+				token(OPEN_SQUARE),
+				token(INTEGER, 1L),
+				token(CLOSE_SQUARE)
+				);
+		
+		Program prog = parseProgFromExp(tokens);
+		assertInstanceOf(LessThan.class, firstExp(prog));
+	}
 	
 	// f () { [INSERT HERE] }
 	
@@ -283,6 +303,15 @@ public class ParserTests {
 
 	private Statement firstStatement(Program program) {
 		return program.getFunctionDefns().get(0).getBody().getStmts().get(0);
+	}
+
+	private Expr firstExp(Program program) {
+		SingleAssign assign = (SingleAssign) firstStatement(program);
+		return assign.getRhs();
+	}
+
+	private Program parseProgFromExp(List<Token> exp) throws Exception {
+		return parseProgFromStmt(expToStmt(exp));
 	}
 	
 	private Program parseProgFromStmt(List<Token> stmt) throws Exception {
@@ -340,7 +369,6 @@ public class ParserTests {
 		return (T) obj;
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> void assertInstanceOf(Class<T> clazz, Object obj) {
 		assertInstanceOfAndReturn(clazz, obj);
 	}

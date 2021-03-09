@@ -1,3 +1,3 @@
 f() {
-	x: bool, y:int = g()
+	if x < a[1] {}
 }
