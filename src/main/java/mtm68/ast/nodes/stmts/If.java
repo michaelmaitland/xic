@@ -34,15 +34,11 @@ public class If extends Statement {
 		p.printAtom("if");
 		condition.prettyPrint(p);
 		if(elseBranch.isPresent()) {
-			p.startList();
 			ifBranch.prettyPrint(p);
 			elseBranch.get().prettyPrint(p);
-			p.endList();
 		}
 		else {
-			p.startList();
 			ifBranch.prettyPrint(p);
-			p.endList();
 		}
 		p.endList();
 	}

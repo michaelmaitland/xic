@@ -21,19 +21,21 @@ public class Program extends Node implements Root {
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
-		p.startList();
-		
+		p.startUnifiedList();
+
 		// Use Statements
-		p.startList();
+		p.startUnifiedList();
 		for(Use use : useStmts) use.prettyPrint(p);
 		p.endList();
 		
 		// Func Decls
+		
 		p.startUnifiedList();
 		for(FunctionDefn defn : functionDefns) defn.prettyPrint(p);
+		p.printAtom("");
 		p.endList();
 		
-		p.printAtom("\n");
+		p.printAtom("");
 		p.endList();
 	}
 	

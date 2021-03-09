@@ -28,6 +28,7 @@ public class MultipleAssign extends Assign {
 		p.startList();
 		for(Optional<ExtendedDecl> optDecl : decls)
 			if(optDecl.isPresent()) optDecl.get().prettyPrint(p);
+			else p. printAtomNoSpace("_ ");
 		p.endList();
 		rhs.prettyPrint(p);
 		p.endList();

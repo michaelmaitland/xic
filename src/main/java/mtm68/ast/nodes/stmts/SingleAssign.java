@@ -22,10 +22,7 @@ public class SingleAssign extends Assign {
 	public void prettyPrint(SExpPrinter p) {
 		p.startList();
 		p.printAtom("=");
-		p.startList();
-		lhs.prettyPrint(p);
-		p.endList();
-		
+		lhs.prettyPrint(p);		
 		rhs.prettyPrint(p);
 		
 		p.endList();

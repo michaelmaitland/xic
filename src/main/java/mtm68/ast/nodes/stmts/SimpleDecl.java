@@ -23,10 +23,10 @@ public class SimpleDecl extends Decl {
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
-		p.startList();
-		p.printAtom(id);
-		p.printAtom(type.getPP());
-		p.endList();
+		//p.startList();
+		p.printAtomNoSpace("(" + id + type.getPP() + ")");
+		//p.printAtomNoSpace(type.getPP());
+		//p.endList();
 	}
 	
 	

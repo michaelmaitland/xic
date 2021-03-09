@@ -28,16 +28,19 @@ public class Block extends Statement {
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startUnifiedList();
-		for(Statement stmt : stmts) stmt.prettyPrint(p);
+		for(Statement stmt : stmts) {
+			stmt.prettyPrint(p);
+		}
 		
 		if(returnStmt.isPresent()) returnStmt.get().prettyPrint(p);
+		p.printAtom("");
 		p.endList();
 	}
 	
 	public List<Statement> getStmts() {
 		return stmts;
 	}
-	
+
 	public Optional<Return> getReturnStmt() {
 		return returnStmt;
 	}

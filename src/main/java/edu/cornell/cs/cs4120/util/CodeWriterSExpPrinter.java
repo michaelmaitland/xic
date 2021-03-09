@@ -60,6 +60,13 @@ public class CodeWriterSExpPrinter implements SExpPrinter {
         writer.write(atom);
         addSpace = true;
     }
+    
+    @Override
+    public void printAtomNoSpace(String atom) {
+        startElement();
+        writer.write(atom);
+        addSpace = false;
+    }
 
     @Override
     public void startList() {
@@ -87,7 +94,7 @@ public class CodeWriterSExpPrinter implements SExpPrinter {
         addSpace = true;
         lists.remove(0);
     }
-
+    
     protected void startElement() {
         if (addSpace) {
             if (!lists.isEmpty() && lists.get(0))
