@@ -13,4 +13,4 @@ mvn install:install-file \
 # Create jar
 mvn package -Dmaven.repo.local=${ROOT_DIR}/lib package
 
-zip -r source-$(uuidgen).zip lib src pom.xml xic-build
+zip -r source-$(uuidgen).zip lib src pom.xml xic-build cup
