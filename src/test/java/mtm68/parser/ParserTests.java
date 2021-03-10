@@ -22,6 +22,7 @@ import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.LessThan;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
@@ -543,6 +544,87 @@ public class ParserTests {
 		tokens.add(token(CLOSE_CURLY));
 		
 		assertSyntaxError(SEMICOLON, parseErrorFromStmt(tokens));
+	}
+
+	//-------------------------------------------------------------------------------- 
+	//- Decl Statement 
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void declSimpleType() throws Exception {
+		// x:int 
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(INT)
+				);
+		
+		Program prog = parseProgFromStmt(tokens);
+		
+		SimpleDecl decl = assertInstanceOfAndReturn(SimpleDecl.class, firstStatement(prog));
+		assertEquals(Types.INT, decl.getType());
+	}
+
+	@Test
+	void declSimpleTypeArray() throws Exception {
+		// x:int[]
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(INT),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE)
+				);
+		
+		Program prog = parseProgFromStmt(tokens);
+		
+		SimpleDecl decl = assertInstanceOfAndReturn(SimpleDecl.class, firstStatement(prog));
+		assertEquals(Types.ARRAY(Types.INT), decl.getType());
+	}
+
+	@Test
+	void declArrayWithInitialization() throws Exception {
+		// x:int[true]["hi"][]
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(INT),
+				token(OPEN_SQUARE),
+				token(TRUE),
+				token(CLOSE_SQUARE),
+				token(OPEN_SQUARE),
+				token(STRING, "hi"),
+				token(CLOSE_SQUARE),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE)
+				);
+		
+		Program prog = parseProgFromStmt(tokens);
+		
+		ExtendedDecl decl = assertInstanceOfAndReturn(ExtendedDecl.class, firstStatement(prog));
+		assertEquals(Types.addArrayDims(Types.INT, 3), decl.getExtendedType().getType());
+		
+		List<Expr> indices = decl.getExtendedType().getIndices();
+		assertEquals(2, indices.size());
+		assertInstanceOf(BoolLiteral.class, indices.get(0));
+		assertInstanceOf(StringLiteral.class, indices.get(1));
+	}
+
+	@Test
+	void declArrayWithInitializationError() throws Exception {
+		// x:int[][true]
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(INT),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(OPEN_SQUARE),
+				token(TRUE),
+				token(CLOSE_SQUARE)
+				);
+		
+		assertSyntaxError(TRUE, parseErrorFromStmt(tokens));
 	}
 
 	//-------------------------------------------------------------------------------- 
