@@ -21,5 +21,8 @@ public class FunctionCall extends Statement {
 		fexp.prettyPrint(p);
 	}
 	
+	public FExpr getFexp() {
+		return fexp;
+	}
 	
 }

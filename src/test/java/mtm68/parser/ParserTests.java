@@ -20,6 +20,8 @@ import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.LessThan;
+import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.Return;
@@ -269,6 +271,7 @@ public class ParserTests {
 
 	@Test
 	void ifNoElse() throws Exception {
+		// if e s
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.addAll(arbitraryExp());
 		ifTokens.addAll(arbitraryStmt());
@@ -281,6 +284,7 @@ public class ParserTests {
 
 	@Test
 	void ifWithElse() throws Exception {
+		// if e s1 else s2
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.addAll(arbitraryExp());
 		ifTokens.addAll(arbitraryStmt());
@@ -295,6 +299,7 @@ public class ParserTests {
 
 	@Test
 	void ifWithParens() throws Exception {
+		// if(e) s
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.add(token(OPEN_PAREN));
 		ifTokens.addAll(arbitraryExp());
@@ -314,6 +319,7 @@ public class ParserTests {
 
 	@Test
 	void whileValid() throws Exception {
+		// while e s
 		List<Token> tokens = elems(token(WHILE));
 		tokens.addAll(arbitraryExp());
 		tokens.addAll(arbitraryStmt());
@@ -327,6 +333,7 @@ public class ParserTests {
 
 	@Test
 	void whileWithParens() throws Exception {
+		// while (e) s
 		List<Token> tokens = elems(token(WHILE));
 		tokens.add(token(OPEN_PAREN));
 		tokens.addAll(arbitraryExp());
@@ -346,6 +353,7 @@ public class ParserTests {
 
 	@Test
 	void returnEmpty() throws Exception {
+		// return
 		List<Token> tokens = elems(
 				token(RETURN));
 
@@ -358,6 +366,7 @@ public class ParserTests {
 
 	@Test
 	void returnEmptyWithSemi() throws Exception {
+		// return;
 		List<Token> tokens = elems(
 				token(RETURN),
 				token(SEMICOLON)
@@ -372,6 +381,7 @@ public class ParserTests {
 
 	@Test
 	void returnMultiple() throws Exception {
+		// return "hi", 3, true
 		List<Token> tokens = elems(
 				token(RETURN),
 				token(STRING, "hi"),
@@ -395,6 +405,8 @@ public class ParserTests {
 
 	@Test
 	void returnNotLastStmtError() throws Exception {
+		// return "hi", 3, true
+		// x = "something"
 		List<Token> tokens = elems(
 				token(RETURN),
 				token(STRING, "hi"),
@@ -412,15 +424,124 @@ public class ParserTests {
 	}
 
 	//-------------------------------------------------------------------------------- 
+	//- Function Call Statement 
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void procedureCallNoArgs() throws Exception {
+		// f()
+		List<Token> tokens = elems(
+			token(ID, "f"),
+			token(OPEN_PAREN),
+			token(CLOSE_PAREN)
+			);
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		FunctionCall fc = assertInstanceOfAndReturn(FunctionCall.class, firstStatement(prog));
+		assertTrue(fc.getFexp().getArgs().isEmpty());
+	}
+
+	@Test
+	void procedureCallWithArgs() throws Exception {
+		// f(true, "false")
+		List<Token> tokens = elems(
+			token(ID, "f"),
+			token(OPEN_PAREN),
+			token(TRUE),
+			token(COMMA),
+			token(STRING, "false"),
+			token(CLOSE_PAREN)
+			);
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		FunctionCall fc = assertInstanceOfAndReturn(FunctionCall.class, firstStatement(prog));
+		List<Expr> args = fc.getFexp().getArgs(); 
+		assertEquals(2, args.size());
+		assertInstanceOf(BoolLiteral.class, args.get(0));
+		assertInstanceOf(StringLiteral.class, args.get(1));
+	}
+
+	//-------------------------------------------------------------------------------- 
 	//- Block Statement 
 	//-------------------------------------------------------------------------------- 
 	
 	@Test
 	void blockSingleSemiSyntaxError() throws Exception {
+		// {;}
 		List<Token> tokens = elems(token(SEMICOLON));
 		
 		SyntaxErrorInfo error = parseErrorFromStmt(tokens);
 		assertSyntaxError(SEMICOLON, error);
+	}
+
+	@Test
+	void blockEmpty() throws Exception {
+		// {}
+		List<Token> tokens = elems(
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY)
+				);
+		
+		Program prog = parseProgFromStmt(tokens);
+		
+		Block block = assertInstanceOfAndReturn(Block.class, firstStatement(prog));
+		assertTrue(block.getStmts().isEmpty());
+		assertEquals(Optional.empty(), block.getReturnStmt());
+	}
+
+	@Test
+	void blockMultipleStmtsWithSemis() throws Exception {
+		// { s1; s2; s3; }
+		List<Token> tokens = elems(
+				token(OPEN_CURLY)
+				);
+		tokens.addAll(arbitraryStmt());
+		tokens.add(token(SEMICOLON));
+		tokens.addAll(arbitraryStmt());
+		tokens.add(token(SEMICOLON));
+		tokens.addAll(arbitraryStmt());
+		tokens.add(token(SEMICOLON));
+		tokens.add(token(CLOSE_CURLY));
+		
+		Program prog = parseProgFromStmt(tokens);
+		
+		Block block = assertInstanceOfAndReturn(Block.class, firstStatement(prog));
+		assertEquals(3, block.getStmts().size());
+	}
+
+	@Test
+	void blockMultipleStmtsNoSemis() throws Exception {
+		// { s1 s2 s3 }
+		List<Token> tokens = elems(
+				token(OPEN_CURLY)
+				);
+		tokens.addAll(arbitraryStmt());
+		tokens.addAll(arbitraryStmt());
+		tokens.addAll(arbitraryStmt());
+		tokens.add(token(CLOSE_CURLY));
+		
+		Program prog = parseProgFromStmt(tokens);
+		
+		Block block = assertInstanceOfAndReturn(Block.class, firstStatement(prog));
+		assertEquals(3, block.getStmts().size());
+	}
+
+	@Test
+	void blockEmptyStmtsInvalid() throws Exception {
+		// { s1; ; s3; }
+		List<Token> tokens = elems(
+				token(OPEN_CURLY)
+				);
+		tokens.addAll(arbitraryStmt());
+		tokens.add(token(SEMICOLON));
+		tokens.add(token(SEMICOLON));
+		tokens.addAll(arbitraryStmt());
+		tokens.add(token(SEMICOLON));
+		tokens.add(token(CLOSE_CURLY));
+		
+		assertSyntaxError(SEMICOLON, parseErrorFromStmt(tokens));
 	}
 
 	//-------------------------------------------------------------------------------- 

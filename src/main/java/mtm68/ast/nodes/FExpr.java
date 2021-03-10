@@ -27,4 +27,12 @@ public class FExpr extends Expr {
 		p.endList();
 	}
 	
+	public String getId() {
+		return id;
+	}
+	
+	public List<Expr> getArgs() {
+		return args;
+	}
+	
 }
