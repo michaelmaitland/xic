@@ -17,17 +17,19 @@ mvn install:install-file \
    -DartifactId=jflex \
    -Dversion=1.8.2 \
    -Dpackaging=jar \
-   -DgeneratePom=true
+   -DgeneratePom=true \
+   -DlocalRepositoryPath=${ROOT_DIR}/lib
 mvn install:install-file \
    -Dfile=${ROOT_DIR}/lib/java_cup.jar \
    -DgroupId=cup \
    -DartifactId=cup \
    -Dversion=1.0 \
    -Dpackaging=jar \
-   -DgeneratePom=true
+   -DgeneratePom=true \
+   -DlocalRepositoryPath=${ROOT_DIR}/lib
 
 # Create jar
-mvn package 
+mvn package -Dmaven.repo.local=${ROOT_DIR}/lib
 
 ## Create executable
 echo "java -cp ${ROOT_DIR}/target/xic-0.0.1-SNAPSHOT.jar mtm68.Main \$@" > xic

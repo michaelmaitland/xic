@@ -9,8 +9,18 @@ mvn install:install-file \
    -DartifactId=jflex \
    -Dversion=1.8.2 \
    -Dpackaging=jar \
-   -DgeneratePom=true
+   -DgeneratePom=true \
+   -DlocalRepositoryPath=${ROOT_DIR}/lib
+mvn install:install-file \
+   -Dfile=${ROOT_DIR}/lib/java_cup.jar \
+   -DgroupId=cup \
+   -DartifactId=cup \
+   -Dversion=1.0 \
+   -Dpackaging=jar \
+   -DgeneratePom=true \
+   -DlocalRepositoryPath=${ROOT_DIR}/lib
+
 # Create jar
-mvn package -Dmaven.repo.local=${ROOT_DIR}/lib package
+mvn package -Dmaven.repo.local=${ROOT_DIR}/lib
 
 zip -r source-$(uuidgen).zip lib src pom.xml xic-build cup
