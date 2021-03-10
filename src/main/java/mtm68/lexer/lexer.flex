@@ -65,15 +65,13 @@ HexDigit = [0-9A-Fa-f]
 Hex = "\\x" {HexDigit}{1,4}
 Identifier = {Letter}({Digit}|{Letter}|_|"\'")*
 Integer = 0 | [1-9]{Digit}* 
-IntegerLiteral = "\'" {InputCharacter} "\'" 
-HexLiteral = "\'" {Hex} "\'" 
-EmptyCharLiteral = "\'\'" 
 Newline = "\\n"
 EscapedSingleQuote = "\\\'"
 EscapedDoubleQuote = "\\\""
 EscapedBackslash = "\\\\"
 
 %state STRING
+%state CHAR
 
 %%
 
@@ -123,19 +121,28 @@ EscapedBackslash = "\\\\"
 
     {Identifier}  { return newToken(TokenType.ID, yytext()); }
     {Integer}     { return newIntegerToken(yytext()); }  
-
-	"\'"{Newline}"\'"	  			{ return newToken(TokenType.CHARACTER, '\n'); }  
-	"\'"{EscapedSingleQuote}"\'"	{ return newToken(TokenType.CHARACTER, '\''); }  
-	"\'"{EscapedDoubleQuote}"\'"    { return newToken(TokenType.CHARACTER, '\"'); }  
-	"\'"{EscapedBackslash}"\'" 	    { return newToken(TokenType.CHARACTER, '\\'); }  
-	{IntegerLiteral}     	 { return newToken(TokenType.CHARACTER, yytext().charAt(1)); }  
-    {HexLiteral}     		 { return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
-    {EmptyCharLiteral}       { return newToken(TokenType.error, "Character literals may not be empty."); }  
-    "\'"\\."\'"    { return newToken(TokenType.error, "Illegal character: " + yytext()); }  
-
 	
+    \'            { yybegin(CHAR); stringLine = yyline(); stringCol = yycolumn();}
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
+    [^]			 { return newToken(TokenType.error, "Invalid input " + yytext());}
+}
+
+<CHAR> {
+
+    [^\n\'\\\"]\'		{ yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, yytext().charAt(0), stringLine, stringCol); }
+
+	{Newline}"\'"	  		 { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\n', stringLine, stringCol); }  
+	{EscapedSingleQuote}"\'" { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\'', stringLine, stringCol); }  
+	{EscapedDoubleQuote}"\'" { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\"', stringLine, stringCol); }  
+	{EscapedBackslash}"\'" 	 { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\\', stringLine, stringCol); }  
+    {Hex}"\'"     		 	 { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", "")), stringLine, stringCol); }  
+
+    \'       		 { yybegin(YYINITIAL); return newToken(TokenType.error, "Character literals may not be empty."); }  
+    \\.  			 { yybegin(YYINITIAL); return newToken(TokenType.error, "Illegal escape sequence: '" + yytext() +  "'"); }  
+    {LineTerminator} { yybegin(YYINITIAL); return newToken(TokenType.error, "Character literals may not span multiple lines"); }
+    <<EOF>>	  		 { yybegin(YYINITIAL); return newToken(TokenType.error, "Character literals must be terminated with a matching '"); }
+    [^]			 	 { yybegin(YYINITIAL); return newToken(TokenType.error, "Invalid character '" + yytext() + "'"); }
 }
 
 <STRING> {
@@ -145,18 +152,15 @@ EscapedBackslash = "\\\\"
 
     [^\n\'\\\"]+     { string.append(yytext());}
 
-    \\n              { string.append('\n'); }
-    \\\'      		 { string.append('\''); }
-    \\\"      	 	 { string.append('\"'); }
-    \\\\      		 { string.append('\\'); }
-    {Hex}     		 { char hexChar = StringUtils.convertHexToChar(yytext());
-                	   string.append(hexChar); }
+    {Newline}              { string.append('\n'); }
+    {EscapedSingleQuote}   { string.append('\''); }
+    {EscapedDoubleQuote}   { string.append('\"'); }
+    {EscapedBackslash}	   { string.append('\\'); }
+    {Hex}     		 	   { char hexChar = StringUtils.convertHexToChar(yytext());
+                	   	     string.append(hexChar); }
                 
-    /* error cases */
-    \\.      		 {   return newToken(TokenType.error, "Illegal escape sequence \"" + yytext() + "\"");}
-
-    {LineTerminator} {  return newToken(TokenType.error, "String literals may not span multiple lines"); }
-    <<EOF>>	  		 {  return newToken(TokenType.error, "String literals must be terminated with a matching \""); }
+    \\.      		 { yybegin(YYINITIAL); return newToken(TokenType.error, "Illegal escape sequence \"" + yytext() + "\"");}
+    {LineTerminator} { yybegin(YYINITIAL); return newToken(TokenType.error, "String literals may not span multiple lines"); }
+    <<EOF>>	  		 { yybegin(YYINITIAL); return newToken(TokenType.error, "String literals must be terminated with a matching \""); }
+    [^]			 	 { yybegin(YYINITIAL); return newToken(TokenType.error, "Invalid string \"" + string.toString() + yytext() + "\"");}
 }
-
-    [^]			 { return newToken(TokenType.error, "Invalid input" + yytext()); }
