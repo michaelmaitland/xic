@@ -8,8 +8,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import java_cup.sym;
-
 public class SourceFileLexer {
 
 	private String filename;
@@ -46,7 +44,7 @@ public class SourceFileLexer {
 
 			for (Token token = (Token) lexer.next_token(); token.getType() != TokenType.EOF; token = (Token) lexer.next_token()) {
 				tokens.add(token);
-				if (token.sym == sym.error)
+				if (token.getType() == TokenType.error)
 					break;
 			}
 			lexer.yyclose();

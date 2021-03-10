@@ -5,6 +5,7 @@ import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
 
+import java.math.BigInteger;
 %%
 
 %public
@@ -43,6 +44,14 @@ import java_cup.runtime.SymbolFactory;
     private Token newToken(TokenType type, Object value, int line, int column) {
 		return tFactory.newToken(type, value, line, column);
 	}
+	
+	private Token newIntegerToken(String toParse) {
+		try {
+         return newToken(TokenType.INTEGER, new BigInteger(toParse));
+		} catch (NumberFormatException ex) {
+		  return newToken(TokenType.error, "Couldn't convert to integer: " + toParse);	
+		}
+	}
 
 %}
 
@@ -58,6 +67,13 @@ Identifier = {Letter}({Digit}|{Letter}|_|"\'")*
 Integer = 0 | [1-9]{Digit}* 
 IntegerLiteral = "\'" {InputCharacter} "\'" 
 HexLiteral = "\'" {Hex} "\'" 
+EmptyCharLiteral = "\'\'" 
+Newline = "\\n"
+EscapedSingleQuote = "\\\'"
+EscapedDoubleQuote = "\\\""
+EscapedBackslash = "\\\\"
+IllegalEscapedCharLiteral = "\'" !({Newline}|{EscapedSingleQuote}|{EscapedDoubleQuote}|{EscapedBackslash}|{Hex}) "\'"  
+IllegalEscapedString = "\\" !("n"|"\'"|"\""|"\\"|({HexDigit}{1,4})) 
 
 %state STRING
 
@@ -108,14 +124,21 @@ HexLiteral = "\'" {Hex} "\'"
     "|"           { return newToken(TokenType.OR); }
 
     {Identifier}  { return newToken(TokenType.ID, yytext()); }
-    {Integer}     { return newToken(TokenType.INTEGER, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
+    {Integer}     { return newIntegerToken(yytext()); }  
 
-	  {IntegerLiteral}     { return newToken(TokenType.CHARACTER, yytext().charAt(1)); }  
-    {HexLiteral}     { return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+	"\'"{Newline}"\'"	  			{ return newToken(TokenType.CHARACTER, '\n'); }  
+	"\'"{EscapedSingleQuote}"\'"	{ return newToken(TokenType.CHARACTER, '\''); }  
+	"\'"{EscapedDoubleQuote}"\'"    { return newToken(TokenType.CHARACTER, '\"'); }  
+	"\'"{EscapedBackslash}"\'" 	    { return newToken(TokenType.CHARACTER, '\\'); }  
+	{IntegerLiteral}     	 { return newToken(TokenType.CHARACTER, yytext().charAt(1)); }  
+    {HexLiteral}     		 { return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
+    {EmptyCharLiteral}       { return newToken(TokenType.error, "Character literals may not be empty."); }  
+    {IllegalEscapedCharLiteral}     { return newToken(TokenType.error, "Illegal character: " + yytext()); }  
 
+	
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return newToken(TokenType.error, "Invalid character " + yytext()); }
+    [^]			 { return newToken(TokenType.error, "Invalid input" + yytext()); }
 }
 
 <STRING> {
@@ -123,11 +146,14 @@ HexLiteral = "\'" {Hex} "\'"
     \"                             { yybegin(YYINITIAL); 
                                     return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
 
-    [^\n\'\\\"]+                   { string.append(yytext());}
+    [^\n\'\\\"]+              { string.append(yytext());}
 
-    \\n                            { string.append('\n'); }
-    \\\'                           { string.append('\''); }
-    \\                             { string.append('\\'); }
-    {Hex}                          { char hexChar = StringUtils.convertHexToChar(yytext());
-                                       string.append(hexChar); }
+    \\n                 { string.append('\n'); }
+    \\\'      { string.append('\''); }
+    \\\"      { string.append('\"'); }
+    \\\\      { string.append('\\'); }
+    {Hex}     { char hexChar = StringUtils.convertHexToChar(yytext());
+                string.append(hexChar); }
+    
+    [^] 	  { return newToken(TokenType.error, "Invalid string: " + string.toString() + yytext()); }
 }
