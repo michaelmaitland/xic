@@ -550,6 +550,7 @@ public class ParserTests {
 
 	@Test
 	void arrayIndexHigherPrecedence() throws Exception {
+		// "hi" < a[1]
 		List<Token> tokens = elems(
 				token(STRING, "hi"),
 				token(LT),
