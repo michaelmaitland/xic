@@ -1,16 +1,56 @@
 package mtm68.lexer;
 
+import static mtm68.lexer.TokenType.ADD;
+import static mtm68.lexer.TokenType.AND;
+import static mtm68.lexer.TokenType.BOOL;
+import static mtm68.lexer.TokenType.CHARACTER;
+import static mtm68.lexer.TokenType.CLOSE_CURLY;
+import static mtm68.lexer.TokenType.CLOSE_PAREN;
+import static mtm68.lexer.TokenType.CLOSE_SQUARE;
+import static mtm68.lexer.TokenType.COLON;
+import static mtm68.lexer.TokenType.COMMA;
+import static mtm68.lexer.TokenType.DIV;
+import static mtm68.lexer.TokenType.ELSE;
+import static mtm68.lexer.TokenType.EQ;
+import static mtm68.lexer.TokenType.EQEQ;
+import static mtm68.lexer.TokenType.EXCLAMATION;
+import static mtm68.lexer.TokenType.FALSE;
+import static mtm68.lexer.TokenType.GEQ;
+import static mtm68.lexer.TokenType.GT;
+import static mtm68.lexer.TokenType.HIGH_MULT;
+import static mtm68.lexer.TokenType.ID;
+import static mtm68.lexer.TokenType.IF;
+import static mtm68.lexer.TokenType.INT;
+import static mtm68.lexer.TokenType.INTEGER;
+import static mtm68.lexer.TokenType.LENGTH;
+import static mtm68.lexer.TokenType.LEQ;
+import static mtm68.lexer.TokenType.LT;
+import static mtm68.lexer.TokenType.MOD;
+import static mtm68.lexer.TokenType.MULT;
+import static mtm68.lexer.TokenType.NEQ;
+import static mtm68.lexer.TokenType.OPEN_CURLY;
+import static mtm68.lexer.TokenType.OPEN_PAREN;
+import static mtm68.lexer.TokenType.OPEN_SQUARE;
+import static mtm68.lexer.TokenType.OR;
+import static mtm68.lexer.TokenType.RETURN;
+import static mtm68.lexer.TokenType.SEMICOLON;
+import static mtm68.lexer.TokenType.STRING;
+import static mtm68.lexer.TokenType.SUB;
+import static mtm68.lexer.TokenType.TRUE;
+import static mtm68.lexer.TokenType.UNDERSCORE;
+import static mtm68.lexer.TokenType.USE;
+import static mtm68.lexer.TokenType.error;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
-import static mtm68.lexer.TokenType.*;
 
 public class SourceFileLexerTests {
 	
@@ -46,14 +86,16 @@ public class SourceFileLexerTests {
 	@Test
 	public void testMinInt() throws IOException {
 	List<Token> tokens = lex("min int", "-9223372036854775808");
-		Token t = tFactory.newToken(INTEGER, -9223372036854775808L, 1, 1);
-		assertEquals(t , tokens.get(0));
+		Token t1 = tFactory.newToken(SUB, 1, 1);
+		Token t2 = tFactory.newToken(INTEGER, new BigInteger("9223372036854775808"), 1, 2);
+		assertEquals(t1 , tokens.get(0));
+		assertEquals(t2 , tokens.get(1));
 	}
 
 	// xic-ref (--lex [basic test]): string01.xi
 		@Test
 	public void testEscapedDoubleQuoteString() throws IOException {
-	List<Token> tokens = lex("double quote char", "\"\"\"");
+	List<Token> tokens = lex("double quote char", "\"\\\"\"");
 		Token t = tFactory.newToken(STRING, "\"", 1, 1);
 		assertEquals(t , tokens.get(0));
 	}
@@ -61,23 +103,21 @@ public class SourceFileLexerTests {
 	// xic-ref (--lex [basic test]): string03.xi
 	@Test
 	public void testSingleQuoteString() throws IOException {
-	List<Token> tokens = lex("single quote String", "\"'\"");
-		Token t = tFactory.newToken(STRING, "'", 1, 1);
-		assertEquals(t , tokens.get(0));
+		assertError("single quote String", "\"'\"");
 	}
 
 	// xic-ref (--lex [basic test]): string05.xi
 	@Test
 	public void testDoubleQuoteWithTextString() throws IOException {
-	List<Token> tokens = lex("double quote with text", "\"\" This should work \"");
-		Token t = tFactory.newToken(STRING, "\" This should work", 1, 1);
+	List<Token> tokens = lex("double quote with text", "\"\\\" This should work \"");
+		Token t = tFactory.newToken(STRING, "\" This should work ", 1, 1);
 		assertEquals(t , tokens.get(0));
 	}
 
 	// xic-ref (--lex [basic test]): string09.xi
 	@Test
 	public void testEscapedBackslashEscapedDoubleQuoteString() throws IOException {
-	List<Token> tokens = lex("escaped backslash escaped double quote string", "\"\\\"\"");
+	List<Token> tokens = lex("escaped backslash escaped double quote string", "\"\\\\\\\"\"");
 		Token t = tFactory.newToken(STRING, "\\\"", 1, 1);
 		assertEquals(t , tokens.get(0));
 	}
@@ -127,7 +167,7 @@ public class SourceFileLexerTests {
 	// xic-ref (--lex [basic-error test]): string07.xi
 	@Test
 	public void testStringWithManyUnescapedQuotesProducesError() throws IOException {
-		assertError("string with many double quotes ", "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"");
+		assertError("string with many double quotes ", "\"\"\"");
 	}
 
 	// xic-ref (--lex [basic-error test]): string08.xi
@@ -142,8 +182,8 @@ public class SourceFileLexerTests {
 	public void testMedley() throws IOException {
 		List<Token> tokens = lex("medley", "bool''''x'x'x'x_x2451'x:bool=5+5<=5555bool5:int[]=\"55bool\\x2F\";'5';'\\'';\n"
 				+ "//at694_cjb328_dbd64_ecp84");
-		Token t = tFactory.newToken(CHARACTER, "\\'", 1, 68);
-		assertEquals(t , tokens.get(0));
+		Token t = tFactory.newToken(CHARACTER, "\'", 1, 68);
+		assertEquals(t , tokens.get(19));
 	}
 
 	// xic-ref (--lex [combo test]): string05.xi
@@ -170,16 +210,18 @@ public class SourceFileLexerTests {
 	@Test
 	public void testEscapedSingleQuoteCharLiteralInMedley() throws IOException {
 		List<Token> tokens = lex("Escaped single quote char literal in medley", "if ( a >= '\\'' ) return x else return y");
-		Token t = tFactory.newToken(CHARACTER, "\\'", 1, 11);
+		Token t = tFactory.newToken(CHARACTER, "'", 1, 11);
 		assertEquals(t, tokens.get(4));
 	}
 
 	// xic-ref (Test --lex): largeintliteral.xi
 	@Test
 	public void testLargeIntLiteralInMedley() throws IOException {
-		assertError("LargeIntLiteralInMedley", "main(args: int[][]) {\n"
+		List<Token> tokens = lex("LargeIntLiteralInMedley", "main(args: int[][]) {\n"
 				+ "    b: int = 1000000000000000000000000000000;\n"
 				+ "}");
+		Token t = tFactory.newToken(INTEGER, "1000000000000000000000000000000", 2, 14);
+		assertEquals(t, tokens.get(15));
 	}
 
 	@Test
@@ -233,7 +275,7 @@ public class SourceFileLexerTests {
 		assertSingleToken(FALSE, "false");
 
 		assertSingleToken(ID, "hello", "hello");
-		assertSingleToken(INTEGER, 56L, "56");
+		assertSingleToken(INTEGER, new BigInteger("56"), "56");
 		assertSingleToken(CHARACTER, 'c', "'c'");
 		assertSingleToken(STRING, "hello", "\"hello\"");
 
@@ -285,7 +327,11 @@ public class SourceFileLexerTests {
 	private void assertError(String testName, String input) throws IOException {
 		List<Token> tokens = lex(testName, input);
 		assertTrue(!tokens.isEmpty());
-		Token errorToken = tokens.get(0);
+		Token errorToken = null;
+		for(Token t : tokens) {
+			if(t.getType()== error) errorToken = t;
+		}
+		assertNotNull(errorToken);
 		assertEquals(error, errorToken.getType());
 		assertTrue(errorToken.toString().contains("error:"));
 

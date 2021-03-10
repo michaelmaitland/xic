@@ -5,6 +5,7 @@ import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
 
+import java.math.BigInteger;
 %%
 
 %public
@@ -43,6 +44,14 @@ import java_cup.runtime.SymbolFactory;
     private Token newToken(TokenType type, Object value, int line, int column) {
 		return tFactory.newToken(type, value, line, column);
 	}
+	
+	private Token newIntegerToken(String toParse) {
+		try {
+         return newToken(TokenType.INTEGER, new BigInteger(toParse));
+		} catch (NumberFormatException ex) {
+		  return newToken(TokenType.error, "Couldn't convert to integer: " + toParse);	
+		}
+	}
 
 %}
 
@@ -56,10 +65,13 @@ HexDigit = [0-9A-Fa-f]
 Hex = "\\x" {HexDigit}{1,4}
 Identifier = {Letter}({Digit}|{Letter}|_|"\'")*
 Integer = 0 | [1-9]{Digit}* 
-IntegerLiteral = "\'" {InputCharacter} "\'" 
-HexLiteral = "\'" {Hex} "\'" 
+Newline = "\\n"
+EscapedSingleQuote = "\\\'"
+EscapedDoubleQuote = "\\\""
+EscapedBackslash = "\\\\"
 
 %state STRING
+%state CHAR
 
 %%
 
@@ -108,26 +120,46 @@ HexLiteral = "\'" {Hex} "\'"
     "|"           { return newToken(TokenType.OR); }
 
     {Identifier}  { return newToken(TokenType.ID, yytext()); }
-    {Integer}     { return newToken(TokenType.INTEGER, Long.parseLong(yytext())); }  // TODO: What to do if integer constant is too big?
-
-	  {IntegerLiteral}     { return newToken(TokenType.CHARACTER, yytext().charAt(1)); }  
-    {HexLiteral}     { return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", ""))); }  
-
+    {Integer}     { return newIntegerToken(yytext()); }  
+	
+    \'            { yybegin(CHAR); stringLine = yyline(); stringCol = yycolumn();}
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return newToken(TokenType.error, "Invalid character " + yytext()); }
+    [^]			  { return newToken(TokenType.error, "Invalid input " + yytext());}
+}
+
+<CHAR> {
+
+    [^\n\'\\\"]\'		{ yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, yytext().charAt(0), stringLine, stringCol); }
+
+	{Newline}"\'"	  		 { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\n', stringLine, stringCol); }  
+	{EscapedSingleQuote}"\'" { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\'', stringLine, stringCol); }  
+	{EscapedDoubleQuote}"\'" { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\"', stringLine, stringCol); }  
+	{EscapedBackslash}"\'" 	 { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, '\\', stringLine, stringCol); }  
+    {Hex}"\'"     		 	 { yybegin(YYINITIAL); return newToken(TokenType.CHARACTER, StringUtils.convertHexToChar(yytext().replace("'", "")), stringLine, stringCol); }  
+
+    \'       		 { yybegin(YYINITIAL); return newToken(TokenType.error, "Character literals may not be empty."); }  
+    \\.  			 { yybegin(YYINITIAL); return newToken(TokenType.error, "Illegal escape sequence: '" + yytext() +  "'"); }  
+    {LineTerminator} { yybegin(YYINITIAL); return newToken(TokenType.error, "Character literals may not span multiple lines"); }
+    <<EOF>>	  		 { yybegin(YYINITIAL); return newToken(TokenType.error, "Character literals must be terminated with a matching '"); }
+    [^]			 	 { yybegin(YYINITIAL); return newToken(TokenType.error, "Invalid character '" + yytext() + "'"); }
 }
 
 <STRING> {
 
-    \"                             { yybegin(YYINITIAL); 
-                                    return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
+    \"               { yybegin(YYINITIAL); return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
 
-    [^\n\'\\\"]+                   { string.append(yytext());}
+    [^\n\'\\\"]+     { string.append(yytext());}
 
-    \\n                            { string.append('\n'); }
-    \\\'                           { string.append('\''); }
-    \\                             { string.append('\\'); }
-    {Hex}                          { char hexChar = StringUtils.convertHexToChar(yytext());
-                                       string.append(hexChar); }
+    {Newline}              { string.append('\n'); }
+    {EscapedSingleQuote}   { string.append('\''); }
+    {EscapedDoubleQuote}   { string.append('\"'); }
+    {EscapedBackslash}	   { string.append('\\'); }
+    {Hex}     		 	   { char hexChar = StringUtils.convertHexToChar(yytext());
+                	   	     string.append(hexChar); }
+                
+    \\.      		 { yybegin(YYINITIAL); return newToken(TokenType.error, "Illegal escape sequence \"" + yytext() + "\"");}
+    {LineTerminator} { yybegin(YYINITIAL); return newToken(TokenType.error, "String literals may not span multiple lines"); }
+    <<EOF>>	  		 { yybegin(YYINITIAL); return newToken(TokenType.error, "String literals must be terminated with a matching \""); }
+    [^]			 	 { yybegin(YYINITIAL); return newToken(TokenType.error, "Invalid string \"" + string.toString() + yytext() + "\"");}
 }
