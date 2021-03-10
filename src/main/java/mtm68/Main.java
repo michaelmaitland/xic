@@ -79,7 +79,6 @@ public class Main {
 		}
 		
 
-		// Act on command arguments
 		if (help || sourceFiles.isEmpty())
 			printHelpScreen(cmdParser);
 
@@ -105,7 +104,6 @@ public class Main {
 //				System.out.println("Result: " + ast);
 			} 
 			
-			//Persist
 			if (lex) {
 				SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 				List<Token> tokens = lexer.getTokens();	
