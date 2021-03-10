@@ -24,8 +24,8 @@ public class SimpleDecl extends Decl implements SingleAssignLHS {
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startList();
-		p.printAtomNoSpace(id);
-		p.printAtomNoSpace(type.getPP());
+		p.printAtom(id);
+		p.printAtom (type.getPP());
 		p.endList();
 	}
 	

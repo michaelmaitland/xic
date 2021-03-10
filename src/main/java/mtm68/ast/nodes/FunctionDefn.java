@@ -23,7 +23,6 @@ public class FunctionDefn extends Node {
 		p.startList();
 		functionDecl.prettyPrint(p);
 		body.prettyPrint(p);
-		p.printAtom("");
 		p.endList();
 	}
 	

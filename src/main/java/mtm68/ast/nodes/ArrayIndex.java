@@ -21,8 +21,7 @@ public class ArrayIndex extends Expr implements SingleAssignLHS {
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startList();
-		p.printAtom("[");
-		p.printAtom("]");
+		p.printAtom("[]");
 		arr.prettyPrint(p);
 		index.prettyPrint(p);
 		p.endList();

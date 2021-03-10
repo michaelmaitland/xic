@@ -64,14 +64,14 @@ public class PrettyPrintTests {
 	
 	@Test
 	void testArrayInit2() {
-		String prog = "foo() {\r\n"
-				+ "    n: int = gcd(10, 2)\r\n"
-				+ "    a: int[n]\r\n"
-				+ "    while (n > 0) {\r\n"
-				+ "      n = n - 1\r\n"
-				+ "      a[n] = n\r\n"
-				+ "    }\r\n"
-				+ "}\r\n"
+		String prog = "foo() {\n"
+				+ "    n: int = gcd(10, 2)\n"
+				+ "    a: int[n]\n"
+				+ "    while (n > 0) {\n"
+				+ "      n = n - 1\n"
+				+ "      a[n] = n\n"
+				+ "    }\n"
+				+ "}\n"
 				+ "";
 		String expected = "(()\r\n"
 				+ " ((foo () ()\r\n"

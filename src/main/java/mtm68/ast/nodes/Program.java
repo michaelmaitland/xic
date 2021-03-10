@@ -32,10 +32,8 @@ public class Program extends Node implements Root {
 		
 		p.startUnifiedList();
 		for(FunctionDefn defn : functionDefns) defn.prettyPrint(p);
-		p.printAtom("");
 		p.endList();
 		
-		p.printAtom("");
 		p.endList();
 	}
 	

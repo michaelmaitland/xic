@@ -33,7 +33,6 @@ public class Block extends Statement {
 		}
 		
 		if(returnStmt.isPresent()) returnStmt.get().prettyPrint(p);
-		p.printAtom("");
 		p.endList();
 	}
 	

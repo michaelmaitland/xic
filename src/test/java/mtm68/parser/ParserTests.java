@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +52,7 @@ public class ParserTests {
 		List<Token> tokens = elems(
 				token(ID, "x"), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 		Program prog = parseProgFromStmt(tokens);
 		
 		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
@@ -66,7 +67,7 @@ public class ParserTests {
 				token(COLON), 
 				token(INT), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 		Program prog = parseProgFromStmt(tokens);
 		
 		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
@@ -82,10 +83,10 @@ public class ParserTests {
 				token(COLON), 
 				token(INT), 
 				token(OPEN_SQUARE),
-				token(INTEGER, 3L),
+				token(INTEGER, new BigInteger("3")),
 				token(CLOSE_SQUARE),
 				token(EQ), 
-				token(INTEGER, 0L));
+				token(INTEGER, new BigInteger("0")));
 
 		assertSyntaxError(EQ, parseErrorFromStmt(tokens));
 	}
@@ -100,7 +101,7 @@ public class ParserTests {
 				token(OPEN_SQUARE),
 				token(CLOSE_SQUARE),
 				token(EQ), 
-				token(INTEGER, 0L));
+				token(INTEGER, new BigInteger("0")));
 
 		Program prog = parseProgFromStmt(tokens);
 		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
@@ -120,7 +121,7 @@ public class ParserTests {
 				token(OPEN_SQUARE),
 				token(CLOSE_SQUARE),
 				token(EQ), 
-				token(INTEGER, 0L));
+				token(INTEGER, new BigInteger("0")));
 
 		Program prog = parseProgFromStmt(tokens);
 		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
@@ -134,10 +135,10 @@ public class ParserTests {
 		List<Token> tokens = elems(
 				token(ID, "x"), 
 				token(OPEN_SQUARE), 
-				token(INTEGER, 0L), 
+				token(INTEGER, new BigInteger("0")), 
 				token(CLOSE_SQUARE), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 
 		Program prog = parseProgFromStmt(tokens);
 		
@@ -153,7 +154,7 @@ public class ParserTests {
 				token(OPEN_SQUARE), 
 				token(CLOSE_SQUARE), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 
 		assertSyntaxError(CLOSE_SQUARE, parseErrorFromStmt(tokens));
 	}
@@ -170,10 +171,10 @@ public class ParserTests {
 				token(STRING, "hello"),
 				token(CLOSE_SQUARE), 
 				token(OPEN_SQUARE), 
-				token(INTEGER, 3L),
+				token(INTEGER, new BigInteger("3")),
 				token(CLOSE_SQUARE), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 
 		Program prog = parseProgFromStmt(tokens);
 		
@@ -190,10 +191,10 @@ public class ParserTests {
 				token(ID, "x"), 
 				token(CLOSE_PAREN), 
 				token(OPEN_SQUARE), 
-				token(INTEGER, 0L), 
+				token(INTEGER, new BigInteger("0")), 
 				token(CLOSE_SQUARE), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 
 		assertSyntaxError(OPEN_PAREN, parseErrorFromStmt(tokens));
 	}
@@ -204,7 +205,7 @@ public class ParserTests {
 		List<Token> tokens = elems(
 				token(UNDERSCORE), 
 				token(EQ), 
-				token(INTEGER, 3L));
+				token(INTEGER, new BigInteger("3")));
 
 		assertSyntaxError(INTEGER, parseErrorFromStmt(tokens));
 	}
@@ -386,7 +387,7 @@ public class ParserTests {
 				token(RETURN),
 				token(STRING, "hi"),
 				token(COMMA),
-				token(INTEGER, 3L),
+				token(INTEGER, new BigInteger("3")),
 				token(COMMA),
 				token(TRUE)
 				);
@@ -411,7 +412,7 @@ public class ParserTests {
 				token(RETURN),
 				token(STRING, "hi"),
 				token(COMMA),
-				token(INTEGER, 3L),
+				token(INTEGER, new BigInteger("3")),
 				token(COMMA),
 				token(TRUE),
 				token(SEMICOLON),
@@ -556,7 +557,7 @@ public class ParserTests {
 				token(LT),
 				token(ID, "a"),
 				token(OPEN_SQUARE),
-				token(INTEGER, 1L),
+				token(INTEGER, new BigInteger("1")),
 				token(CLOSE_SQUARE)
 				);
 		
@@ -606,11 +607,11 @@ public class ParserTests {
 	}
 	
 	private List<Token> arbitraryStmt() {
-		return elems(token(ID, "x"), token(EQ), token(INTEGER, 3L));
+		return elems(token(ID, "x"), token(EQ), token(INTEGER, new BigInteger("3")));
 	}
 
 	private List<Token> arbitraryExp() {
-		return elems(token(INTEGER, 3L), token(MOD), token(STRING, "hi"));
+		return elems(token(INTEGER, new BigInteger("3")), token(MOD), token(STRING, "hi"));
 	}
 	
 	private List<Token> stmtToProg(List<Token> stmt) {

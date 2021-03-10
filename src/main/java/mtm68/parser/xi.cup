@@ -10,6 +10,7 @@ import mtm68.util.*;
 import mtm68.lexer.*;
 import java.util.*;
 import java_cup.runtime.*;
+import java.math.BigInteger;
 
 parser code {:
     List<SyntaxErrorInfo> syntaxErrors = new ArrayList<>();
@@ -31,7 +32,7 @@ parser code {:
 terminal String ID;
 terminal String STRING;
 terminal Character CHARACTER;
-terminal Long INTEGER;
+terminal BigInteger INTEGER;
 terminal IXI, XI;
 
 terminal USE, IF, ELSE, WHILE, RETURN, LENGTH, INT, BOOL, TRUE, FALSE; 
