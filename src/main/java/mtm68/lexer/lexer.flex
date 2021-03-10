@@ -125,7 +125,7 @@ EscapedBackslash = "\\\\"
     \'            { yybegin(CHAR); stringLine = yyline(); stringCol = yycolumn();}
     \"            { string.setLength(0); stringLine = yyline(); stringCol = yycolumn(); yybegin(STRING); }
     
-    [^]			 { return newToken(TokenType.error, "Invalid input " + yytext());}
+    [^]			  { return newToken(TokenType.error, "Invalid input " + yytext());}
 }
 
 <CHAR> {
@@ -147,8 +147,7 @@ EscapedBackslash = "\\\\"
 
 <STRING> {
 
-    \"               { yybegin(YYINITIAL); 
-                       return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
+    \"               { yybegin(YYINITIAL); return newToken(TokenType.STRING, string.toString(), stringLine, stringCol); }
 
     [^\n\'\\\"]+     { string.append(yytext());}
 
