@@ -97,12 +97,12 @@ public class Main {
 			if(parse) writeToFile(filename, parseResult);
 			
 			if(parseResult.isValidAST()) {
-				Node ast = parseResult.getNode().get();
+//				Node ast = parseResult.getNode().get();
 				
-				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-				ast.prettyPrint(printer);
-				printer.flush();
-				System.out.println("Result: " + ast);
+//				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+//				ast.prettyPrint(printer);
+//				printer.flush();
+//				System.out.println("Result: " + ast);
 			} 
 			
 			//Persist
