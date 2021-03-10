@@ -41,6 +41,7 @@ import static mtm68.lexer.TokenType.UNDERSCORE;
 import static mtm68.lexer.TokenType.USE;
 import static mtm68.lexer.TokenType.error;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -166,7 +167,7 @@ public class SourceFileLexerTests {
 	// xic-ref (--lex [basic-error test]): string07.xi
 	@Test
 	public void testStringWithManyUnescapedQuotesProducesError() throws IOException {
-		assertError("string with many double quotes ", "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"");
+		assertError("string with many double quotes ", "\"\"\"");
 	}
 
 	// xic-ref (--lex [basic-error test]): string08.xi
@@ -181,8 +182,8 @@ public class SourceFileLexerTests {
 	public void testMedley() throws IOException {
 		List<Token> tokens = lex("medley", "bool''''x'x'x'x_x2451'x:bool=5+5<=5555bool5:int[]=\"55bool\\x2F\";'5';'\\'';\n"
 				+ "//at694_cjb328_dbd64_ecp84");
-		Token t = tFactory.newToken(CHARACTER, "\\'", 1, 68);
-		assertEquals(t , tokens.get(17));
+		Token t = tFactory.newToken(CHARACTER, "\'", 1, 68);
+		assertEquals(t , tokens.get(19));
 	}
 
 	// xic-ref (--lex [combo test]): string05.xi
@@ -209,7 +210,7 @@ public class SourceFileLexerTests {
 	@Test
 	public void testEscapedSingleQuoteCharLiteralInMedley() throws IOException {
 		List<Token> tokens = lex("Escaped single quote char literal in medley", "if ( a >= '\\'' ) return x else return y");
-		Token t = tFactory.newToken(CHARACTER, "\\'", 1, 11);
+		Token t = tFactory.newToken(CHARACTER, "'", 1, 11);
 		assertEquals(t, tokens.get(4));
 	}
 
@@ -326,7 +327,11 @@ public class SourceFileLexerTests {
 	private void assertError(String testName, String input) throws IOException {
 		List<Token> tokens = lex(testName, input);
 		assertTrue(!tokens.isEmpty());
-		Token errorToken = tokens.get(0);
+		Token errorToken = null;
+		for(Token t : tokens) {
+			if(t.getType()== error) errorToken = t;
+		}
+		assertNotNull(errorToken);
 		assertEquals(error, errorToken.getType());
 		assertTrue(errorToken.toString().contains("error:"));
 
