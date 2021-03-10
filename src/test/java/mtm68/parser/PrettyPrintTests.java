@@ -35,14 +35,6 @@ public class PrettyPrintTests {
 	private StringWriter output = new StringWriter();
 	private SExpPrinter p = new CodeWriterSExpPrinter(new PrintWriter(output));
 	
-//	@Test
-//	void testAddErr() {
-//		String prog = "";
-//		String expected = "";
-//		
-//		testPrettyPrint(setUpParser(prog, FileType.XI), expected);
-//	}
-	
 	@Test
 	void testAddErr() {
 		String prog = "+++";
