@@ -4,6 +4,7 @@ import static mtm68.lexer.TokenType.*;
 import static mtm68.util.ArrayUtils.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,16 +13,20 @@ import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Program;
+import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.LessThan;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
+import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.Statement;
+import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.Types;
 import mtm68.exception.SyntaxErrorInfo;
 import mtm68.lexer.MockLexer;
@@ -68,8 +73,8 @@ public class ParserTests {
 	}
 
 	@Test
-	void singleAssignWithArrayDecl() throws Exception {
-		// x:int[3] = 0 
+	void singleAssignWithArrayDeclError() throws Exception {
+		// x:int[3] = 0
 		List<Token> tokens = elems(
 				token(ID, "x"), 
 				token(COLON), 
@@ -81,6 +86,44 @@ public class ParserTests {
 				token(INTEGER, 0L));
 
 		assertSyntaxError(EQ, parseErrorFromStmt(tokens));
+	}
+
+	@Test
+	void singleAssignWithArrayDeclValid() throws Exception {
+		// x:int[] = 0
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(COLON), 
+				token(INT), 
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(EQ), 
+				token(INTEGER, 0L));
+
+		Program prog = parseProgFromStmt(tokens);
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		SimpleDecl decl = assertInstanceOfAndReturn(SimpleDecl.class, assignStmt.getLhs());
+		assertEquals(Types.ARRAY(Types.INT), decl.getType());
+	}
+
+	@Test
+	void singleAssignWithDoubleArrayDeclValid() throws Exception {
+		// x:int[][] = 0
+		List<Token> tokens = elems(
+				token(ID, "x"), 
+				token(COLON), 
+				token(INT), 
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(EQ), 
+				token(INTEGER, 0L));
+
+		Program prog = parseProgFromStmt(tokens);
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		SimpleDecl decl = assertInstanceOfAndReturn(SimpleDecl.class, assignStmt.getLhs());
+		assertEquals(Types.addArrayDims(Types.INT, 2), decl.getType());
 	}
 
 	@Test
@@ -176,7 +219,8 @@ public class ParserTests {
 				);
 
 		Program prog = parseProgFromStmt(tokens);
-		assertInstanceOf(MultipleAssign.class, firstStatement(prog));
+		MultipleAssign assign = assertInstanceOfAndReturn(MultipleAssign.class, firstStatement(prog));
+		assertEquals(Optional.empty(), assign.getDecls().get(0));
 	}
 
 	@Test
@@ -224,7 +268,7 @@ public class ParserTests {
 	//-------------------------------------------------------------------------------- 
 
 	@Test
-	void parseIfNoElse() throws Exception {
+	void ifNoElse() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.addAll(arbitraryExp());
 		ifTokens.addAll(arbitraryStmt());
@@ -236,7 +280,7 @@ public class ParserTests {
 	}
 
 	@Test
-	void parseIfWithElse() throws Exception {
+	void ifWithElse() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.addAll(arbitraryExp());
 		ifTokens.addAll(arbitraryStmt());
@@ -250,7 +294,7 @@ public class ParserTests {
 	}
 
 	@Test
-	void parseIfWithParens() throws Exception {
+	void ifWithParens() throws Exception {
 		List<Token> ifTokens = elems(token(IF));
 		ifTokens.add(token(OPEN_PAREN));
 		ifTokens.addAll(arbitraryExp());
@@ -263,9 +307,116 @@ public class ParserTests {
 		If ifStmt = assertInstanceOfAndReturn(If.class, firstStatement(prog));
 		assertEquals(Optional.empty(), ifStmt.getElseBranch());
 	}
+
+	//-------------------------------------------------------------------------------- 
+	//- While Statement 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void whileValid() throws Exception {
+		List<Token> tokens = elems(token(WHILE));
+		tokens.addAll(arbitraryExp());
+		tokens.addAll(arbitraryStmt());
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		While whileStmt = assertInstanceOfAndReturn(While.class, firstStatement(prog));
+		assertNotNull(whileStmt.getBody());
+		assertNotNull(whileStmt.getCondition());
+	}
+
+	@Test
+	void whileWithParens() throws Exception {
+		List<Token> tokens = elems(token(WHILE));
+		tokens.add(token(OPEN_PAREN));
+		tokens.addAll(arbitraryExp());
+		tokens.add(token(CLOSE_PAREN));
+		tokens.addAll(arbitraryStmt());
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		While whileStmt = assertInstanceOfAndReturn(While.class, firstStatement(prog));
+		assertNotNull(whileStmt.getBody());
+		assertNotNull(whileStmt.getCondition());
+	}
+
+	//-------------------------------------------------------------------------------- 
+	//- Return Statement 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void returnEmpty() throws Exception {
+		List<Token> tokens = elems(
+				token(RETURN));
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		Optional<Return> retStmt = returnStatement(prog);
+		assertTrue(retStmt.isPresent());
+		assertTrue(retStmt.get().getRetList().isEmpty());
+	}
+
+	@Test
+	void returnEmptyWithSemi() throws Exception {
+		List<Token> tokens = elems(
+				token(RETURN),
+				token(SEMICOLON)
+				);
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		Optional<Return> retStmt = returnStatement(prog);
+		assertTrue(retStmt.isPresent());
+		assertTrue(retStmt.get().getRetList().isEmpty());
+	}
+
+	@Test
+	void returnMultiple() throws Exception {
+		List<Token> tokens = elems(
+				token(RETURN),
+				token(STRING, "hi"),
+				token(COMMA),
+				token(INTEGER, 3L),
+				token(COMMA),
+				token(TRUE)
+				);
+
+		Program prog = parseProgFromStmt(tokens);
+		
+		Optional<Return> retStmt = returnStatement(prog);
+		assertTrue(retStmt.isPresent());
+		
+		List<Expr> retExprs = retStmt.get().getRetList();
+		assertEquals(3, retExprs.size());
+		assertInstanceOf(StringLiteral.class, retExprs.get(0));
+		assertInstanceOf(IntLiteral.class, retExprs.get(1));
+		assertInstanceOf(BoolLiteral.class, retExprs.get(2));
+	}
+
+	@Test
+	void returnNotLastStmtError() throws Exception {
+		List<Token> tokens = elems(
+				token(RETURN),
+				token(STRING, "hi"),
+				token(COMMA),
+				token(INTEGER, 3L),
+				token(COMMA),
+				token(TRUE),
+				token(SEMICOLON),
+				token(ID, "x"),
+				token(EQ),
+				token(STRING, "something")
+				);
+
+		assertSyntaxError(ID, parseErrorFromStmt(tokens));
+	}
+
+	//-------------------------------------------------------------------------------- 
+	//- Block Statement 
+	//-------------------------------------------------------------------------------- 
 	
 	@Test
-	void parseBlockSingleSemiSyntaxError() throws Exception {
+	void blockSingleSemiSyntaxError() throws Exception {
 		List<Token> tokens = elems(token(SEMICOLON));
 		
 		SyntaxErrorInfo error = parseErrorFromStmt(tokens);
@@ -303,6 +454,10 @@ public class ParserTests {
 
 	private Statement firstStatement(Program program) {
 		return program.getFunctionDefns().get(0).getBody().getStmts().get(0);
+	}
+
+	private Optional<Return> returnStatement(Program program) {
+		return program.getFunctionDefns().get(0).getBody().getReturnStmt();
 	}
 
 	private Expr firstExp(Program program) {

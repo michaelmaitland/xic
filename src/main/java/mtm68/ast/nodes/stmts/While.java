@@ -27,5 +27,11 @@ public class While extends Statement {
 		p.endList();
 	}
 	
+	public Expr getCondition() {
+		return condition;
+	}
 	
+	public Statement getBody() {
+		return body;
+	}
 }

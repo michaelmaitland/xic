@@ -25,4 +25,8 @@ public class Return extends Statement {
 		for(Expr expr: retList) expr.prettyPrint(p);
 		p.endList();
 	}
+	
+	public List<Expr> getRetList() {
+		return retList;
+	}
 }

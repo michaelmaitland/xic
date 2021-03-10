@@ -33,4 +33,12 @@ public class MultipleAssign extends Assign {
 		rhs.prettyPrint(p);
 		p.endList();
 	}
+	
+	public List<Optional<SimpleDecl>> getDecls() {
+		return decls;
+	}
+	
+	public FExpr getRhs() {
+		return rhs;
+	}
 }
