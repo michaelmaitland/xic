@@ -30,10 +30,10 @@ public class FunctionDecl extends Node {
 		//Args
 		p.startList();
 		for(SimpleDecl arg : args) arg.prettyPrint(p);
-		p.printAtomNoSpace(") "); 
+		p.endList(); 
 		
 		//Return Types
-		p.printAtomNoSpace("(");
+		p.startList();
 		String typeString = "";
 		for(Type type: returnTypes) typeString += type.getPP() + " "; 
 		p.printAtomNoSpace(typeString.trim());
