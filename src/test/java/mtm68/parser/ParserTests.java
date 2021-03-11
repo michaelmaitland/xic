@@ -29,6 +29,7 @@ import static mtm68.lexer.TokenType.TRUE;
 import static mtm68.lexer.TokenType.UNDERSCORE;
 import static mtm68.lexer.TokenType.WHILE;
 import static mtm68.lexer.TokenType.XI;
+import static mtm68.lexer.TokenType.IXI;
 import static mtm68.util.ArrayUtils.concat;
 import static mtm68.util.ArrayUtils.elems;
 import static org.junit.Assert.assertTrue;
