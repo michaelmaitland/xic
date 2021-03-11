@@ -23,6 +23,8 @@ One choice we made was how to handle an empty file. We decided, that since it wa
 
 Another choice was dealing with two different forms of array initializers. We decided that we will not allow initializing an array with specificed ranges with an array initializer (i.e. a:int[3] = {1, 2, 3}). We decided that the language used in the specification implied these two forms are not compatible. Also, this is not a feature in many major languages like Java as it simply would not serve much of a useful purpose.
 
+We also made the choice that function declarations cannot be separated by semicolons.
+
 ## Design and Implementation 
 One of the important parts of this assignment was creating a grammar to capture the xi language and put it into our cup spec. Luckily enough, after designing our grammar by hand, there turned out to be no original shift-reduce or reduce-reduce conflicts. We did, however, run into a few later down the road as we tweaked our grammar. One example was when we were building our possible array initializer list (which allows for a trailing comma). We initially used a right recursive approach but then there was an error where, if the list was ended with a trailing comma, the parser didn't know to shift and look for another expression or reduce and end the list. Upon some research and a few different remodeling attempts, we found that changing the list to build left-recursively fixed the problem with no real downside.
 
