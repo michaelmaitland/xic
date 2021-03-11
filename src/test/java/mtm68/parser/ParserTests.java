@@ -140,8 +140,8 @@ public class ParserTests {
 		assertEquals(2, i.getFunctionDecls().size());
 		
 		FunctionDecl declTwo = i.getFunctionDecls().get(1);
-		assertEquals(0, declTwo.getReturnTypes().size());
-		assertEquals(2, declTwo.getArgs().size());
+		assertEquals(2, declTwo.getReturnTypes().size());
+		assertEquals(0, declTwo.getArgs().size());
 	}
 	
 	//-------------------------------------------------------------------------------- 
