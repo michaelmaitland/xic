@@ -39,4 +39,16 @@ public class FunctionDecl extends Node {
 		p.printAtom(typeString.trim());
 		p.endList();
 	}
+	
+	public String getId() {
+		return id;
+	}
+	
+	public List<SimpleDecl> getArgs() {
+		return args;
+	}
+	
+	public List<Type> getReturnTypes() {
+		return returnTypes;
+	}
 }
