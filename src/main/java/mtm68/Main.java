@@ -95,15 +95,6 @@ public class Main {
 			
 			if(parse) writeToFile(filename, parseResult);
 			
-			if(parseResult.isValidAST()) {
-//				Node ast = parseResult.getNode().get();
-				
-//				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-//				ast.prettyPrint(printer);
-//				printer.flush();
-//				System.out.println("Result: " + ast);
-			} 
-			
 			if (lex) {
 				SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 				List<Token> tokens = lexer.getTokens();	
