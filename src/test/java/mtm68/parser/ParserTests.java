@@ -16,7 +16,9 @@ import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.IntLiteral;
+import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
@@ -37,11 +39,76 @@ import mtm68.lexer.MockLexer;
 import mtm68.lexer.Token;
 import mtm68.lexer.TokenFactory;
 import mtm68.lexer.TokenType;
+import mtm68.util.ArrayUtils;
 
 public class ParserTests {
 	
 	private ComplexSymbolFactory symFac = new ComplexSymbolFactory();
 	private TokenFactory tokenFac = new TokenFactory();
+
+	//-------------------------------------------------------------------------------- 
+	//- Function Decls 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void noFunctionDeclsValidInterface() throws Exception {
+		Interface i = parseInterfaceFromTokens(ArrayUtils.empty());
+		assertEquals(0, i.getFunctionDecls().size());
+	}
+
+	@Test
+	void interfaceWithSingleDecl() throws Exception {
+		// f(a:int):bool[]
+		List<Token> tokens = elems(
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getFunctionDecls().size());
+		
+		FunctionDecl decl = i.getFunctionDecls().get(0);
+		assertEquals(1, decl.getReturnTypes().size());
+		assertEquals(1, decl.getArgs().size());
+	}
+
+	@Test
+	void interfaceWithMultipleDecls() throws Exception {
+		// f(a:int):bool[]
+		// g():int, bool
+		List<Token> tokens = elems(
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(ID, "g"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(INT),
+				token(COMMA),
+				token(BOOL)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(2, i.getFunctionDecls().size());
+		
+		FunctionDecl declTwo = i.getFunctionDecls().get(1);
+		assertEquals(0, declTwo.getReturnTypes().size());
+		assertEquals(2, declTwo.getArgs().size());
+	}
 	
 	//-------------------------------------------------------------------------------- 
 	//- Assign Statement 
@@ -682,6 +749,11 @@ public class ParserTests {
 	private SyntaxErrorInfo parseErrorFromStmt(List<Token> stmt) throws Exception {
 		ParseResult parseResult = new ParseResult(setupParser(stmtToProg(stmt)));
 		return parseResult.getFirstSyntaxError();
+	}
+	
+	private Interface parseInterfaceFromTokens(List<Token> tokens) throws Exception {
+		tokens.add(0, token(IXI));
+		return (Interface) setupParser(tokens).parse().value;
 	}
 	
 	private Parser setupParser(List<Token> tokens) {
