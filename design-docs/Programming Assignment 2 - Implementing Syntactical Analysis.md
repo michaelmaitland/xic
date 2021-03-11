@@ -17,7 +17,6 @@ We found that accounting for all the different possible legal syntax to be chall
 
 ## Specification
 
-**INSERT**
 Again, in this assignment we did not feel we had to make many choices about the spec's ambiguity other than a few small things.
 
 One choice we made was how to handle an empty file. We decided, that since it was left ambiguous, that the behavior should be undefined. Currently our parser throws a syntax error for an unexpected EOF token. We believe this a reasonable choice as any user should not expect an empty file to do anything.
@@ -52,13 +51,12 @@ The key classes and packages we created or updated for this assignment are the f
 - Early on, we decided not to use a Visitor structure for our pretty print setup (as we were unsure how/if it would fit later parts of the project well). Of course after our class lecture on the visitor structure we were a little disappointed that we hadn't used it. Perhaps we will incorporate the structure later regardless.
 
 ### Programming ###
-- Once again, we ran into a lot of interesting errors for our build and also incorporating Jflex and cup. These errors were often tough to chase down due to unhelpful error messages but fortunately we were able to solve them after a bit of debugging.
+- Once again, we ran into a lot of interesting errors for our build and also incorporating Jflex and cup. These errors were often tough to chase down due to unhelpful error messages but fortunately we were able to solve them after a bit of debugging. One example of such an error was not constructing an EOF token of our own. The one passed to the parser by default was not of a format that matched our other tokens which caused mysterious errors.
 - The following is the team coding/responsibility breakdown for this assignment...
     - **Tobin:** 
        - command line options
        - jcup spec
-       - pretty printing (and tests)
-       - parser tests
+       - pretty printing (and pp tests)
     - **Maitland:**
         - fixing lexer errors
         - new lexer tests
@@ -78,13 +76,13 @@ We also created a test suite for pretty printing to check that our structure was
 
 ## Work plan
 
-We began by splitting up the work such that Maitland would address flaws in our lexer as well as jcup integration while Bass and Tobin worked on the grammar and cup speec. This allowed us to accomplish two big tasks in parallel without holding each other back. Then, we caught each other up to speed and carried out testing together to make sure everyone understood the code and that it was correct.
+We began by splitting up the work such that Maitland would address flaws in our lexer as well as jcup integration while Bass and Tobin worked on the grammar and cup spec. This allowed us to accomplish two big tasks in parallel without holding each other back. Then, we caught each other up to speed and carried out testing together to make sure everyone understood the code and that it was correct.
 
 This plan allowed for us to work in parallel which increased our efficiency. We also partitioned the work such that each component was well-isolated which meant that there wasn't much need for code redesign. We had also discussed what was expected of each component prior to implementation such that we were all on the same page for the big picture.
 
 ## Known Problems
 
-**INSERT**
+We currently are not aware of any issues with our compiler.
 
 ## Comments
 

@@ -16,6 +16,12 @@ public enum FileType {
 		return tokenType;
 	}
 	
+	/** Returns FileType that corresponds to suffix of provided filename.
+	 *  Returns null if filename does not end in .xi or .ixi
+	 * 
+	 * @param filename       filename
+	 * @return	             FileType
+	 */
 	public static FileType parseFileType(String filename) {
 		for(FileType ft : FileType.values()) {
 			String suffix = "." + ft.name().toLowerCase();

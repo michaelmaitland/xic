@@ -62,13 +62,6 @@ public class CodeWriterSExpPrinter implements SExpPrinter {
     }
     
     @Override
-    public void printAtomNoSpace(String atom) {
-        startElement();
-        writer.write(atom);
-        addSpace = false;
-    }
-
-    @Override
     public void startList() {
         startEveryList(false);
     }

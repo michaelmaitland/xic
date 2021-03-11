@@ -16,7 +16,6 @@ public class SourceFileLexer {
 
 	private List<Token> tokens;
 
-	//TODO test
 	public SourceFileLexer(String filename, Path sourcePath) throws FileNotFoundException {
 		this.filename = filename;
 		this.lexer = new Lexer(new FileReader(sourcePath.resolve(filename).toString()));

@@ -12,7 +12,7 @@ public interface SExpPrinter extends AutoCloseable {
      */
     void printAtom(String atom);
     
-    void printAtomNoSpace(String atom);
+    //void printAtomNoSpace(String atom);
 
     /**
      * Prints the open parenthesis of an S-expression list.

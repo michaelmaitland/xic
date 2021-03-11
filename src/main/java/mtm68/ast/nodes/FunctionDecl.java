@@ -25,7 +25,7 @@ public class FunctionDecl extends Node {
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
-		p.printAtomNoSpace(id +" ");
+		p.printAtom(id);
 		
 		//Args
 		p.startList();
@@ -36,7 +36,7 @@ public class FunctionDecl extends Node {
 		p.startList();
 		String typeString = "";
 		for(Type type: returnTypes) typeString += type.getPP() + " "; 
-		p.printAtomNoSpace(typeString.trim());
+		p.printAtom(typeString.trim());
 		p.endList();
 	}
 }

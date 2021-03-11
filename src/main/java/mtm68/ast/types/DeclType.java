@@ -54,6 +54,17 @@ public class DeclType {
 		return addIndicesToPP(type.getPP(), indices, 0);
 	}
 	
+	
+	/**
+	 * Returns typePP with all elements of indices properly placed in their brackets
+	 * 
+	 * I.e. typePP = "([] ([] int)"; indices = [3, 4] => "([] ([] int 4) 3)"
+	 * 
+	 * @param typePP               the pretty print of the type
+	 * @param indices              list of arr indices
+	 * @param n                    counter (should be initialized to 0)
+	 * @return		               typePP properly indicized
+	 */
 	public static String addIndicesToPP(String typePP, List<Expr> indices, int n) {
 		if(n == indices.size()) {
 			return typePP;
