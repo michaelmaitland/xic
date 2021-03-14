@@ -65,6 +65,7 @@ HexDigit = [0-9A-Fa-f]
 Hex = "\\x" {HexDigit}{1,4}
 Identifier = {Letter}({Digit}|{Letter}|_|"\'")*
 Integer = 0 | [1-9]{Digit}* 
+MinInt = -9223372036854775808
 Newline = "\\n"
 EscapedSingleQuote = "\\\'"
 EscapedDoubleQuote = "\\\""
@@ -90,6 +91,7 @@ EscapedBackslash = "\\\\"
     "bool"        { return newToken(TokenType.BOOL); }
     "true"        { return newToken(TokenType.TRUE); }
     "false"       { return newToken(TokenType.FALSE); }
+    {MinInt}  	  { return newIntegerToken(yytext()); }  
 
     "["           { return newToken(TokenType.OPEN_SQUARE); }
     "]"           { return newToken(TokenType.CLOSE_SQUARE); }

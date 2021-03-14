@@ -86,10 +86,8 @@ public class SourceFileLexerTests {
 	@Test
 	public void testMinInt() throws IOException {
 	List<Token> tokens = lex("min int", "-9223372036854775808");
-		Token t1 = tFactory.newToken(SUB, 1, 1);
-		Token t2 = tFactory.newToken(INTEGER, new BigInteger("9223372036854775808"), 1, 2);
-		assertEquals(t1 , tokens.get(0));
-		assertEquals(t2 , tokens.get(1));
+		Token t = tFactory.newToken(INTEGER, new BigInteger("-9223372036854775808"), 1, 1);
+		assertEquals(t , tokens.get(0));
 	}
 
 	// xic-ref (--lex [basic test]): string01.xi
