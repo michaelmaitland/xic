@@ -1,0 +1,73 @@
+package mtm68;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import java_cup.runtime.ComplexSymbolFactory;
+import mtm68.ast.nodes.FunctionDecl;
+import mtm68.ast.nodes.Interface;
+import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Program;
+import mtm68.ast.nodes.Use;
+import mtm68.exception.SyntaxErrorInfo;
+import mtm68.lexer.Lexer;
+import mtm68.parser.ParseResult;
+import mtm68.parser.Parser;
+
+public class SymbolTableManager {
+	private Map<String, Map<String, FunctionDecl>> useIdToSymTable;
+	private Path libPath;
+	
+	public SymbolTableManager(Path libPath) {
+		useIdToSymTable = new HashMap<>();
+		this.libPath = libPath;
+	}
+	
+	public Map<String, FunctionDecl> mergeSymbolTables(Program prog){
+		Map<String, FunctionDecl> mergedTable = new HashMap<>();
+		for(Use use : prog.getUseStmts()) {
+			if(!useIdToSymTable.containsKey(use.getId()))
+				try {
+					generateSymbolTableFromLib(use);
+				} catch (FileNotFoundException e) {
+					System.out.println("Not able to find " + use.getId() +".ixi in library location " + libPath.toString());
+				}
+			mergedTable.putAll(useIdToSymTable.get(use.getId()));
+		}
+		return mergedTable;
+	}
+
+	private void generateSymbolTableFromLib(Use use) throws FileNotFoundException {
+		String filename = use.getId() + ".ixi";
+		Lexer lexer = new Lexer(new FileReader(libPath.resolve(filename).toString()));
+		Parser parser = new Parser(lexer, new ComplexSymbolFactory());
+		
+		ParseResult parseResult = new ParseResult(parser);
+		printSyntaxErrors(parseResult);
+		//TODO add typecheck
+		if(parseResult.isValidAST()) {
+			Interface root = (Interface)parseResult.getNode().get();
+			generateSymbolTableFromAST(use.getId(), root);
+		}
+	}
+	
+	public void generateSymbolTableFromAST(String useId, Interface root) {
+		Map<String, FunctionDecl> symTable = new HashMap<>();
+		
+		for(FunctionDecl decl : root.getFunctionDecls())
+			symTable.put(decl.getId(), decl);
+		
+		useIdToSymTable.put(useId, symTable);
+	}
+	
+	private void printSyntaxErrors(ParseResult parseResult) {
+		for(SyntaxErrorInfo errorInfo : parseResult.getSyntaxErrors()) {
+			System.out.println(errorInfo);
+		}
+	}
+	
+}

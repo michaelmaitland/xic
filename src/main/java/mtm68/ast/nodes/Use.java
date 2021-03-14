@@ -9,6 +9,10 @@ public class Use extends Node {
 	public Use(String id) {
 		this.id = id;
 	}
+	
+	public String getId() {
+		return this.id;
+	}
 
 	@Override
 	public String toString() {
