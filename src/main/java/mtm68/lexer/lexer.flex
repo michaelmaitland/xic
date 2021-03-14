@@ -5,7 +5,6 @@ import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
 
-import java.math.BigInteger;
 %%
 
 %public
@@ -47,7 +46,7 @@ import java.math.BigInteger;
 	
 	private Token newIntegerToken(String toParse) {
 		try {
-         return newToken(TokenType.INTEGER, new BigInteger(toParse));
+         return newToken(TokenType.INTEGER, Long.parseLong(toParse));
 		} catch (NumberFormatException ex) {
 		  return newToken(TokenType.error, "Couldn't convert to integer: " + toParse);	
 		}

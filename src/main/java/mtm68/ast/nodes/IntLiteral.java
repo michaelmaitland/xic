@@ -1,12 +1,10 @@
 package mtm68.ast.nodes;
 
-import java.math.BigInteger;
-
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
-public class IntLiteral extends Literal<BigInteger> {
+public class IntLiteral extends Literal<Long> {
 	
-	public IntLiteral(BigInteger value) {
+	public IntLiteral(Long value) {
 		super(value);
 	}
 

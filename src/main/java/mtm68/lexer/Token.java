@@ -1,7 +1,5 @@
 package mtm68.lexer;
 
-import java.math.BigInteger;
-
 import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.util.StringUtils;
@@ -57,9 +55,9 @@ public class Token extends ComplexSymbol {
         if(value instanceof String) {
             String str = (String) value;
             return " " + StringUtils.preserveNewlines(str);
-        } else if(value instanceof BigInteger) {
-        	BigInteger i = (BigInteger) value;
-        	return " " + i.toString();
+        } else if(value instanceof Long) {
+        	Long l = (Long) value;
+        	return " " + l;
         } else {
         	return " " + value;
 		}

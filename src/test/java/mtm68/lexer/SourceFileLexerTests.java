@@ -46,7 +46,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
@@ -86,7 +85,7 @@ public class SourceFileLexerTests {
 	@Test
 	public void testMinInt() throws IOException {
 	List<Token> tokens = lex("min int", "-9223372036854775808");
-		Token t = tFactory.newToken(INTEGER, new BigInteger("-9223372036854775808"), 1, 1);
+		Token t = tFactory.newToken(INTEGER, -9223372036854775808L, 1, 1);
 		assertEquals(t , tokens.get(0));
 	}
 
@@ -215,11 +214,9 @@ public class SourceFileLexerTests {
 	// xic-ref (Test --lex): largeintliteral.xi
 	@Test
 	public void testLargeIntLiteralInMedley() throws IOException {
-		List<Token> tokens = lex("LargeIntLiteralInMedley", "main(args: int[][]) {\n"
+		assertError("LargeIntLiteralInMedley", "main(args: int[][]) {\n"
 				+ "    b: int = 1000000000000000000000000000000;\n"
 				+ "}");
-		Token t = tFactory.newToken(INTEGER, "1000000000000000000000000000000", 2, 14);
-		assertEquals(t, tokens.get(15));
 	}
 
 	@Test
@@ -273,7 +270,7 @@ public class SourceFileLexerTests {
 		assertSingleToken(FALSE, "false");
 
 		assertSingleToken(ID, "hello", "hello");
-		assertSingleToken(INTEGER, new BigInteger("56"), "56");
+		assertSingleToken(INTEGER, 56L, "56");
 		assertSingleToken(CHARACTER, 'c', "'c'");
 		assertSingleToken(STRING, "hello", "\"hello\"");
 
