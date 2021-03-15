@@ -1,3 +1,7 @@
 f() {
-	if x < a[1] {}
+	$$$$
+	if true { x:int = 3 }
+	while true true
+	x : bool
+	$
 }

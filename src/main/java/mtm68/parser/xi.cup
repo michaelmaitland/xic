@@ -12,18 +12,43 @@ import java.util.*;
 import java_cup.runtime.*;
 
 parser code {:
-    List<SyntaxErrorInfo> syntaxErrors = new ArrayList<>();
+    private List<ParserError> syntaxErrors = new ArrayList<>();
+    private List<LexerError> lexErrors = new ArrayList<>();
+    
+    @Override
+    public Symbol scan() throws Exception {
+    	Symbol sym = super.scan();
+    	if(!(sym instanceof Token)) return sym;
+
+    	Token token = (Token) sym;
+    	if(token.getType() == TokenType.error) {
+    		lexErrors.add(new LexerError(token));
+    	} 
+    	return token;
+    }
 
     @Override
     public void syntax_error(Symbol cur_token) {
-        syntaxErrors.add(new SyntaxErrorInfo((Token)cur_token));
+    	Token token = (Token) cur_token;
+    	if(token.getType() != TokenType.error) {
+			syntaxErrors.add(new ParserError(token));
+    	}
+    }
+    
+    @Override
+    public void report_error(String message, Object info) {
+    	System.out.println("Report error: " + message);
     }
 
     /* @Override */
     /* public void unrecovered_syntax_error(Symbol cur_token) {} */
 
-    public List<SyntaxErrorInfo> getSyntaxErrors() {
+    public List<ParserError> getSyntaxErrors() {
         return syntaxErrors;
+    }
+
+    public List<LexerError> getLexErrors() {
+        return lexErrors;
     }
 :}
 

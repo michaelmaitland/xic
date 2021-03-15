@@ -1,37 +1,7 @@
 package mtm68.parser;
 
-import static mtm68.lexer.TokenType.ADD;
-import static mtm68.lexer.TokenType.BOOL;
-import static mtm68.lexer.TokenType.CLOSE_CURLY;
-import static mtm68.lexer.TokenType.CLOSE_PAREN;
-import static mtm68.lexer.TokenType.CLOSE_SQUARE;
-import static mtm68.lexer.TokenType.COLON;
-import static mtm68.lexer.TokenType.COMMA;
-import static mtm68.lexer.TokenType.DIV;
-import static mtm68.lexer.TokenType.ELSE;
-import static mtm68.lexer.TokenType.EOF;
-import static mtm68.lexer.TokenType.EQ;
-import static mtm68.lexer.TokenType.ID;
-import static mtm68.lexer.TokenType.IF;
-import static mtm68.lexer.TokenType.INT;
-import static mtm68.lexer.TokenType.INTEGER;
-import static mtm68.lexer.TokenType.LT;
-import static mtm68.lexer.TokenType.MOD;
-import static mtm68.lexer.TokenType.MULT;
-import static mtm68.lexer.TokenType.OPEN_CURLY;
-import static mtm68.lexer.TokenType.OPEN_PAREN;
-import static mtm68.lexer.TokenType.OPEN_SQUARE;
-import static mtm68.lexer.TokenType.RETURN;
-import static mtm68.lexer.TokenType.SEMICOLON;
-import static mtm68.lexer.TokenType.STRING;
-import static mtm68.lexer.TokenType.SUB;
-import static mtm68.lexer.TokenType.TRUE;
-import static mtm68.lexer.TokenType.UNDERSCORE;
-import static mtm68.lexer.TokenType.WHILE;
-import static mtm68.lexer.TokenType.XI;
-import static mtm68.lexer.TokenType.IXI;
-import static mtm68.util.ArrayUtils.concat;
-import static mtm68.util.ArrayUtils.elems;
+import static mtm68.lexer.TokenType.*;
+import static mtm68.util.ArrayUtils.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -47,8 +17,8 @@ import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.IntLiteral;
-import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.Interface;
+import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
@@ -67,7 +37,7 @@ import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.Statement;
 import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.Types;
-import mtm68.exception.SyntaxErrorInfo;
+import mtm68.exception.ParserError;
 import mtm68.lexer.MockLexer;
 import mtm68.lexer.Token;
 import mtm68.lexer.TokenFactory;
@@ -574,8 +544,8 @@ public class ParserTests {
 		// {;}
 		List<Token> tokens = elems(token(SEMICOLON));
 		
-		SyntaxErrorInfo error = parseErrorFromStmt(tokens);
-		assertSyntaxError(SEMICOLON, error);
+		
+		assertSyntaxError(SEMICOLON, parseErrorFromStmt(tokens));
 	}
 
 	@Test
@@ -896,11 +866,11 @@ public class ParserTests {
 	
 	// f () { [INSERT HERE] }
 	
-	private void assertSyntaxError(TokenType expected, SyntaxErrorInfo actual) {
+	private void assertSyntaxError(TokenType expected, ParserError actual) {
 		assertEquals(expected, tokenFromError(actual).getType());
 	}
 
-	private Token tokenFromError(SyntaxErrorInfo errorInfo) {
+	private Token tokenFromError(ParserError errorInfo) {
 		return errorInfo.getToken();
 	}
 
@@ -926,9 +896,9 @@ public class ParserTests {
 		return (Program) parseResult.getNode().get();
 	}
 
-	private SyntaxErrorInfo parseErrorFromStmt(List<Token> stmt) throws Exception {
+	private ParserError parseErrorFromStmt(List<Token> stmt) throws Exception {
 		ParseResult parseResult = new ParseResult(setupParser(stmtToProg(stmt)));
-		return parseResult.getFirstSyntaxError();
+		return (ParserError) parseResult.getFirstError();
 	}
 	
 	private Interface parseInterfaceFromTokens(List<Token> tokens) throws Exception {

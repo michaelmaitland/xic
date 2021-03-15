@@ -1,7 +1,6 @@
 package mtm68;
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,13 +27,13 @@ import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
-import mtm68.exception.SyntaxErrorInfo;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
 import mtm68.lexer.Token;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
+import mtm68.util.ErrorUtils;
 
 public class Main {
 
@@ -111,7 +110,7 @@ public class Main {
 			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
 			
 			ParseResult parseResult = new ParseResult(parser);
-			printSyntaxErrors(parseResult);
+			ErrorUtils.printErrors(parseResult, filename);
 			
 			if(parse) writeToFile(filename, parseResult);
 			
@@ -140,11 +139,6 @@ public class Main {
 		}
 	}
 	
-	private void printSyntaxErrors(ParseResult parseResult) {
-		for(SyntaxErrorInfo errorInfo : parseResult.getSyntaxErrors()) {
-			System.out.println(errorInfo);
-		}
-	}
 
 	/**
 	 * Writes lexed results to [filename.lexed] 
@@ -185,7 +179,7 @@ public class Main {
 				printer.close();
 			}
 			else {
-				String error = result.getFirstSyntaxError().toFileString();
+				String error = result.getFirstError().getFileErrorMessage();
 				BufferedWriter writer = new BufferedWriter(new FileWriter(outpath.toString()));
 			    writer.write(error);
 			    writer.close();

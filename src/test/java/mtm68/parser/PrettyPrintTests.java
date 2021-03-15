@@ -438,7 +438,7 @@ public class PrettyPrintTests {
 			assertEquals(superTrim(expected), superTrim(output.toString()));
 		}
 		else {
-			assertEquals(expected, result.getFirstSyntaxError().toFileString());
+			assertEquals(expected, result.getFirstError().getFileErrorMessage());
 		}
 	}
 	
