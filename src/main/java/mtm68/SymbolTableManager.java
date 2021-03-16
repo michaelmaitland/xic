@@ -29,12 +29,20 @@ public class SymbolTableManager {
 	public Map<String, FunctionDecl> mergeSymbolTables(Program prog){
 		Map<String, FunctionDecl> mergedTable = new HashMap<>();
 		for(Use use : prog.getUseStmts()) {
-			if(!useIdToSymTable.containsKey(use.getId()))
+			if(!useIdToSymTable.containsKey(use.getId())) {
 				try {
 					generateSymbolTableFromLib(use);
 				} catch (FileNotFoundException e) {
-					System.out.println("Not able to find " + use.getId() +".ixi in library location " + libPath.toString());
+					System.err.println("Not able to find " + use.getId() +".ixi in library location " + libPath.toString());
 				}
+			}
+			Map<String, FunctionDecl> curMap = useIdToSymTable.get(use.getId());
+			for(String f : curMap.keySet()) {
+				if(mergedTable.containsKey(f)) {
+					if(!mergedTable.get(f).equals(curMap.get(f))) 
+						System.err.println("Multiple interface mismatched function declaration for " + curMap.get(f));
+				}
+			}
 			mergedTable.putAll(useIdToSymTable.get(use.getId()));
 		}
 		return mergedTable;
