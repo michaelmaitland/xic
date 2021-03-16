@@ -75,10 +75,9 @@ public class SourceFileLexerTests {
 	// xic-ref (--lex [basic test]): char03.xi
 	@Test
 	public void testDoubleQuoteChar() throws IOException {
-	List<Token> tokens = lex("double quote char", "'\\\"'");
+		List<Token> tokens = lex("double quote char", "'\\\"'");
 		Token t = tFactory.newToken(CHARACTER, "\"", 1, 1);
 		assertEquals(t , tokens.get(0));
-
 	}
 
 	// xic-ref (--lex [basic test]): int06.xi
@@ -92,7 +91,7 @@ public class SourceFileLexerTests {
 	// xic-ref (--lex [basic test]): string01.xi
 		@Test
 	public void testEscapedDoubleQuoteString() throws IOException {
-	List<Token> tokens = lex("double quote char", "\"\\\"\"");
+		List<Token> tokens = lex("double quote char", "\"\\\"\"");
 		Token t = tFactory.newToken(STRING, "\"", 1, 1);
 		assertEquals(t , tokens.get(0));
 	}
@@ -100,7 +99,9 @@ public class SourceFileLexerTests {
 	// xic-ref (--lex [basic test]): string03.xi
 	@Test
 	public void testSingleQuoteString() throws IOException {
-		assertError("single quote String", "\"'\"");
+		List<Token> tokens = lex("single quote String", "\"'\"");
+		Token t = tFactory.newToken(STRING, "'", 1, 1);
+		assertEquals(t , tokens.get(0));
 	}
 
 	// xic-ref (--lex [basic test]): string05.xi
@@ -219,6 +220,48 @@ public class SourceFileLexerTests {
 				+ "}");
 	}
 
+	// xic (Test --lex): ex2.xi
+	@Test
+	public void testCorrectLineColOnError() throws IOException {
+		assertError("empty char medley", "x:bool = 4all\nx = ''\nthis = does not matter", 2, 5);
+		assertError("empty char ", "''", 1, 1);
+		assertError("new line char", "'\n'", 1, 1);
+		assertError("multiple literal char", "'asd'", 1, 1);
+		assertError("multiple single quotes unbalanced", "'''''''''''''''''''''''''''''''''''''''", 1, 1);
+		assertError("unclosed char literal", "'a", 1, 1);
+		assertError("unclosed multiple char literal", "'asdf", 1, 1);
+		assertError("unescaped backslash string", "\"\"\"", 1, 1);
+		assertError("single double quote", "\"", 1, 1);
+		assertError("escaped backslash and unescaped string", "\"\\\\\\\"", 1, 1);
+		assertError("multiple double quotes unbalanced", "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"", 1, 41);
+		assertError("unclosed string ", "\"abcdef", 1, 1);
+		assertError("multi line string", "\"This might\nnot work\"", 1, 1);
+		assertError("multi line empty string", "\"\n\"", 1, 1);
+	}
+	
+	// xic-ref (--lex [basic test]): char01.xi
+	@Test
+	public void testDoubleQuoteCharUnescaped() throws IOException {
+		List<Token> tokens = lex("double quote char unescaped", "'\"'");
+		Token t = tFactory.newToken(CHARACTER, "\"", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): string03.xi
+	@Test
+	public void testSingleQuoteStringUnescaped() throws IOException {
+		List<Token> tokens = lex("single quote string unescaped", "\"'\"");
+		Token t = tFactory.newToken(STRING, "\'", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
+
+	// xic-ref (--lex [basic test]): string07.xi
+	@Test
+	public void testEscapedTab() throws IOException {
+		List<Token> tokens = lex("escaped tab string", "\"\\t\"");
+		Token t = tFactory.newToken(STRING, "\t", 1, 1);
+		assertEquals(t , tokens.get(0));
+	}
 	@Test
 	public void testValidIdentifier() throws IOException {
 		List<Token> tokens = lex("valid_id", "a'_33");
@@ -329,6 +372,20 @@ public class SourceFileLexerTests {
 		assertNotNull(errorToken);
 		assertEquals(error, errorToken.getType());
 		assertTrue(errorToken.toString().contains("error:"));
+	}
+
+	private void assertError(String testName, String input, int line, int col) throws IOException {
+		List<Token> tokens = lex(testName, input);
+		assertTrue(!tokens.isEmpty());
+		Token errorToken = null;
+		for(Token t : tokens) {
+			if(t.getType()== error) errorToken = t;
+		}
+		assertNotNull(errorToken);
+		assertEquals(error, errorToken.getType());
+		assertTrue(errorToken.toString().contains("error:"));
+		assertEquals(line, errorToken.getLine());
+		assertEquals(col, errorToken.getColumn());
 
 	}
 }
