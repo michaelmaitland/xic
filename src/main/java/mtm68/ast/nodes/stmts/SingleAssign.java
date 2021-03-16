@@ -2,6 +2,9 @@ package mtm68.ast.nodes.stmts;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class SingleAssign extends Assign {
 	
@@ -34,5 +37,17 @@ public class SingleAssign extends Assign {
 	
 	public Expr getRhs() {
 		return rhs;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		SingleAssignLHS lhs = visitChild(lhs, v);
+		Expr rhs = visitChild(rhs, v);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

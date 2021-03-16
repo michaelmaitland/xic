@@ -1,6 +1,8 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class ArrayLength extends Expr {
 	
@@ -21,6 +23,20 @@ public class ArrayLength extends Expr {
 		p.printAtom("length");
 		exp.prettyPrint(p);
 		p.endList();
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		Expr exp = visitChild(this.exp, v);
+		
+		// TODO check if we need to copy
+		return new ArrayLength(exp);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

@@ -3,6 +3,8 @@ package mtm68.ast.nodes;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class Program extends Node implements Root {
 	
@@ -43,5 +45,20 @@ public class Program extends Node implements Root {
 	
 	public List<FunctionDefn> getFunctionDefns() {
 		return functionDefns;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<Use> useStmts = visitChild(this.useStmts, v);
+		List<FunctionDefn> functionDefns = visitChild(this.functionDefns, v);
+	
+		// TODO check copy
+		return new Program(useStmts, functionDefns);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

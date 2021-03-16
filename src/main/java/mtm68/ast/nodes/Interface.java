@@ -3,6 +3,8 @@ package mtm68.ast.nodes;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class Interface extends Node implements Root {
 	
@@ -34,5 +36,19 @@ public class Interface extends Node implements Root {
 	
 	public List<FunctionDecl> getFunctionDecls() {
 		return functionDecls;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<FunctionDecl> functionDecls = visitChild(functionDecls, v);
+
+		// TODO: check if need copy
+		return new Interface(functionDecls);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

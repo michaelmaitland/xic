@@ -16,6 +16,5 @@ public abstract class Node {
 
 	public abstract Node visitChildren(Visitor v);
 
-
 	public abstract Node typeCheck(TypeChecker tc);
 }

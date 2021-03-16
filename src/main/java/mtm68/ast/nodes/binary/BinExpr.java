@@ -2,6 +2,9 @@ package mtm68.ast.nodes.binary;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class BinExpr extends Expr {
 	
@@ -27,5 +30,20 @@ public class BinExpr extends Expr {
 		left.prettyPrint(p);
 		right.prettyPrint(p);
 		p.endList();
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		Expr left = visitChild(this.left, v);
+		Expr right = visitChild(this.right, v);
+		
+		// TODO: check copy
+		return new BinExpr(op, left, right);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class FunctionDecl extends Node {
 	
@@ -50,5 +52,20 @@ public class FunctionDecl extends Node {
 	
 	public List<Type> getReturnTypes() {
 		return returnTypes;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<SimpleDecl> args = visitChild(args, v);
+		List<Type> returnTypes = visitChild(returnTypes, v);
+
+		// TODO check if need to copy
+		return new FunctionDecl(id, args, returnTypes);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

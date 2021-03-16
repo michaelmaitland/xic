@@ -4,6 +4,9 @@ import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class If extends Statement {
 	
@@ -53,5 +56,21 @@ public class If extends Statement {
 
 	public Optional<Statement> getElseBranch() {
 		return elseBranch;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		Expr condition = visitChild(this.condition, v);
+		Statement ifBranch = visitChild(this.ifBranch, v);
+		Optional<Statement> elseBranch = visitChild(this.elseBranch, v);
+		
+		// TODO: check copy
+		return new If(condition, ifBranch, elseBranch);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

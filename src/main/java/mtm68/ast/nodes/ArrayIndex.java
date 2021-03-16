@@ -39,7 +39,6 @@ public class ArrayIndex extends Expr implements SingleAssignLHS {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-
 		Expr arr = visitChild(this.arr, v);
 		Expr index = visitChild(this.index, v);
 

@@ -3,6 +3,8 @@ package mtm68.ast.nodes;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class FExpr extends Expr {
 	
@@ -33,6 +35,20 @@ public class FExpr extends Expr {
 	
 	public List<Expr> getArgs() {
 		return args;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<Expr> args = visitChild(this.args, v);
+		
+		// TODO: check if need copy
+		return new FExpr(id, args);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

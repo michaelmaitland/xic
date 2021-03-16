@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class Block extends Statement {
 	
@@ -18,6 +21,11 @@ public class Block extends Statement {
 	public Block(List<Statement> stmts, Return returnStmt) {
 		this.stmts = stmts;
 		this.returnStmt = Optional.of(returnStmt);
+	}
+
+	public Block(List<Statement> stmts, Optional<Return> returnStmt) {
+		this.stmts = stmts;
+		this.returnStmt = returnStmt;
 	}
 
 	@Override
@@ -42,5 +50,20 @@ public class Block extends Statement {
 
 	public Optional<Return> getReturnStmt() {
 		return returnStmt;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<Statement> stmts = visitChild(this.stmts, v);
+		Optional<Return> returnStmt = visitChild(this.returnStmt, v);
+
+		// TODO: check copy
+		return new Block(stmts, returnStmt);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

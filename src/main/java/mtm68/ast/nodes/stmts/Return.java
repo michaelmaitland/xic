@@ -4,6 +4,9 @@ import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class Return extends Statement {
 	
@@ -28,5 +31,19 @@ public class Return extends Statement {
 	
 	public List<Expr> getRetList() {
 		return retList;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<Expr> retList = visitChild(retList, v);
+		
+		// TODO check copy
+		return new Return(retList);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

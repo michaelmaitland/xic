@@ -2,6 +2,9 @@ package mtm68.ast.nodes.stmts;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class FunctionCall extends Statement {
 	
@@ -23,6 +26,20 @@ public class FunctionCall extends Statement {
 	
 	public FExpr getFexp() {
 		return fexp;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		FExpr fexp = visitChild(this.fexp,  v);
+		
+		// TODO check copy
+		return new FunctionCall(fexp);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

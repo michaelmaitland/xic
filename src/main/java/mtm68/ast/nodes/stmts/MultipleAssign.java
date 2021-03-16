@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class MultipleAssign extends Assign {
 	
@@ -40,5 +43,20 @@ public class MultipleAssign extends Assign {
 	
 	public FExpr getRhs() {
 		return rhs;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<Optional<SimpleDecl>> decls = visitChild(this.decls, v);
+		FExpr rhs = visitChild(rhs, v);
+		
+		// TODO check copy
+		return new MultipleAssign(decls, rhs);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

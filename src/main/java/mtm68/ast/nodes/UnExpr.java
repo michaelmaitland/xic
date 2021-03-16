@@ -7,5 +7,4 @@ public abstract class UnExpr extends Expr {
 	public UnExpr(Expr expr) {
 		this.expr = expr;
 	}
-	
 }

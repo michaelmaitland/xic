@@ -2,6 +2,9 @@ package mtm68.ast.nodes.stmts;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.Node;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
 
 public class While extends Statement {
 	
@@ -33,5 +36,20 @@ public class While extends Statement {
 	
 	public Statement getBody() {
 		return body;
+	}
+
+	@Override
+	public Node visitChildren(Visitor v) {
+		Expr condition = visitChild(this.condition, v);
+		Statement body = visitChild(this.body, v);
+
+		// TODO check copy
+		return new While(condition, body);
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
