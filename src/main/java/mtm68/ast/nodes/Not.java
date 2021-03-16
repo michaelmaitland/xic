@@ -20,5 +20,4 @@ public class Not extends UnExpr {
 		expr.prettyPrint(p);
 		p.endList();
 	}
-
 }
