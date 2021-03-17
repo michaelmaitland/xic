@@ -91,7 +91,7 @@ nonterminal List<Expr> filled_bracket_plus;
 nonterminal empty_bracket;
 nonterminal Integer empty_bracket_star;
 nonterminal List<Type> ty_list;
-nonterminal SingleAssignLHS assign_single_lhs;
+nonterminal Node assign_single_lhs;
 nonterminal List<Type> f_type;
 nonterminal FunctionDecl fdecl;
 nonterminal FunctionDefn fdefn;

@@ -47,8 +47,8 @@ public class MultipleAssign extends Assign {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Optional<SimpleDecl>> decls = visitChild(this.decls, v);
-		FExpr rhs = visitChild(rhs, v);
+		//List<Optional<SimpleDecl>> decls = visitChild(this.decls, v);
+		FExpr rhs = visitChild(this.rhs, v);
 		
 		// TODO check copy
 		return new MultipleAssign(decls, rhs);

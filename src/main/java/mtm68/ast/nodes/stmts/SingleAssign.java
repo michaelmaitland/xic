@@ -8,10 +8,11 @@ import mtm68.visit.Visitor;
 
 public class SingleAssign extends Assign {
 	
-	private SingleAssignLHS lhs;
+	// TODO change parser to return a node
+	private Node lhs;
 	private Expr rhs;
 
-	public SingleAssign(SingleAssignLHS lhs, Expr rhs) {
+	public SingleAssign(Node lhs, Expr rhs) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
@@ -31,7 +32,7 @@ public class SingleAssign extends Assign {
 		p.endList();
 	}
 	
-	public SingleAssignLHS getLhs() {
+	public Node getLhs() {
 		return lhs;
 	}
 	
@@ -41,8 +42,10 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		SingleAssignLHS lhs = visitChild(lhs, v);
-		Expr rhs = visitChild(rhs, v);
+		Node lhs = visitChild(this.lhs, v);
+		Expr rhs = visitChild(this.rhs, v);
+		
+		return new SingleAssign(lhs, rhs);
 	}
 
 	@Override
