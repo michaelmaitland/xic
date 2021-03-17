@@ -23,11 +23,6 @@ public class Block extends Statement {
 		this.returnStmt = Optional.of(returnStmt);
 	}
 
-	public Block(List<Statement> stmts, Optional<Return> returnStmt) {
-		this.stmts = stmts;
-		this.returnStmt = returnStmt;
-	}
-
 	@Override
 	public String toString() {
 		return "Block [stmts=" + stmts + ", returnStmt=" + returnStmt + "]";
@@ -55,7 +50,7 @@ public class Block extends Statement {
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<Statement> stmts = visitList(this.stmts, v);
-		Optional<Return> returnStmt = visitChild(this.returnStmt, v);
+		Return returnStmt = this.returnStmt.isPresent() ? visitChild(this.returnStmt.get(), v) : null;
 
 		// TODO: check copy
 		return new Block(stmts, returnStmt);

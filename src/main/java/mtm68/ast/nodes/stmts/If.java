@@ -62,7 +62,7 @@ public class If extends Statement {
 	public Node visitChildren(Visitor v) {
 		Expr condition = visitChild(this.condition, v);
 		Statement ifBranch = visitChild(this.ifBranch, v);
-		Optional<Statement> elseBranch = visitChild(this.elseBranch, v);
+		Statement elseBranch = this.elseBranch.isPresent() ? visitChild(this.elseBranch.get(), v) : null;
 		
 		// TODO: check copy
 		return new If(condition, ifBranch, elseBranch);
