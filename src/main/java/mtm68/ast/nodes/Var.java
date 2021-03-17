@@ -1,11 +1,10 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.nodes.stmts.SingleAssignLHS;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class Var extends Expr implements SingleAssignLHS {
+public class Var extends Expr {
 	
 	private String id;
 	

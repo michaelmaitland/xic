@@ -6,7 +6,7 @@ import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class SimpleDecl extends Decl implements SingleAssignLHS {
+public class SimpleDecl extends Decl {
 	
 	private Type type;
 	
