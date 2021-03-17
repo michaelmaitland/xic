@@ -54,7 +54,7 @@ public class Block extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Statement> stmts = visitChild(this.stmts, v);
+		List<Statement> stmts = visitList(this.stmts, v);
 		Optional<Return> returnStmt = visitChild(this.returnStmt, v);
 
 		// TODO: check copy

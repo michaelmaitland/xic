@@ -49,8 +49,8 @@ public class Program extends Node implements Root {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Use> useStmts = visitChild(this.useStmts, v);
-		List<FunctionDefn> functionDefns = visitChild(this.functionDefns, v);
+		List<Use> useStmts = visitList(this.useStmts, v);
+		List<FunctionDefn> functionDefns = visitList(this.functionDefns, v);
 	
 		// TODO check copy
 		return new Program(useStmts, functionDefns);

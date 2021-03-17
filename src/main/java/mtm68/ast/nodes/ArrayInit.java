@@ -1,5 +1,6 @@
 package mtm68.ast.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -28,9 +29,8 @@ public class ArrayInit extends Expr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Expr> items = visitChild(this.items, v);
-		
-		// TODO: check if we need to copy
+		List<Expr> items = visitList(this.items, v);
+
 		return new ArrayInit(items);
 	}
 

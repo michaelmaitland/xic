@@ -56,8 +56,7 @@ public class FunctionDecl extends Node {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<SimpleDecl> args = visitChild(args, v);
-		List<Type> returnTypes = visitChild(returnTypes, v);
+		List<SimpleDecl> args = visitList(this.args, v);
 
 		// TODO check if need to copy
 		return new FunctionDecl(id, args, returnTypes);

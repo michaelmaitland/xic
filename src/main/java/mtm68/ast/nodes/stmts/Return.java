@@ -35,7 +35,7 @@ public class Return extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Expr> retList = visitChild(retList, v);
+		List<Expr> retList = visitList(this.retList, v);
 		
 		// TODO check copy
 		return new Return(retList);
