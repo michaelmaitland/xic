@@ -59,16 +59,16 @@ public class MultipleAssign extends Assign {
 			if(!d.isPresent()) {
 				vl.add(d);
 				continue;
+			} else {
+				SimpleDecl s = d.get();
+				SimpleDecl newS = s.accept(v); 
+				if(newS != s) {
+					newDecls = vl;
+				}
+				vl.add(Optional.of(newS));
 			}
-			SimpleDecl s = d.get();
-			SimpleDecl newS = s.accept(v); 
-			if(newS != s) {
-				newDecls = vl;
-			}
-			d = Optional.of(newS);
-			// Add everything to vl in case any n != n2
-			vl.add(d);
 		}
+		
 		FExpr newRhs = rhs.accept(v);
 		
 		
