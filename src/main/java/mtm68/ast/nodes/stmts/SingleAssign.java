@@ -42,10 +42,14 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Node lhs = visitChild(this.lhs, v);
-		Expr rhs = visitChild(this.rhs, v);
+		Node newLhs = lhs.accept(v);
+		Expr newRhs = rhs.accept(v);
 		
-		return new SingleAssign(lhs, rhs);
+		if(newLhs != lhs || newRhs != rhs) {
+			return new SingleAssign(lhs, rhs);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

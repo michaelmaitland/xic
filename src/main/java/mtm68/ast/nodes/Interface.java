@@ -40,10 +40,12 @@ public class Interface extends Node implements Root {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<FunctionDecl> functionDecls = visitList(this.functionDecls, v);
-
-		// TODO: check if need copy
-		return new Interface(functionDecls);
+		List<FunctionDecl> newFunctionDecls = acceptList(functionDecls, v);
+		if(newFunctionDecls != functionDecls) {
+			return new Interface(newFunctionDecls);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

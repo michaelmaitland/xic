@@ -60,12 +60,17 @@ public class If extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr condition = visitChild(this.condition, v);
-		Statement ifBranch = visitChild(this.ifBranch, v);
-		Statement elseBranch = this.elseBranch.isPresent() ? visitChild(this.elseBranch.get(), v) : null;
+		Expr newCondition = condition.accept(v);
+		Statement newIfBranch = ifBranch.accept(v);
+		Statement newElseBranch = elseBranch.isPresent() ? elseBranch.get().accept(v) : null;
 		
-		// TODO: check copy
-		return new If(condition, ifBranch, elseBranch);
+		if(newCondition != condition
+				|| newIfBranch != ifBranch
+				|| (elseBranch.isPresent() && elseBranch.get() != newElseBranch)) {
+			return new If(newCondition, newIfBranch, newElseBranch);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

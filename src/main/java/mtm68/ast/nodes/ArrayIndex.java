@@ -38,11 +38,13 @@ public class ArrayIndex extends Expr  {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr arr = visitChild(this.arr, v);
-		Expr index = visitChild(this.index, v);
-
-		// TODO : check if we need to do copying
-		return new ArrayIndex(arr, index);
+		Expr newArr = arr.accept(v);
+        Expr newIndex = index.accept(v);
+        if (newArr != arr|| newIndex != index) {
+            return new ArrayIndex(newArr, newIndex);
+        } else {
+            return this; // no new node needed
+        }
 	}
 
 	@Override

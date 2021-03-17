@@ -28,9 +28,12 @@ public class ArrayInit extends Expr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Expr> items = visitList(this.items, v);
-
-		return new ArrayInit(items);
+		List<Expr> newItems = acceptList(this.items, v);
+		if(newItems != items) {
+			return new ArrayInit(newItems);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

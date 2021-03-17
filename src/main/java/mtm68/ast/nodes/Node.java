@@ -12,17 +12,17 @@ public abstract class Node {
 	public abstract void prettyPrint(SExpPrinter p);
 	
 	/**
-	 * Visit a child
-	 * 
-	 * @param n The child to visit
-	 * @param v The visitor to visit  with
-	 * @return The node returned from visiting.
+	 * Accepts a visitor
+	 * @param v the visitor to use
+	 * @return the visited node
 	 */
-	public <N extends Node> N visitChild(N n, Visitor v) {
-		if(n == null) return null;
-		else return v.visit(n);
-	}
-
+	@SuppressWarnings("unchecked")
+	public <N extends Node> N accept(Visitor v) {
+        Visitor v2 = v.enter(this);
+        Node n = visitChildren(v2);
+        return (N) v2.leave(n, this);
+    }
+	
 	/**
 	 * Visit each element of a list.
 	 * 
@@ -34,7 +34,7 @@ public abstract class Node {
 	 *         
 	 * This function is adopted from polyglot.ast.Node_c
 	 */
-	public <N extends Node> List<N> visitList(List<N> l, Visitor v){
+	public <N extends Node> List<N> acceptList(List<N> l, Visitor v){
 
 		if(l == null) {
 			return null;
@@ -44,7 +44,7 @@ public abstract class Node {
 		List<N> vl = new ArrayList<>(l.size());
 		
 		for(N n : l) {
-			N n2 = visitChild(n, v);
+			N n2 = n.accept(v); 
 			if(n != n2) {
 				result = vl;
 			}

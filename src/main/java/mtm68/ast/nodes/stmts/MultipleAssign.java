@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,11 +48,35 @@ public class MultipleAssign extends Assign {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		//List<Optional<SimpleDecl>> decls = visitChild(this.decls, v);
-		FExpr rhs = visitChild(this.rhs, v);
+		if(decls == null) {
+			return null;
+		}
+			
+		List<Optional<SimpleDecl>> newDecls = decls;
+		List<Optional<SimpleDecl>> vl = new ArrayList<>(decls.size());
 		
-		// TODO check copy
-		return new MultipleAssign(decls, rhs);
+		for(Optional<SimpleDecl> d : decls) {
+			if(!d.isPresent()) {
+				vl.add(d);
+				continue;
+			}
+			SimpleDecl s = d.get();
+			SimpleDecl newS = s.accept(v); 
+			if(newS != s) {
+				newDecls = vl;
+			}
+			d = Optional.of(newS);
+			// Add everything to vl in case any n != n2
+			vl.add(d);
+		}
+		FExpr newRhs = rhs.accept(v);
+		
+		
+		if(newRhs != rhs || newDecls != decls) {
+			return new MultipleAssign(newDecls, newRhs);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

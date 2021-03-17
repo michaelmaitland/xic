@@ -39,10 +39,12 @@ public class FExpr extends Expr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Expr> args = visitList(this.args, v);
-		
-		// TODO: check if need copy
-		return new FExpr(id, args);
+		List<Expr> newArgs = acceptList(this.args, v);
+		if(newArgs != args) {
+			return new FExpr(id, newArgs);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

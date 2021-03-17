@@ -40,11 +40,14 @@ public class While extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr condition = visitChild(this.condition, v);
-		Statement body = visitChild(this.body, v);
-
-		// TODO check copy
-		return new While(condition, body);
+		Expr newCondition = condition.accept(v);
+		Statement newBody = body.accept(v);
+		
+		if(newCondition != condition || newBody != body) {
+			return new While(condition, body);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

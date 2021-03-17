@@ -49,11 +49,13 @@ public class Program extends Node implements Root {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Use> useStmts = visitList(this.useStmts, v);
-		List<FunctionDefn> functionDefns = visitList(this.functionDefns, v);
-	
-		// TODO check copy
-		return new Program(useStmts, functionDefns);
+		List<Use> newUseStmts = acceptList(useStmts, v);
+		List<FunctionDefn> newFunctionDefns = acceptList(functionDefns, v);
+		if(newUseStmts != useStmts || newFunctionDefns != functionDefns) {
+			return new Program(useStmts, functionDefns);
+		} else {
+			return this;
+		}	
 	}
 
 	@Override

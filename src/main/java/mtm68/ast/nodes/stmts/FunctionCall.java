@@ -30,10 +30,13 @@ public class FunctionCall extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		FExpr fexp = visitChild(this.fexp,  v);
-		
-		// TODO check copy
-		return new FunctionCall(fexp);
+		FExpr newFexp = fexp.accept(v);
+	
+		if(newFexp != fexp) {
+			return new FunctionCall(fexp);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

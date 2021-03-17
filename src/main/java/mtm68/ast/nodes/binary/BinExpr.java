@@ -34,11 +34,14 @@ public class BinExpr extends Expr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr left = visitChild(this.left, v);
-		Expr right = visitChild(this.right, v);
+		Expr newLeft = left.accept(v);
+		Expr newRight = right.accept(v);
 		
-		// TODO: check copy
-		return new BinExpr(op, left, right);
+		if(newLeft != left || newRight != right) {
+			return new BinExpr(op, left, right);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

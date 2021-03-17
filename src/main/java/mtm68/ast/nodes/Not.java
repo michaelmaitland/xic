@@ -25,10 +25,12 @@ public class Not extends UnExpr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr expr = visitChild(this.expr, v);
-		
-		// TODO: check copy
-		return new Not(expr);
+		Expr newExpr = expr.accept(v);
+		if (newExpr != expr) {
+			return new Not(expr);
+        } else {
+            return this; // no new node needed
+        }	
 	}
 
 	@Override

@@ -25,10 +25,12 @@ public class Negate extends UnExpr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr expr = visitChild(this.expr, v);
-		
-		// TODO: check if copy
-		return new Negate(expr);
+		Expr newExpr = expr.accept(v);
+		if (newExpr != expr) {
+			return new Negate(expr);
+        } else {
+            return this; // no new node needed
+        }	
 	}
 
 	@Override

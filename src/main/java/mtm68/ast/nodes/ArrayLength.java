@@ -27,10 +27,12 @@ public class ArrayLength extends Expr {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr exp = visitChild(this.exp, v);
-		
-		// TODO check if we need to copy
-		return new ArrayLength(exp);
+		Expr newExp = this.exp.accept(v);
+		if(newExp != exp) {
+			return new ArrayLength(newExp);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

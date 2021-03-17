@@ -35,10 +35,13 @@ public class Return extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Expr> retList = visitList(this.retList, v);
+		List<Expr> newRetList = acceptList(retList, v);
 		
-		// TODO check copy
-		return new Return(retList);
+		if(newRetList != retList) {
+			return new Return(retList);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

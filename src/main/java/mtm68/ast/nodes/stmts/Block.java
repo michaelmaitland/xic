@@ -49,11 +49,15 @@ public class Block extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<Statement> stmts = visitList(this.stmts, v);
-		Return returnStmt = this.returnStmt.isPresent() ? visitChild(this.returnStmt.get(), v) : null;
-
-		// TODO: check copy
-		return new Block(stmts, returnStmt);
+		List<Statement> newStmts = acceptList(stmts, v);
+		Return newReturnStmt = returnStmt.isPresent() ? returnStmt.get().accept(v) : null;
+		
+		if(newStmts != stmts 
+				|| (returnStmt.isPresent() && returnStmt.get() != newReturnStmt)) {
+			return new Block(newStmts, newReturnStmt);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

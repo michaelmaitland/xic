@@ -38,11 +38,13 @@ public class FunctionDefn extends Node {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		FunctionDecl functionDecl = visitChild(this.functionDecl, v);
-		Block body = visitChild(this.body, v);
-		
-		// TODO: check if need copy
-		return new FunctionDefn(functionDecl, body);
+		FunctionDecl newFunctionDecl = functionDecl.accept(v);
+		Block newBody = body.accept(v);
+		if(newFunctionDecl!= functionDecl || newBody != body) {
+			return new FunctionDefn(newFunctionDecl, newBody);
+		} else {
+			return this;
+		}	
 	}
 
 	@Override
