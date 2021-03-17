@@ -1,6 +1,5 @@
 package mtm68.ast.nodes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -39,7 +38,4 @@ public class ArrayInit extends Expr {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
-
 }
