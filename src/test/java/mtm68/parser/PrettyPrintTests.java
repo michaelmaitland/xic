@@ -1,34 +1,19 @@
 package mtm68.parser;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.FileType;
-import mtm68.ast.nodes.ArrayIndex;
-import mtm68.ast.nodes.FunctionDecl;
-import mtm68.ast.nodes.FunctionDefn;
-import mtm68.ast.nodes.IntLiteral;
-import mtm68.ast.nodes.Node;
-import mtm68.ast.nodes.Program;
-import mtm68.ast.nodes.Use;
-import mtm68.ast.nodes.Var;
-import mtm68.ast.nodes.binary.Add;
-import mtm68.ast.nodes.stmts.Block;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
-import mtm68.util.ArrayUtils;
+import mtm68.lexer.TokenFactory;
 
 
 public class PrettyPrintTests {
@@ -443,8 +428,9 @@ public class PrettyPrintTests {
 	}
 	
 	private Parser setUpParser(String prog, FileType ft) {
-		Lexer lexer = new FileTypeLexer(new StringReader(prog), ft);
-		return new Parser(lexer, new ComplexSymbolFactory());
+		TokenFactory tokenFactory = new TokenFactory();
+		Lexer lexer = new FileTypeLexer(new StringReader(prog), ft, tokenFactory);
+		return new Parser(lexer, tokenFactory);
 	}
 }
 

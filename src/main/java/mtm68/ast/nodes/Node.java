@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
 public abstract class Node {
+	
+	private Location startLoc;
 	
 	public abstract void prettyPrint(SExpPrinter p);
 	
@@ -64,4 +67,12 @@ public abstract class Node {
 	public abstract Node visitChildren(Visitor v);
 
 	public abstract Node typeCheck(TypeChecker tc);
+
+	public Location getStartLoc() {
+		return startLoc;
+	}
+
+	public void setStartLoc(Location startLoc) {
+		this.startLoc = startLoc;
+	}
 }

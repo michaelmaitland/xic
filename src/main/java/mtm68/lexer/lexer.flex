@@ -4,6 +4,7 @@ import mtm68.parser.sym;
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
+import java.io.Reader;
 
 %%
 
@@ -22,6 +23,11 @@ import java_cup.runtime.SymbolFactory;
 
 %{
 
+    public Lexer(Reader reader, TokenFactory tf) {
+        this(reader);
+        this.tFactory = tf;
+    }
+
     /** Data to manage string state */
     StringBuffer string = new StringBuffer();
     int stringCol, stringLine;
@@ -30,7 +36,7 @@ import java_cup.runtime.SymbolFactory;
 
 	public int yycolumn() { return yycolumn + 1; }
 
-	TokenFactory tFactory = new TokenFactory();
+	private TokenFactory tFactory;
 
     private Token newToken(TokenType type) {
       return tFactory.newToken(type, yyline(), yycolumn());

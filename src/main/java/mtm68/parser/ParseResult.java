@@ -9,6 +9,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.exception.BaseError;
 import mtm68.exception.LexerError;
 import mtm68.exception.ParserError;
+import mtm68.util.Debug;
 
 public class ParseResult {
 	
@@ -19,6 +20,7 @@ public class ParseResult {
 		try {
 			node = Optional.of((Node)parser.parse().value);
 		} catch(Exception e) {
+			if(Debug.DEBUG_ON) e.printStackTrace();
 			node = Optional.empty();
 		} finally {
 			errors = getAllErrorsSorted(parser.getLexErrors(), parser.getSyntaxErrors());

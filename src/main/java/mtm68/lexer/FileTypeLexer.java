@@ -15,25 +15,22 @@ public class FileTypeLexer extends Lexer {
 	private FileType fileType;
 	private TokenFactory tokenFactory;
 	
-	public FileTypeLexer(String filename, Path sourcePath, FileType fileType) throws FileNotFoundException {
-		super(new FileReader(sourcePath.resolve(filename).toString()));
-		this.fileType = fileType;
-		firstToken = true;
-		tokenFactory = new TokenFactory();
+	public FileTypeLexer(String filename, Path sourcePath, FileType fileType, TokenFactory tokenFactory) throws FileNotFoundException {
+		this(new FileReader(sourcePath.resolve(filename).toString()), fileType, tokenFactory);
 	}
 
-	public FileTypeLexer(Reader in, FileType fileType) {
-		super(in);
+	public FileTypeLexer(Reader in, FileType fileType, TokenFactory tokenFactory) {
+		super(in, tokenFactory);
 		this.fileType = fileType;
+		this.tokenFactory = tokenFactory; 
 		firstToken = true;
-		tokenFactory = new TokenFactory();
 	}
 	
 	@Override
 	public Symbol next_token() throws IOException {
 		if(firstToken) {
 			firstToken = false;
-			return tokenFactory.newToken(fileType.getTokenType(), 0, 0);
+			return tokenFactory.newToken(fileType.getTokenType(), 1, 1);
 		}
 
 		return super.next_token();

@@ -22,7 +22,6 @@ import org.kohsuke.args4j.ParserProperties;
 
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
@@ -31,8 +30,10 @@ import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
 import mtm68.lexer.Token;
+import mtm68.lexer.TokenFactory;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
+import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
 
 public class Main {
@@ -48,6 +49,9 @@ public class Main {
 	
 	@Option(name = "--typecheck", usage = "saves result of typechecking AST generated from source file to <filename>.typed")
 	private boolean typecheck;
+
+	@Option(name = "--debug", usage = "turns on debug output", hidden = true)
+	private boolean debug;
 	
 	@Option(name = "-sourcepath", usage = "specify path to source files")
 	private Path sourcePath = Paths.get(System.getProperty("user.dir"));
@@ -86,6 +90,7 @@ public class Main {
 			printHelpScreen(cmdParser);
 		}
 		
+		Debug.DEBUG_ON = debug;
 
 		if (help || sourceFiles.isEmpty())
 			printHelpScreen(cmdParser);
@@ -106,8 +111,9 @@ public class Main {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
-			Lexer lexx = new FileTypeLexer(filename, sourcePath, FileType.parseFileType(filename));
-			Parser parser = new Parser(lexx, new ComplexSymbolFactory());
+			TokenFactory tokenFactory = new TokenFactory();
+			Lexer lexx = new FileTypeLexer(filename, sourcePath, FileType.parseFileType(filename), tokenFactory);
+			Parser parser = new Parser(lexx, tokenFactory);
 			
 			ParseResult parseResult = new ParseResult(parser);
 			ErrorUtils.printErrors(parseResult, filename);

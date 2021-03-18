@@ -1,7 +1,4 @@
-f() {
-	$$$$
-	if true { x:int = 3 }
-	while true true
-	x : bool
-	$
+f () {
+    x:int = y
+    z:int = x + y
 }

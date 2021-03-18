@@ -18,18 +18,23 @@ public class SourceFileLexer {
 
 	public SourceFileLexer(String filename, Path sourcePath) throws FileNotFoundException {
 		this.filename = filename;
-		this.lexer = new Lexer(new FileReader(sourcePath.resolve(filename).toString()));
+		this.lexer = createLexer(new FileReader(sourcePath.resolve(filename).toString()));
 	}
 	
 	public SourceFileLexer(String filename) throws FileNotFoundException {
 		this.filename = filename;
-		this.lexer = new Lexer(new FileReader(filename));
+		this.lexer = createLexer(new FileReader(filename));
 	}
 
 	public SourceFileLexer(String filename, Reader reader) {
 		this.filename = filename;
-		this.lexer = new Lexer(reader);
+		this.lexer = createLexer(reader);
 	}
+	
+	private Lexer createLexer(Reader reader) {
+		return new Lexer(reader, new TokenFactory());
+	}
+	
 
 	/**
 	 * Returns list of tokens lexed from the file on which the SourceFileLexer was instantiated on.
