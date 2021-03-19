@@ -1,6 +1,7 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -49,7 +50,10 @@ public class ArrayIndex extends Expr  {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
+	
+		//tc.typeCheck(arr, Types.ARRAY_TYPE);
+		tc.typeCheck(index, Types.INT);
+		
 		return null;
 	}
 }

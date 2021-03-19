@@ -1,6 +1,7 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -8,6 +9,7 @@ public class CharLiteral extends Literal<Character>{
 	
 	public CharLiteral(Character value) {
 		super(value);
+		setType(Types.INT);
 	}
 	
 	@Override
@@ -27,7 +29,6 @@ public class CharLiteral extends Literal<Character>{
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 }
