@@ -49,7 +49,7 @@ public class MultipleAssign extends Assign {
 	@Override
 	public Node visitChildren(Visitor v) {
 		if(decls == null) {
-			return null;
+			return this;
 		}
 			
 		List<Optional<SimpleDecl>> newDecls = decls;
