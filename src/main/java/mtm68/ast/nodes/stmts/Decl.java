@@ -1,6 +1,8 @@
 package mtm68.ast.nodes.stmts;
 
-public abstract class Decl extends Statement {
+import mtm68.ast.types.HasType;
+
+public abstract class Decl extends Statement implements HasType {
 	
 	protected String id;
 	

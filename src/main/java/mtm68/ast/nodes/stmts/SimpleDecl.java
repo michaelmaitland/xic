@@ -2,6 +2,7 @@ package mtm68.ast.nodes.stmts;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -15,6 +16,7 @@ public class SimpleDecl extends Decl {
 		this.type = type;
 	}
 	
+	@Override
 	public Type getType() {
 		return type;
 	}
@@ -31,7 +33,7 @@ public class SimpleDecl extends Decl {
 		p.printAtom (type.getPP());
 		p.endList();
 	}
-
+	
 	@Override
 	public Node visitChildren(Visitor v) {
 		return this;
@@ -39,8 +41,12 @@ public class SimpleDecl extends Decl {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		tc.checkDecl(this);
+
+		SimpleDecl decl = new SimpleDecl(id, type);
+		decl.result = Result.UNIT;
+
+		return decl;
 	}
 	
 	

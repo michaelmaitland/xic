@@ -62,10 +62,10 @@ public class Block extends Statement {
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<Statement> newStmts = acceptList(stmts, v);
-		Return newReturnStmt = returnStmt.isPresent() ? returnStmt.get().accept(v) : null;
+		Optional<Return> newReturnStmt = acceptOptional(returnStmt, v);
 		
 		if(newStmts != stmts 
-				|| (returnStmt.isPresent() && returnStmt.get() != newReturnStmt)) {
+				|| newReturnStmt != returnStmt) {
 			return new Block(newStmts, newReturnStmt);
 		} else {
 			return this;

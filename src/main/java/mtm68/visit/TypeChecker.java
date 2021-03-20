@@ -7,6 +7,8 @@ import java.util.Map;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.Decl;
+import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.HasResult;
@@ -76,6 +78,15 @@ public class TypeChecker extends Visitor {
 		}
 	}
 	
+	public void checkDecl(Decl decl) {
+		if(context.isDefined(decl.getId())) { 
+			reportError(decl, "Identifier \"" + decl.getId() + "\" is already bound in scope");
+			return;
+		}
+		
+		context.addIdBinding(decl.getId(), decl.getType());
+	}
+	
 	public List<SemanticError> getTypeErrors() {
 		return typeErrors;
 	}
@@ -94,6 +105,7 @@ public class TypeChecker extends Visitor {
 	}
 	
 	private boolean isScopeNode(Node node) {
-		return node instanceof Block;
+		return node instanceof Block
+				|| node instanceof If;
 	}
 }

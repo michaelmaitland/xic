@@ -3,6 +3,7 @@ package mtm68.ast.nodes.stmts;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.DeclType;
+import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -17,6 +18,11 @@ public class ExtendedDecl extends Decl {
 
 	public DeclType getExtendedType() {
 		return type;
+	}
+	
+	@Override
+	public Type getType() {
+		return getExtendedType().getType();
 	}
 
 	@Override

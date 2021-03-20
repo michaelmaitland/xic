@@ -16,6 +16,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
+import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.ast.types.TypingContext;
@@ -56,6 +57,42 @@ public class TypeCheckerTests {
 		ifStmt = doTypeCheck(gamma, ifStmt);
 		
 		assertEquals(Result.UNIT, ifStmt.getResult());
+	}
+
+	@Test
+	void ifRestoresScope() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("z", BOOL);
+
+		If ifStmt = new If(arbitraryCondition(), new SimpleDecl("x", INT));
+		ifStmt = doTypeCheck(context, ifStmt);
+		
+		assertEquals(Result.UNIT, ifStmt.getResult());
+		assertFalse(context.isDefined("x"));
+		assertTrue(context.isDefined("z"));
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// Decl
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void declAddsToContext() {
+		TypingContext context = new TypingContext();
+		SimpleDecl decl = new SimpleDecl("x", INT);
+		decl = doTypeCheck(context, decl);
+		
+		assertEquals(Result.UNIT, decl.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void declAlreadyInScopeError() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", BOOL);
+
+		SimpleDecl decl = new SimpleDecl("x", INT);
+		assertTypeCheckError(context, decl);
 	}
 
 	//-------------------------------------------------------------------------------- 
