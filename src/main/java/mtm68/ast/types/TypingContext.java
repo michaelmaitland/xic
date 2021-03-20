@@ -149,7 +149,8 @@ public class TypingContext {
 	 * zero args or zero return types. Places return types in rho binding as 
 	 * discussed in lecture.
 	 * 
-	 * @param args the simple declarations to be added to the context
+	 * @param args         the simple declarations to be added to the context
+	 * @param returnTypes  return types to be bound to rho
 	 */
 	public void addFuncBindings(List<SimpleDecl> args, List<Type> returnTypes) {
 		for (SimpleDecl decl : args)
