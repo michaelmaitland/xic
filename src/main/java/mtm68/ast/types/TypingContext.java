@@ -145,8 +145,9 @@ public class TypingContext {
 
 	/**
 	 * Adds the passed list of simple decls to the current context. A new scope
-	 * should be entered prior to calling this method. For a procedure, empty
-	 * lists should be passed.
+	 * should be entered prior to calling this method. Expects empty lists for 
+	 * zero args or zero return types. Places return types in rho binding as 
+	 * discussed in lecture.
 	 * 
 	 * @param args the simple declarations to be added to the context
 	 */
@@ -171,6 +172,7 @@ public class TypingContext {
 
 	/**
 	 * Returns list of function return types assuming scope is function body.
+	 * Corresponds to rho lookup as in lecture
 	 * 
 	 * @return list of return types
 	 */
