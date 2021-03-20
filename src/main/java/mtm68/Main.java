@@ -1,6 +1,7 @@
 package mtm68;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.kohsuke.args4j.Argument;
@@ -26,6 +28,8 @@ import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.types.ContextType;
+import mtm68.exception.SemanticError;
+import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
@@ -49,7 +53,7 @@ public class Main {
 	private boolean parse;
 	
 	@Option(name = "--typecheck", usage = "saves result of typechecking AST generated from source file to <filename>.typed")
-	private boolean typecheck;
+	private boolean typeCheck;
 
 	@Option(name = "--debug", usage = "turns on debug output", hidden = true)
 	private boolean debug;
@@ -112,6 +116,10 @@ public class Main {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
+			if(!Files.isDirectory(sourcePath.resolve(filename))) {
+				System.out.println("Skipping " + filename + " as it cannot be found.");
+				continue;				
+			}
 			TokenFactory tokenFactory = new TokenFactory();
 			Lexer lexx = new FileTypeLexer(filename, sourcePath, FileType.parseFileType(filename), tokenFactory);
 			Parser parser = new Parser(lexx, tokenFactory);
@@ -129,19 +137,24 @@ public class Main {
 			
 			if(parseResult.isValidAST()) {
 				Node root = parseResult.getNode().get();
-				
 				if(root instanceof Program) {
-					//TODO Handle potential symTable semantic exceptions and file no found
-					Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
-					TypeChecker typeChecker = new TypeChecker(mergedSymbolTable);
-					root.accept(typeChecker);
-					//if(typeCheck) writeToFile(filename. typeResult);
+					try {
+						Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
+						TypeChecker typeChecker = new TypeChecker(mergedSymbolTable);
+						root.accept(typeChecker);
+						if(typeCheck) {
+							writeToFile(filename, 
+								typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
+						}
+					}
+					catch(SemanticException e) {
+						SemanticError error = new SemanticError(e.getErrorNode(), e.getMessage());
+						if(typeCheck) writeToFile(filename, Optional.of(error));
+						continue;
+					}
 				}
 				if(root instanceof Interface) {
 					symTableManager.generateSymbolTableFromAST(filename.substring(0, filename.length()-4), (Interface) root); 
-					TypeChecker typeChecker = new TypeChecker();
-					root.accept(typeChecker);			
-					//if(typeCheck) writeToFile(filename. typeResult);
 				}
 			}
 		}
@@ -195,6 +208,28 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Failed writing parser results to " + dPath.resolve(outfile) + " for " + filename);
+		}
+	}
+	
+	/**
+	 * Writes typecheck results to [filename.typed] 
+	 * Requires: filename is of the form filename.xi or filename.ixi
+	 * 
+	 * @param filename the name of the file parsed
+	 * @param error    the semantic error to be written
+	 */
+	public void writeToFile(String filename, Optional<SemanticError> error) {
+		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".typed");
+		Path outpath = dPath.resolve(outfile);
+		String msg = error.isPresent() ? error.get().getFileErrorMessage() : "Valid Xi Program";
+		BufferedWriter writer;
+		try {
+			writer = new BufferedWriter(new FileWriter(outpath.toString()));
+		    writer.write(msg);
+		    writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Failed writing type check results to " + dPath.resolve(outfile) + " for " + filename);
 		}
 	}
 
