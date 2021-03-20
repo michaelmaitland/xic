@@ -8,7 +8,7 @@ import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public abstract class Node {
+public abstract class Node implements HasLocation {
 	
 	private Location startLoc;
 	
@@ -75,4 +75,16 @@ public abstract class Node {
 	public void setStartLoc(Location startLoc) {
 		this.startLoc = startLoc;
 	}
+	
+	@Override
+	public int getLine() {
+		return startLoc.getLine();
+	}
+	
+	@Override
+	public int getColumn() {
+		return startLoc.getColumn();
+	}
+	
+	
 }

@@ -190,5 +190,4 @@ public class TypingContext {
 	public boolean isReturnTypeUnitInScope() {
 		return contextStack.peek().get(RHO).getReturnTypes().isEmpty();
 	}
-
 }

@@ -1,5 +1,7 @@
 package mtm68.ast.types;
 
-public interface HasType {
+import mtm68.ast.nodes.HasLocation;
+
+public interface HasType extends HasLocation{
 	Type getType();
 }
