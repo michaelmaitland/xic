@@ -180,5 +180,15 @@ public class TypingContext {
 	public List<Type> getReturnTypeInScope() {
 		return contextStack.peek().get(RHO).getReturnTypes();
 	}
+	
+	/**
+	 * Returns whether or not return type is unit assuming scope is function body.
+	 * Corresponds to rho lookup as in lecture
+	 * 
+	 * @return true if unit, false otherwise
+	 */
+	public boolean isReturnTypeUnitInScope() {
+		return contextStack.peek().get(RHO).getReturnTypes().isEmpty();
+	}
 
 }
