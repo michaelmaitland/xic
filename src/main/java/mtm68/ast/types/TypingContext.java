@@ -178,7 +178,7 @@ public class TypingContext {
 	 * @return list of return types
 	 */
 	public List<Type> getReturnTypeInScope() {
-		return contextStack.peek().get(RHO).getReturnTypes();
+		return getReturnTypes(RHO);
 	}
 	
 	/**

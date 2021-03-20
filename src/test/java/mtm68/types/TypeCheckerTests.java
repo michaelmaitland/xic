@@ -49,6 +49,15 @@ public class TypeCheckerTests {
 		assertEquals(Result.UNIT, ifStmt.getResult());
 	}
 
+	@Test
+	void ifNoElseIsUnitDespiteVoidInner() {
+		TypingContext gamma = setupRho(empty());
+		If ifStmt = new If(arbitraryCondition(), new Block(empty(), new Return(empty())));
+		ifStmt = doTypeCheck(gamma, ifStmt);
+		
+		assertEquals(Result.UNIT, ifStmt.getResult());
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// Return
 	//-------------------------------------------------------------------------------- 
