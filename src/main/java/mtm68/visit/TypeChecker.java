@@ -7,6 +7,7 @@ import java.util.Map;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.HasResult;
 import mtm68.ast.types.HasType;
@@ -22,7 +23,11 @@ public class TypeChecker extends Visitor {
 	private List<SemanticError> typeErrors;
 
 	public TypeChecker(Map<String, ContextType> initSymTable) {
-		this.context = new TypingContext(initSymTable);
+		this(new TypingContext(initSymTable));
+	}
+
+	public TypeChecker(TypingContext context) {
+		this.context = context;
 		typeErrors = new ArrayList<>();
 	}
 	
@@ -55,6 +60,19 @@ public class TypeChecker extends Visitor {
 	public void checkResultIsUnit(HasResult result) {
 		if(result.getResult() != Result.UNIT) {
 			reportError(result, "Statement cannot return here");
+		}
+	}
+	
+	public <T extends HasType> void checkReturn(Return ret, List<T> retTypes) {
+		List<Type> expected = context.getReturnTypeInScope();
+		
+		if(expected.size() != retTypes.size()) {
+			reportError(ret, "Mismatch on number of expressions to return from return statement");
+			return;
+		}
+		
+		for(int i = 0; i < retTypes.size(); i++) {
+			typeCheck(retTypes.get(i), expected.get(i));
 		}
 	}
 	

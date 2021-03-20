@@ -5,6 +5,8 @@ import java.util.Optional;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.Result;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -15,15 +17,17 @@ public class If extends Statement {
 	private Optional<Statement> elseBranch;
 
 	public If(Expr condition, Statement ifBranch) {
-		this.condition = condition;
-		this.ifBranch = ifBranch;
-		this.elseBranch = Optional.empty();
+		this(condition, ifBranch, Optional.empty());
 	}
 
 	public If(Expr condition, Statement ifBranch, Statement elseBranch) {
+		this(condition, ifBranch, Optional.of(elseBranch));
+	}
+	
+	public If(Expr condition, Statement ifBranch, Optional<Statement> elseBranch) {
 		this.condition = condition;
 		this.ifBranch = ifBranch;
-		this.elseBranch = Optional.of(elseBranch);
+		this.elseBranch = elseBranch;
 	}
 
 	@Override
@@ -62,20 +66,24 @@ public class If extends Statement {
 	public Node visitChildren(Visitor v) {
 		Expr newCondition = condition.accept(v);
 		Statement newIfBranch = ifBranch.accept(v);
-		Statement newElseBranch = elseBranch.isPresent() ? elseBranch.get().accept(v) : null;
+		Optional<Statement> newElseBranch = acceptOptional(elseBranch, v);
 		
 		if(newCondition != condition
 				|| newIfBranch != ifBranch
-				|| (elseBranch.isPresent() && elseBranch.get() != newElseBranch)) {
+				|| newElseBranch != elseBranch) {
 			return new If(newCondition, newIfBranch, newElseBranch);
-		} else {
-			return this;
-		}
+		} 
+
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		tc.typeCheck(condition, Types.BOOL);
+
+		If stmt = new If(condition, ifBranch, elseBranch);
+		stmt.result = Result.UNIT;
+
+		return stmt;
 	}
 }

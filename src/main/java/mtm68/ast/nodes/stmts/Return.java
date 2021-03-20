@@ -1,10 +1,14 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.HasType;
+import mtm68.ast.types.Result;
+import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -39,14 +43,18 @@ public class Return extends Statement {
 		
 		if(newRetList != retList) {
 			return new Return(retList);
-		} else {
-			return this;
-		}
+		} 
+
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		tc.checkReturn(this, retList);
+
+		Return ret = new Return(retList);
+		ret.result = Result.VOID;
+
+		return ret;
 	}
 }

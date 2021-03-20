@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
@@ -56,6 +57,17 @@ public abstract class Node implements HasLocation {
 		}
 
 		return result;
+	}
+	
+	public <N extends Node> Optional<N> acceptOptional(Optional<N> opt, Visitor v) {
+		if(!opt.isPresent()) return opt; 
+		
+		N node = opt.get();
+		N newNode = node.accept(v);
+		
+		if(node == newNode) return opt;
+		
+		return Optional.of(newNode);
 	}
 
 	/**
