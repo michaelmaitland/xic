@@ -1,12 +1,23 @@
 package mtm68.visit;
 
+import java.util.Map;
+
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.ContextType;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Type;
+import mtm68.ast.types.TypingContext;
 
 public class TypeChecker extends Visitor {
+	TypingContext context;
 
-	// State (ie symbold table)
+	public TypeChecker(Map<String, ContextType> initSymTable) {
+		this.context = new TypingContext(initSymTable);
+	}
+	
+	public TypeChecker() {
+		this.context = new TypingContext();
+	}
 
 	@Override
 	public Visitor enter(Node n) {

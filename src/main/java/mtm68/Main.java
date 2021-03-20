@@ -22,10 +22,10 @@ import org.kohsuke.args4j.ParserProperties;
 
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
+import mtm68.ast.types.ContextType;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.SourceFileLexer;
@@ -35,6 +35,7 @@ import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
+import mtm68.visit.TypeChecker;
 
 public class Main {
 
@@ -130,18 +131,19 @@ public class Main {
 				Node root = parseResult.getNode().get();
 				
 				if(root instanceof Program) {
-					Map<String, FunctionDecl> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
-					//TypeResult typeResult = typecheck(root, mergedSymbolTable)
+					//TODO Handle potential symTable semantic exceptions and file no found
+					Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
+					TypeChecker typeChecker = new TypeChecker(mergedSymbolTable);
+					root.accept(typeChecker);
 					//if(typeCheck) writeToFile(filename. typeResult);
 				}
 				if(root instanceof Interface) {
 					symTableManager.generateSymbolTableFromAST(filename.substring(0, filename.length()-4), (Interface) root); 
-					//TypeResult typeResult = typecheck(root, epsilon)
+					TypeChecker typeChecker = new TypeChecker();
+					root.accept(typeChecker);			
 					//if(typeCheck) writeToFile(filename. typeResult);
 				}
 			}
-			
-			
 		}
 	}
 	

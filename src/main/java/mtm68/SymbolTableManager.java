@@ -7,18 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import java_cup.runtime.ComplexSymbolFactory;
+import mtm68.ast.types.ContextType;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Use;
-import mtm68.exception.BaseError;
+import mtm68.exception.SemanticException;
 import mtm68.lexer.Lexer;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.ErrorUtils;
 
 public class SymbolTableManager {
-	private Map<String, Map<String, FunctionDecl>> useIdToSymTable;
+	private Map<String, Map<String, ContextType>> useIdToSymTable;
 	private Path libPath;
 	
 	public SymbolTableManager(Path libPath) {
@@ -26,21 +27,17 @@ public class SymbolTableManager {
 		this.libPath = libPath;
 	}
 	
-	public Map<String, FunctionDecl> mergeSymbolTables(Program prog){
-		Map<String, FunctionDecl> mergedTable = new HashMap<>();
+	public Map<String, ContextType> mergeSymbolTables(Program prog) throws SemanticException, FileNotFoundException{
+		Map<String, ContextType> mergedTable = new HashMap<>();
 		for(Use use : prog.getUseStmts()) {
 			if(!useIdToSymTable.containsKey(use.getId())) {
-				try {
 					generateSymbolTableFromLib(use);
-				} catch (FileNotFoundException e) {
-					System.err.println("Not able to find " + use.getId() +".ixi in library location " + libPath.toString());
-				}
 			}
-			Map<String, FunctionDecl> curMap = useIdToSymTable.get(use.getId());
+			Map<String, ContextType> curMap = useIdToSymTable.get(use.getId());
 			for(String f : curMap.keySet()) {
 				if(mergedTable.containsKey(f)) {
 					if(!mergedTable.get(f).equals(curMap.get(f))) 
-						System.err.println("Multiple interface mismatched function declaration for " + curMap.get(f));
+						throw new SemanticException("Multiple interface mismatched function declaration for " + curMap.get(f));
 				}
 			}
 			mergedTable.putAll(useIdToSymTable.get(use.getId()));
@@ -63,10 +60,10 @@ public class SymbolTableManager {
 	}
 	
 	public void generateSymbolTableFromAST(String useId, Interface root) {
-		Map<String, FunctionDecl> symTable = new HashMap<>();
+		Map<String, ContextType> symTable = new HashMap<>();
 		
 		for(FunctionDecl decl : root.getFunctionDecls())
-			symTable.put(decl.getId(), decl);
+			symTable.put(decl.getId(), new ContextType(decl.getArgs(), decl.getReturnTypes()));
 		
 		useIdToSymTable.put(useId, symTable);
 	}
