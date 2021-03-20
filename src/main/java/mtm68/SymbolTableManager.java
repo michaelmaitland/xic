@@ -28,17 +28,22 @@ public class SymbolTableManager {
 		this.libPath = libPath;
 	}
 	
-	public Map<String, ContextType> mergeSymbolTables(Program prog) throws SemanticException, FileNotFoundException{
+	public Map<String, ContextType> mergeSymbolTables(Program prog) throws SemanticException{
 		Map<String, ContextType> mergedTable = new HashMap<>();
 		for(Use use : prog.getUseStmts()) {
 			if(!useIdToSymTable.containsKey(use.getId())) {
+				try {
 					generateSymbolTableFromLib(use);
+				}
+				catch(FileNotFoundException e) {
+					throw new SemanticException(use, use.getId() + ".ixi not found in library " + libPath);
+				}
 			}
 			Map<String, ContextType> curMap = useIdToSymTable.get(use.getId());
 			for(String f : curMap.keySet()) {
 				if(mergedTable.containsKey(f)) {
 					if(!mergedTable.get(f).equals(curMap.get(f))) 
-						throw new SemanticException("Multiple interface mismatched function declaration for " + curMap.get(f));
+						throw new SemanticException(use, "Multiple interface mismatched function declaration for " + curMap.get(f));
 				}
 			}
 			mergedTable.putAll(useIdToSymTable.get(use.getId()));
@@ -46,8 +51,9 @@ public class SymbolTableManager {
 		return mergedTable;
 	}
 
-	private void generateSymbolTableFromLib(Use use) throws FileNotFoundException {
+	private void generateSymbolTableFromLib(Use use) throws FileNotFoundException, SemanticException {
 		String filename = use.getId() + ".ixi";
+		
 		Lexer lexer = new Lexer(new FileReader(libPath.resolve(filename).toString()));
 		Parser parser = new Parser(lexer, new ComplexSymbolFactory());
 		
@@ -56,9 +62,10 @@ public class SymbolTableManager {
 		
 		if(parseResult.isValidAST()) {
 			Interface root = (Interface)parseResult.getNode().get();
-			TypeChecker typeChecker = new TypeChecker();
-			root.accept(typeChecker);
 			generateSymbolTableFromAST(use.getId(), root);
+		}
+		else {
+			throw new SemanticException(use, "Parse error in library interface file");
 		}
 	}
 	
