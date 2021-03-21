@@ -30,8 +30,7 @@ public class StringLiteral extends Literal<String>{
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 	
 
