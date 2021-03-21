@@ -127,6 +127,11 @@ public class TypeChecker extends Visitor {
 		checkFunctionArgs(fexp, id, fexp.getArgs());
 		return checkAndGetFunctionReturn(fexp, id, false);
 	}
+
+	public void checkBinExpr(Expr left, Expr right) {
+		typeCheck(left, Types.INT);
+		typeCheck(right, Types.INT);
+	}
 	
 	private void checkFunctionDecl(Node base, String id) {
 		if(!context.isFunctionDecl(id)) {
@@ -174,4 +179,6 @@ public class TypeChecker extends Visitor {
 				|| node instanceof If
 				|| node instanceof While;
 	}
+
+	
 }

@@ -3,6 +3,7 @@ package mtm68.ast.nodes.binary;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -18,6 +19,22 @@ public class BinExpr extends Expr {
 		this.right = right;
 	}
 	
+	public Expr getLeft() {
+		return left;
+	}
+
+	public void setLeft(Expr left) {
+		this.left = left;
+	}
+
+	public Expr getRight() {
+		return right;
+	}
+
+	public void setRight(Expr right) {
+		this.right = right;
+	}
+
 	@Override
 	public String toString() {
 		return "(" + left + " " + op + " " + right + ")";
@@ -46,7 +63,10 @@ public class BinExpr extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		tc.checkBinExpr(left, right);
+		
+		BinExpr copy = this.copy();
+		copy.setType(Types.INT);
+		return copy;
 	}
 }
