@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
+import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.While;
@@ -16,6 +18,7 @@ import mtm68.ast.types.HasResult;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
@@ -97,6 +100,34 @@ public class TypeChecker extends Visitor {
 		}
 		
 		context.addIdBinding(decl.getId(), decl.getType());
+	}
+	
+	public void checkProcCall(FunctionCall stmt) {
+		FExpr fexp = stmt.getFexp();
+
+		if(!context.isFunctionDecl(fexp.getId())) {
+			reportError(stmt, "Identifier \"" + fexp.getId() + "\" is not a valid function");
+			return;
+		}
+	}
+
+	public Type checkFunctionCall(FExpr fexp) {
+		if(!context.isFunctionDecl(fexp.getId())) {
+			reportError(fexp, "Identifier \"" + fexp.getId() + "\" is not a valid function");
+			return null;
+		}
+		
+		List<Type> argTys = context.getArgTypes(fexp.getId());
+		checkTypes(fexp, fexp.getArgs(), argTys);
+		
+		Type retTy = Types.TVEC(context.getReturnTypes(fexp.getId()));
+		
+		if(retTy.equals(Types.UNIT)) {
+			reportError(fexp, "Function can't return unit");
+			return null;
+		}
+				
+		return retTy;
 	}
 	
 	public List<SemanticError> getTypeErrors() {

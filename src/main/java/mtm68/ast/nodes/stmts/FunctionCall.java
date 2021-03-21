@@ -3,6 +3,7 @@ package mtm68.ast.nodes.stmts;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.Result;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -41,8 +42,12 @@ public class FunctionCall extends Statement {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		tc.checkProcCall(this);
+
+		FunctionCall stmt = new FunctionCall(fexp);
+		stmt.result = Result.UNIT;
+
+		return stmt;
 	}
 	
 }

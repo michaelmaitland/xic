@@ -11,10 +11,12 @@ import org.junit.jupiter.api.Test;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
+import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
@@ -22,6 +24,7 @@ import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.DeclType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
 import mtm68.util.ArrayUtils;
 import mtm68.visit.TypeChecker;
@@ -147,6 +150,30 @@ public class TypeCheckerTests {
 	}
 
 	//-------------------------------------------------------------------------------- 
+	// Procedure Call
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void procedureCallValid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), empty());
+
+		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		stmt = doTypeCheck(stmt);
+		
+		assertEquals(Result.UNIT, stmt.getResult());
+	}
+
+	@Test
+	void procedureCallUnboundFunction() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), empty());
+
+		FunctionCall stmt = new FunctionCall(new FExpr("g", empty()));
+		assertTypeCheckError(context, stmt);
+	}
+
+	//-------------------------------------------------------------------------------- 
 	// Decl
 	//-------------------------------------------------------------------------------- 
 
@@ -259,6 +286,41 @@ public class TypeCheckerTests {
 
 		Return ret = new Return(elems(arbitraryCondition(), intLit(0L)));
 		assertTypeCheckError(gamma, ret);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// FExp
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void fexpValid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), singleton(INT));
+
+		FExpr exp = new FExpr("f", empty());
+		exp = doTypeCheck(context, exp);
+
+		assertEquals(Types.INT, exp.getType());
+	}
+
+	@Test
+	void fexpMultipleReturnArgs() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, BOOL));
+
+		FExpr exp = new FExpr("f", empty());
+		exp = doTypeCheck(context, exp);
+
+		assertEquals(TVEC(INT, BOOL), exp.getType());
+	}
+
+	@Test
+	void fexpNoReturnInvalid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), empty());
+
+		FExpr exp = new FExpr("f", empty());
+		assertTypeCheckError(context, exp);
 	}
 
 	private <N extends Node> N doTypeCheck(TypingContext context, N node) {
