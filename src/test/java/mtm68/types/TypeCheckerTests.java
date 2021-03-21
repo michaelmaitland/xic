@@ -14,12 +14,14 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.DeclType;
 import mtm68.ast.types.Result;
@@ -283,6 +285,22 @@ public class TypeCheckerTests {
 				1));
 
 		assertTypeCheckError(context, decl);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// Assign
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void singleAssignValid() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		
+		SingleAssign assign = new SingleAssign(new Var("x"), intLit(0L));
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
 	}
 
 	//-------------------------------------------------------------------------------- 
