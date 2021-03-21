@@ -1,6 +1,9 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
@@ -31,13 +34,16 @@ public class FunctionCall extends Statement {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		FExpr newFexp = fexp.accept(v);
-	
-		if(newFexp != fexp) {
-			return new FunctionCall(fexp);
-		} else {
-			return this;
+		// We traverse like this because we don't actually want the FExp
+		// to get its own traversal. This is important for type-checking
+		// because procedure calls have different typing rules than FExp's
+		List<Expr> newArgs = acceptList(fexp.getArgs(), v);
+		
+		if(newArgs != fexp.getArgs()) {
+			return new FunctionCall(new FExpr(fexp.getId(), newArgs));
 		}
+
+		return this;
 	}
 
 	@Override

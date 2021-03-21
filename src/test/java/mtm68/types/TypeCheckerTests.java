@@ -159,7 +159,7 @@ public class TypeCheckerTests {
 		context.addFuncDecl("f", empty(), empty());
 
 		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
-		stmt = doTypeCheck(stmt);
+		stmt = doTypeCheck(context, stmt);
 		
 		assertEquals(Result.UNIT, stmt.getResult());
 	}
@@ -364,7 +364,7 @@ public class TypeCheckerTests {
 	private <N extends Node> N doTypeCheck(TypingContext context, N node) {
 		TypeChecker tc = new TypeChecker(context);
 		addLocs(node);
-		node = node.accept(tc);
+		node = tc.performTypeCheck(node);
 		
 		if(tc.hasError()) {
 			assertTrue(false, "Expected no errors but got " + tc.getFirstError().getFileErrorMessage());
@@ -375,7 +375,7 @@ public class TypeCheckerTests {
 	private <N extends Node> N doTypeCheck(N node) {
 		TypeChecker tc = new TypeChecker();
 		addLocs(node);
-		node = node.accept(tc);
+		node = tc.performTypeCheck(node);
 		assertFalse(tc.hasError(), "Expected no errors but got some");
 		return node;
 	}
@@ -383,7 +383,7 @@ public class TypeCheckerTests {
 	private <N extends Node> void assertTypeCheckError(TypingContext context, N node) {
 		TypeChecker tc = new TypeChecker(context);
 		addLocs(node);
-		node.accept(tc);
+		tc.performTypeCheck(node);
 		assertTrue(tc.hasError(), "Expected type check error but got none");
 	}
 

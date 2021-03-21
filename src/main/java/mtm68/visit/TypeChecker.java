@@ -22,6 +22,7 @@ import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
 import mtm68.exception.BaseError;
+import mtm68.exception.FatalTypeException;
 import mtm68.exception.SemanticError;
 
 public class TypeChecker extends Visitor {
@@ -41,6 +42,14 @@ public class TypeChecker extends Visitor {
 	public TypeChecker() {
 		this.context = new TypingContext();
 		typeErrors = new ArrayList<>();
+	}
+	
+	public <N extends Node> N performTypeCheck(N root) {
+		try {
+			return root.accept(this);
+		} catch(FatalTypeException e) {
+		}
+		return root;
 	}
 
 	@Override
@@ -106,7 +115,10 @@ public class TypeChecker extends Visitor {
 	public void checkProcCall(FunctionCall stmt) {
 		FExpr fexp = stmt.getFexp();
 		
-		typeCheck(fexp, Types.UNIT);
+		String id = fexp.getId();
+		checkFunctionDecl(stmt, id);
+		checkFunctionArgs(stmt, id, fexp.getArgs());
+		checkAndGetFunctionReturn(stmt, id, true);
 	}
 
 	public Type checkFunctionCall(FExpr fexp) {
@@ -119,7 +131,7 @@ public class TypeChecker extends Visitor {
 	private void checkFunctionDecl(Node base, String id) {
 		if(!context.isFunctionDecl(id)) {
 			reportError(base, "Identifier \"" + id + "\" is not a valid function");
-			return;
+			throw new FatalTypeException();
 		}
 	}
 
@@ -133,10 +145,8 @@ public class TypeChecker extends Visitor {
 		
 		if(!isProc && retTy.equals(Types.UNIT)) {
 			reportError(base, "Function can't return unit");
-			return null;
 		} else if(isProc && !retTy.equals(Types.UNIT)) {
 			reportError(base, "Procedure cannot have return type");
-			return null;
 		}
 		
 		return retTy;
