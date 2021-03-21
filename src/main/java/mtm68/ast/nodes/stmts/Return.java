@@ -1,14 +1,11 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
-import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
-import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 

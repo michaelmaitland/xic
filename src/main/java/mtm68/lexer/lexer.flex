@@ -1,9 +1,5 @@
 package mtm68.lexer;
 import mtm68.util.StringUtils;
-import mtm68.parser.sym;
-import java_cup.runtime.ComplexSymbolFactory;
-import java_cup.runtime.Symbol;
-import java_cup.runtime.SymbolFactory;
 import java.io.Reader;
 
 %%

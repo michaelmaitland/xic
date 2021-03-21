@@ -17,6 +17,7 @@ public class ArrayUtils {
 	/** 
 	 *  Returns list composed of all arguments
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> List<T> elems(T... elems) {
 		List<T> ret = new ArrayList<T>(); 
 		for(T elem : elems) {

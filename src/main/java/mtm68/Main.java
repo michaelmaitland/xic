@@ -1,7 +1,6 @@
 package mtm68;
 
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -116,7 +115,7 @@ public class Main {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
 			}
-			if(!Files.isDirectory(sourcePath.resolve(filename))) {
+			if(!Files.exists(sourcePath.resolve(filename))) {
 				System.out.println("Skipping " + filename + " as it cannot be found.");
 				continue;				
 			}

@@ -17,7 +17,6 @@ import mtm68.lexer.Lexer;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.ErrorUtils;
-import mtm68.visit.TypeChecker;
 
 public class SymbolTableManager {
 	private Map<String, Map<String, ContextType>> useIdToSymTable;
