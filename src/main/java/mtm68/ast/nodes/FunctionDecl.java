@@ -71,7 +71,7 @@ public class FunctionDecl extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		return this;
 	}
 	
 	@Override

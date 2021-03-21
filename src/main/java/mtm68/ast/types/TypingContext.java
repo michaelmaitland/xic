@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.exception.FatalTypeException;
 
 public class TypingContext {
 	private final String RHO = "!!!";
@@ -154,9 +155,12 @@ public class TypingContext {
 	 * @param returnTypes  return types to be bound to rho
 	 */
 	public void addFuncBindings(List<SimpleDecl> args, List<Type> returnTypes) {
-		for (SimpleDecl decl : args)
-			contextStack.peek().put(decl.getId(),
-					new ContextType(decl.getType()));
+		for (SimpleDecl decl : args) {
+			if(contextStack.peek().containsKey(decl.getId())) {
+				throw new FatalTypeException();
+			}
+			contextStack.peek().put(decl.getId(), new ContextType(decl.getType()));
+		}
 		contextStack.peek().put(RHO, new ContextType(returnTypes));
 	}
 
@@ -170,6 +174,10 @@ public class TypingContext {
 	public void addFuncDecl(String id, List<SimpleDecl> args, List<Type> returnTypes) {
 		ContextType type = new ContextType(args, returnTypes);
 		contextStack.peek().put(id, type);
+	}
+	
+	public void addReturnTypeInScope(List<Type> returnTypes) {
+		contextStack.peek().put(RHO, new ContextType(returnTypes));
 	}
 
 	/**

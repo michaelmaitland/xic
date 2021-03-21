@@ -6,6 +6,7 @@ import java.util.Map;
 
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.stmts.Block;
@@ -13,6 +14,7 @@ import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
+import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.HasResult;
@@ -55,6 +57,7 @@ public class TypeChecker extends Visitor {
 	@Override
 	public Visitor enter(Node n) {
 		if(isScopeNode(n)) context.enterScope();
+		if(n instanceof FunctionDefn) checkFuncBindings((FunctionDefn) n);
 
 		return this;
 	}
@@ -106,10 +109,17 @@ public class TypeChecker extends Visitor {
 	public void checkDecl(Decl decl) {
 		if(context.isDefined(decl.getId())) { 
 			reportError(decl, "Identifier \"" + decl.getId() + "\" is already bound in scope");
-			return;
+			throw new FatalTypeException();
 		}
-		
 		context.addIdBinding(decl.getId(), decl.getType());
+	}
+	
+	public void checkFuncBindings(FunctionDefn fDefn) {
+		List<SimpleDecl> decls = fDefn.getFunctionDecl().getArgs();
+		for(Decl decl : decls) {
+			checkDecl(decl);
+		}
+		context.addReturnTypeInScope(fDefn.getFunctionDecl().getReturnTypes());
 	}
 	
 	public void checkProcCall(FunctionCall stmt) {
@@ -152,6 +162,15 @@ public class TypeChecker extends Visitor {
 		return retTy;
 	}
 	
+	public void checkFunctionResult(FunctionDefn fDefn) {
+		Type retTy = Types.TVEC(fDefn.getFunctionDecl().getReturnTypes());
+		boolean isProc = retTy.equals(Types.UNIT);
+		
+		if(!isProc && fDefn.getBody().getResult().equals(Result.VOID)){
+			reportError(fDefn, "Function body must have void result.");
+		}
+	}
+	
 	public List<SemanticError> getTypeErrors() {
 		return typeErrors;
 	}
@@ -172,6 +191,9 @@ public class TypeChecker extends Visitor {
 	private boolean isScopeNode(Node node) {
 		return node instanceof Block
 				|| node instanceof If
-				|| node instanceof While;
+				|| node instanceof While
+				|| node instanceof FunctionDefn;
 	}
+
+
 }

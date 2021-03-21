@@ -53,7 +53,8 @@ public class FunctionDefn extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		tc.checkFunctionResult(this);
+		return this;
 	}
 
 }
