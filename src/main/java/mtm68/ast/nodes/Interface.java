@@ -41,16 +41,19 @@ public class Interface extends Node implements Root {
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<FunctionDecl> newFunctionDecls = acceptList(functionDecls, v);
+
 		if(newFunctionDecls != functionDecls) {
-			return new Interface(newFunctionDecls);
-		} else {
-			return this;
-		}
+			Interface i = copy();
+			i.functionDecls = newFunctionDecls;
+
+			return i;
+		} 
+
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

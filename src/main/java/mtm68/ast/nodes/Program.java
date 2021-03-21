@@ -51,16 +51,19 @@ public class Program extends Node implements Root {
 	public Node visitChildren(Visitor v) {
 		List<Use> newUseStmts = acceptList(useStmts, v);
 		List<FunctionDefn> newFunctionDefns = acceptList(functionDefns, v);
+
 		if(newUseStmts != useStmts || newFunctionDefns != functionDefns) {
-			return new Program(useStmts, functionDefns);
-		} else {
-			return this;
-		}	
+			Program prog = copy();
+			prog.useStmts = newUseStmts;
+			prog.functionDefns = newFunctionDefns;
+
+			return prog;
+		} 
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

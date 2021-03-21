@@ -71,7 +71,12 @@ public class If extends Statement {
 		if(newCondition != condition
 				|| newIfBranch != ifBranch
 				|| newElseBranch != elseBranch) {
-			return new If(newCondition, newIfBranch, newElseBranch);
+			If stmt = copy();
+			stmt.condition = newCondition;
+			stmt.ifBranch = newIfBranch;
+			stmt.elseBranch = newElseBranch;
+
+			return stmt;
 		} 
 
 		return this;
@@ -81,7 +86,7 @@ public class If extends Statement {
 	public Node typeCheck(TypeChecker tc) {
 		tc.typeCheck(condition, Types.BOOL);
 
-		If stmt = new If(condition, ifBranch, elseBranch);
+		If stmt = copy(); 
 		
 		Result ifRes = ifBranch.result;
 		Result elseRes = elseBranch.isPresent() ? elseBranch.get().getResult() : Result.UNIT;

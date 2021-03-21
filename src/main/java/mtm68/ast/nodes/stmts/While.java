@@ -46,7 +46,11 @@ public class While extends Statement {
 		Statement newBody = body.accept(v);
 		
 		if(newCondition != condition || newBody != body) {
-			return new While(condition, body);
+			While stmt = copy();
+			stmt.condition = newCondition;
+			stmt.body = newBody;
+
+			return stmt;
 		} 
 
 		return this;
@@ -56,7 +60,7 @@ public class While extends Statement {
 	public Node typeCheck(TypeChecker tc) {
 		tc.typeCheck(condition, Types.BOOL);
 		
-		While stmt = new While(condition, body);
+		While stmt = copy();
 		stmt.result = Result.UNIT;
 
 		return stmt;

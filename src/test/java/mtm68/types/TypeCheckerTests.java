@@ -44,6 +44,43 @@ public class TypeCheckerTests {
 		assertEquals(Result.UNIT, newBlock.getResult());
 	}
 
+	@Test
+	void blockAllStatementsUnit() {
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new SimpleDecl("y", INT),
+				new SimpleDecl("z", INT)
+				));
+		Block newBlock = doTypeCheck(block);
+		
+		assertEquals(Result.UNIT, newBlock.getResult());
+	}
+
+	@Test
+	void blockMatchesTypeOfLastStmt() {
+		TypingContext context = setupRho(empty());
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new SimpleDecl("y", INT),
+				new SimpleDecl("z", INT)
+				), new Return(empty()));
+		Block newBlock = doTypeCheck(context, block);
+		
+		assertEquals(Result.VOID, newBlock.getResult());
+	}
+
+	@Test
+	void blockCantHaveVoidInMiddle() {
+		TypingContext context = setupRho(empty());
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new Block(empty(), new Return(empty())),
+				new SimpleDecl("z", INT)
+				), new Return(empty()));
+
+		assertTypeCheckError(context, block);
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// If
 	//-------------------------------------------------------------------------------- 

@@ -43,7 +43,7 @@ public class SimpleDecl extends Decl {
 	public Node typeCheck(TypeChecker tc) {
 		tc.checkDecl(this);
 
-		SimpleDecl decl = new SimpleDecl(id, type);
+		SimpleDecl decl = copy();
 		decl.result = Result.UNIT;
 
 		return decl;
