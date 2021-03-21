@@ -58,15 +58,17 @@ public class FunctionDecl extends Node {
 	public Node visitChildren(Visitor v) {
 		List<SimpleDecl> newArgs = acceptList(this.args, v);
 		if(newArgs != args) {
-			return new FunctionDecl(id, newArgs, returnTypes);
-		} else {
-			return this;
-		}
+			FunctionDecl decl = copy();
+			decl.args = newArgs;
+
+			return decl;
+		} 
+
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

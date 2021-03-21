@@ -50,9 +50,13 @@ public class ExtendedDecl extends Decl {
 		List<Expr> newIndices = acceptList(indices, v);
 		
 		if(indices == newIndices) return this;
-		
-		DeclType declType = new DeclType(type.getType(), newIndices);
-		return new ExtendedDecl(id, declType);
+
+		DeclType newDeclType = new DeclType(type.getType(), newIndices);
+
+		ExtendedDecl decl = copy();
+		decl.type = newDeclType;
+
+		return decl;
 	}
 
 	@Override
@@ -64,7 +68,7 @@ public class ExtendedDecl extends Decl {
 		tc.checkTypes(this, indices, expectedTypes);
 		tc.checkDecl(this);
 		
-		ExtendedDecl decl = new ExtendedDecl(id, type);
+		ExtendedDecl decl = copy();
 		decl.result = Result.UNIT;
 
 		return decl;

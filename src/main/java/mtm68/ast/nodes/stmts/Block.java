@@ -66,10 +66,14 @@ public class Block extends Statement {
 		
 		if(newStmts != stmts 
 				|| newReturnStmt != returnStmt) {
-			return new Block(newStmts, newReturnStmt);
-		} else {
-			return this;
-		}
+			
+			Block newBlock = copy();
+			newBlock.stmts = newStmts;
+			newBlock.returnStmt = newReturnStmt;
+
+			return newBlock;
+		} 
+		return this;
 	}
 
 	@Override
@@ -86,8 +90,10 @@ public class Block extends Statement {
 				tc.checkResultIsUnit(stmt);
 			}
 		}
-		Block newBlock = new Block(stmts, returnStmt);
+
+		Block newBlock = copy();
 		newBlock.result = result;
+
 		return newBlock;
 	}
 }

@@ -40,16 +40,19 @@ public class FunctionDefn extends Node {
 	public Node visitChildren(Visitor v) {
 		FunctionDecl newFunctionDecl = functionDecl.accept(v);
 		Block newBody = body.accept(v);
+
 		if(newFunctionDecl!= functionDecl || newBody != body) {
-			return new FunctionDefn(newFunctionDecl, newBody);
-		} else {
-			return this;
-		}	
+			FunctionDefn defn = copy();
+			defn.functionDecl = newFunctionDecl;
+			defn.body = newBody;
+
+			return defn;
+		}
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

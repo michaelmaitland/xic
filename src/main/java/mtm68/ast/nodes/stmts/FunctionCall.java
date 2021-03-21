@@ -31,7 +31,7 @@ public class FunctionCall extends Statement {
 	public FExpr getFexp() {
 		return fexp;
 	}
-
+	
 	@Override
 	public Node visitChildren(Visitor v) {
 		// We traverse like this because we don't actually want the FExp
@@ -40,7 +40,10 @@ public class FunctionCall extends Statement {
 		List<Expr> newArgs = acceptList(fexp.getArgs(), v);
 		
 		if(newArgs != fexp.getArgs()) {
-			return new FunctionCall(new FExpr(fexp.getId(), newArgs));
+			FunctionCall call = copy();
+
+			call.fexp = new FExpr(fexp.getId(), newArgs);
+			return call;
 		}
 
 		return this;
@@ -50,7 +53,7 @@ public class FunctionCall extends Statement {
 	public Node typeCheck(TypeChecker tc) {
 		tc.checkProcCall(this);
 
-		FunctionCall stmt = new FunctionCall(fexp);
+		FunctionCall stmt = copy();
 		stmt.result = Result.UNIT;
 
 		return stmt;

@@ -35,7 +35,6 @@ public class Use extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
