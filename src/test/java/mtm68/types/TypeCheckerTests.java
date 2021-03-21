@@ -1,8 +1,15 @@
 package mtm68.types;
 
-import static mtm68.ast.types.Types.*;
-import static mtm68.util.ArrayUtils.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static mtm68.ast.types.Types.BOOL;
+import static mtm68.ast.types.Types.INT;
+import static mtm68.ast.types.Types.TVEC;
+import static mtm68.ast.types.Types.addArrayDims;
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.ArrayUtils.empty;
+import static mtm68.util.ArrayUtils.singleton;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -10,11 +17,13 @@ import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
+import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
+import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -33,7 +42,59 @@ import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
 public class TypeCheckerTests {
+
+	//-------------------------------------------------------------------------------- 
+	// IntLiteral 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void intLiteralIsInt() {
+		CharLiteral literal = charLit('c');
+		CharLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(Types.INT, newLiteral.getType());
+	}
+
+	@Test
+	void charIsIntLiteral() {
+		StringLiteral literal = stringLit("hello");
+		StringLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(Types.ARRAY(INT), newLiteral.getType());
+	}
 	
+	//-------------------------------------------------------------------------------- 
+	// BoolLiteral
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void trueIsBoolLiteral() {
+		BoolLiteral literal = boolLit(true);
+		BoolLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(Types.BOOL, newLiteral.getType());
+	}
+
+	@Test
+	void falseIsBoolLiteral() {
+		BoolLiteral literal = boolLit(false);
+		BoolLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(Types.BOOL, newLiteral.getType());
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// StringLiteral
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void stringIsIntArray() {
+		StringLiteral literal = stringLit("hello");
+		StringLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(Types.ARRAY(INT), newLiteral.getType());
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 
@@ -459,9 +520,17 @@ public class TypeCheckerTests {
 	private IntLiteral intLit(Long value) {
 		return new IntLiteral(value);
 	}
+	
+	private CharLiteral charLit(Character value) {
+		return new CharLiteral(value);
+	}
 
 	private BoolLiteral boolLit(boolean value) {
 		return new BoolLiteral(value);
+	}
+
+	private StringLiteral stringLit(String value) {
+		return new StringLiteral(value);
 	}
 
 	private Block emptyBlock() {

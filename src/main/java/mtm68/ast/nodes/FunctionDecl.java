@@ -5,6 +5,8 @@ import java.util.List;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
+import mtm68.exception.SemanticException;
+import mtm68.visit.FunctionCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -70,5 +72,11 @@ public class FunctionDecl extends Node {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		return null;
+	}
+	
+	@Override
+	public Node extractFunctionDecl(FunctionCollector fc) {
+		fc.addFunctionDecl(this);
+		return this;
 	}
 }

@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
+import mtm68.exception.SemanticException;
+import mtm68.visit.FunctionCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -79,7 +81,11 @@ public abstract class Node implements HasLocation, Cloneable {
 	public abstract Node visitChildren(Visitor v);
 
 	public abstract Node typeCheck(TypeChecker tc);
-
+	
+	public Node extractFunctionDecl(FunctionCollector fc){
+		return this;
+	}
+	
 	public Location getStartLoc() {
 		return startLoc;
 	}
