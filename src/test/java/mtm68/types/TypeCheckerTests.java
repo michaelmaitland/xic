@@ -22,13 +22,17 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.StringLiteral;
+import mtm68.ast.nodes.binary.Add;
+import mtm68.ast.nodes.binary.BinExpr;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.DeclType;
 import mtm68.ast.types.Result;
@@ -92,6 +96,42 @@ public class TypeCheckerTests {
 		
 		assertEquals(Types.ARRAY(INT), newLiteral.getType());
 	}
+
+	//-------------------------------------------------------------------------------- 
+	// BinExpr (Add, And, Div, EqEq, GreaterThan, GreaterThanOrEqual,
+	//			HighMult, LessThan, LessThanOrEqual, Mod, Mult,
+	//			Or, Sub)
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void addHasIntLeftAndIntRight() {
+		BinExpr add = new Add(intLit(0L), intLit(1L));
+		BinExpr newAdd = doTypeCheck(add);
+		
+		assertEquals(Types.INT, newAdd.getLeft().getType());
+		assertEquals(Types.INT, newAdd.getRight().getType());
+	}
+
+
+	@Test
+	void addFailsWhenNotIntLeftAndIntRight() {
+		BinExpr expr = new Add(arbitraryCondition(),arbitraryCondition());
+		assertTypeCheckError(null, expr);
+	}
+
+	@Test
+	void addFailsWhenNotIntLeft() {
+		BinExpr expr = new Add(arbitraryCondition(),intLit(0L));
+		assertTypeCheckError(null, expr);
+	}
+
+	@Test
+	void addFailsWhenNotIntRight() {
+		BinExpr expr = new Add(arbitraryCondition(),intLit(0L));
+		assertTypeCheckError(null, expr);
+	}
+
+
 
 	//-------------------------------------------------------------------------------- 
 	// Block
@@ -344,6 +384,22 @@ public class TypeCheckerTests {
 				1));
 
 		assertTypeCheckError(context, decl);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// Assign
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void singleAssignValid() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		
+		SingleAssign assign = new SingleAssign(new Var("x"), intLit(0L));
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
 	}
 
 	//-------------------------------------------------------------------------------- 
