@@ -3,16 +3,17 @@ package mtm68.ast.types;
 import java.util.List;
 
 import mtm68.ast.nodes.Expr;
-import mtm68.ast.nodes.Var;
-import mtm68.util.ArrayUtils;
 
-public class DeclType {
-	
+public class DeclType { 
 	private Type type;
 	private List<Expr> indices;
 	
 	public DeclType(Type type, List<Expr> indices, int numEmptyBrackets) {
-		this.type = Types.addArrayDims(type, indices.size() + numEmptyBrackets);
+		this(Types.addArrayDims(type, indices.size() + numEmptyBrackets), indices);
+	}
+	
+	public DeclType(Type type, List<Expr> indices) {
+		this.type = type;
 		this.indices = indices;
 	}
 	

@@ -2,6 +2,7 @@ package mtm68.ast.types;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import mtm68.ast.nodes.stmts.SimpleDecl;
 
@@ -43,6 +44,24 @@ public class ContextType {
 
 	public boolean isFunctionDecl() {
 		return isFunctionDecl;
+	}
+	
+	@Override
+	public String toString() {
+		if(isFunctionDecl) {
+			return "fn " + typeListToString(argTypes) + " -> " + typeListToString(returnTypes);
+		}
+		return "var " + type;
+	}
+	
+	private String typeListToString(List<Type> types) {
+		if(types.size() == 0) return "unit";
+		
+		String tys = types.stream()
+			.map(Type::toString)
+			.collect(Collectors.joining(", "));
+		
+		return "(" + tys + ")";
 	}
 
 	@Override

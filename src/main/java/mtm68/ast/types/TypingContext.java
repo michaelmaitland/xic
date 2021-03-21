@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import mtm68.ast.nodes.stmts.SimpleDecl;
 
@@ -189,5 +190,29 @@ public class TypingContext {
 	 */
 	public boolean isReturnTypeUnitInScope() {
 		return contextStack.peek().get(RHO).getReturnTypes().isEmpty();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[");
+
+		Iterator<Map<String, ContextType>> stackIterator = contextStack
+				.iterator();
+		while (stackIterator.hasNext()) {
+			Map<String, ContextType> contextMap = stackIterator.next();
+			for(Entry<String, ContextType> entry : contextMap.entrySet()) {
+				String id = entry.getKey();
+				ContextType ty = entry.getValue();
+				
+				builder.append(id);
+				builder.append(":");
+				builder.append(ty);
+				builder.append(", ");
+			}
+		}
+		int lastComma = builder.lastIndexOf(",");
+		String end = lastComma != -1 ? builder.substring(0, lastComma) : builder.toString();
+		return end + "]";
 	}
 }

@@ -1,9 +1,15 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.DeclType;
+import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -40,13 +46,28 @@ public class ExtendedDecl extends Decl {
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		return this;
+		List<Expr> indices = type.getIndices();
+		List<Expr> newIndices = acceptList(indices, v);
+		
+		if(indices == newIndices) return this;
+		
+		DeclType declType = new DeclType(type.getType(), newIndices);
+		return new ExtendedDecl(id, declType);
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Expr> indices = type.getIndices();
+		List<Type> expectedTypes = indices.stream()
+				.map(e -> Types.INT)
+				.collect(Collectors.toList());
+		tc.checkTypes(this, indices, expectedTypes);
+		tc.checkDecl(this);
+		
+		ExtendedDecl decl = new ExtendedDecl(id, type);
+		decl.result = Result.UNIT;
+
+		return decl;
 	}
 	
 	

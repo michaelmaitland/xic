@@ -82,8 +82,13 @@ public class If extends Statement {
 		tc.typeCheck(condition, Types.BOOL);
 
 		If stmt = new If(condition, ifBranch, elseBranch);
-		stmt.result = Result.UNIT;
+		
+		Result ifRes = ifBranch.result;
+		Result elseRes = elseBranch.isPresent() ? elseBranch.get().getResult() : Result.UNIT;
+
+		stmt.result = Result.leastUpperBound(ifRes, elseRes);
 
 		return stmt;
 	}
+	
 }

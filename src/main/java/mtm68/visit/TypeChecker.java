@@ -10,6 +10,7 @@ import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
+import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.HasResult;
 import mtm68.ast.types.HasType;
@@ -59,6 +60,17 @@ public class TypeChecker extends Visitor {
 		}
 	}
 	
+	public <T extends HasType> void checkTypes(Node base, List<T> actual, List<Type> expected) {
+		if(expected.size() != actual.size()) {
+			reportError(base, "Type lists don't match in size");
+			return;
+		}
+		
+		for(int i = 0; i < actual.size(); i++) {
+			typeCheck(actual.get(i), expected.get(i));
+		}	
+	}
+	
 	public void checkResultIsUnit(HasResult result) {
 		if(result.getResult() != Result.UNIT) {
 			reportError(result, "Statement cannot return here");
@@ -106,6 +118,7 @@ public class TypeChecker extends Visitor {
 	
 	private boolean isScopeNode(Node node) {
 		return node instanceof Block
-				|| node instanceof If;
+				|| node instanceof If
+				|| node instanceof While;
 	}
 }

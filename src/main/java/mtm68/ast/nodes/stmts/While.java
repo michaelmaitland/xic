@@ -3,6 +3,8 @@ package mtm68.ast.nodes.stmts;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.Result;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -45,14 +47,18 @@ public class While extends Statement {
 		
 		if(newCondition != condition || newBody != body) {
 			return new While(condition, body);
-		} else {
-			return this;
-		}
+		} 
+
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		tc.typeCheck(condition, Types.BOOL);
+		
+		While stmt = new While(condition, body);
+		stmt.result = Result.UNIT;
+
+		return stmt;
 	}
 }

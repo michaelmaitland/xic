@@ -24,8 +24,7 @@ public class IntLiteral extends Literal<Long> {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 	
 }
