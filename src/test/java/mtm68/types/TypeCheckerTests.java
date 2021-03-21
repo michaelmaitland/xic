@@ -361,6 +361,10 @@ public class TypeCheckerTests {
 		assertTypeCheckError(context, exp);
 	}
 
+	//-------------------------------------------------------------------------------- 
+	// Helper Methods
+	//-------------------------------------------------------------------------------- 
+
 	private <N extends Node> N doTypeCheck(TypingContext context, N node) {
 		TypeChecker tc = new TypeChecker(context);
 		addLocs(node);
@@ -373,11 +377,7 @@ public class TypeCheckerTests {
 	}
 
 	private <N extends Node> N doTypeCheck(N node) {
-		TypeChecker tc = new TypeChecker();
-		addLocs(node);
-		node = tc.performTypeCheck(node);
-		assertFalse(tc.hasError(), "Expected no errors but got some");
-		return node;
+		return doTypeCheck(new TypingContext(), node);
 	}
 	
 	private <N extends Node> void assertTypeCheckError(TypingContext context, N node) {
