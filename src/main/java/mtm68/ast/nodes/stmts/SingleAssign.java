@@ -46,15 +46,17 @@ public class SingleAssign extends Assign {
 		Expr newRhs = rhs.accept(v);
 		
 		if(newLhs != lhs || newRhs != rhs) {
-			return new SingleAssign(lhs, rhs);
-		} else {
-			return this;
-		}
+			SingleAssign single = copy();
+			single.lhs = newLhs;
+			single.rhs = newRhs;
+
+			return single;
+		} 
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

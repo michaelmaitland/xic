@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +28,7 @@ import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.types.ContextType;
+import mtm68.ast.types.TypingContext;
 import mtm68.exception.SemanticError;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
@@ -38,6 +40,7 @@ import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
+import mtm68.visit.FunctionCollector;
 import mtm68.visit.TypeChecker;
 
 public class Main {
@@ -136,10 +139,27 @@ public class Main {
 			
 			if(parseResult.isValidAST()) {
 				Node root = parseResult.getNode().get();
+				
+				if(Debug.DEBUG_ON) {
+					SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+					root.prettyPrint(printer);
+					printer.flush();
+				}
 				if(root instanceof Program) {
 					try {
 						Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
-						TypeChecker typeChecker = new TypeChecker(mergedSymbolTable);
+						
+						FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
+						root.accept(funcCollector);
+						if(funcCollector.hasError()) {
+							if(typeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
+							continue;
+						}
+						
+						TypeChecker typeChecker = new TypeChecker(funcCollector.getContext());
+						
+						if(Debug.DEBUG_ON) System.out.println(new TypingContext(funcCollector.getContext()));
+						
 						root.accept(typeChecker);
 						if(typeCheck) {
 							writeToFile(filename, 

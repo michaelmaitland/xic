@@ -39,7 +39,10 @@ public class Return extends Statement {
 		List<Expr> newRetList = acceptList(retList, v);
 		
 		if(newRetList != retList) {
-			return new Return(retList);
+			Return ret = copy(); 
+			ret.retList = newRetList;
+
+			return ret;
 		} 
 
 		return this;
@@ -49,7 +52,7 @@ public class Return extends Statement {
 	public Node typeCheck(TypeChecker tc) {
 		tc.checkReturn(this, retList);
 
-		Return ret = new Return(retList);
+		Return ret = copy();
 		ret.result = Result.VOID;
 
 		return ret;

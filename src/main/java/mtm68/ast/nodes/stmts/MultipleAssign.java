@@ -71,17 +71,18 @@ public class MultipleAssign extends Assign {
 		
 		FExpr newRhs = rhs.accept(v);
 		
-		
 		if(newRhs != rhs || newDecls != decls) {
-			return new MultipleAssign(newDecls, newRhs);
-		} else {
-			return this;
-		}
+			MultipleAssign multi = copy();
+			multi.decls = newDecls;
+			multi.rhs = newRhs;
+
+			return multi;
+		} 
+		return this;
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

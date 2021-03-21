@@ -105,6 +105,43 @@ public class TypeCheckerTests {
 		assertEquals(Result.UNIT, newBlock.getResult());
 	}
 
+	@Test
+	void blockAllStatementsUnit() {
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new SimpleDecl("y", INT),
+				new SimpleDecl("z", INT)
+				));
+		Block newBlock = doTypeCheck(block);
+		
+		assertEquals(Result.UNIT, newBlock.getResult());
+	}
+
+	@Test
+	void blockMatchesTypeOfLastStmt() {
+		TypingContext context = setupRho(empty());
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new SimpleDecl("y", INT),
+				new SimpleDecl("z", INT)
+				), new Return(empty()));
+		Block newBlock = doTypeCheck(context, block);
+		
+		assertEquals(Result.VOID, newBlock.getResult());
+	}
+
+	@Test
+	void blockCantHaveVoidInMiddle() {
+		TypingContext context = setupRho(empty());
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new Block(empty(), new Return(empty())),
+				new SimpleDecl("z", INT)
+				), new Return(empty()));
+
+		assertTypeCheckError(context, block);
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// If
 	//-------------------------------------------------------------------------------- 
@@ -422,6 +459,10 @@ public class TypeCheckerTests {
 		assertTypeCheckError(context, exp);
 	}
 
+	//-------------------------------------------------------------------------------- 
+	// Helper Methods
+	//-------------------------------------------------------------------------------- 
+
 	private <N extends Node> N doTypeCheck(TypingContext context, N node) {
 		TypeChecker tc = new TypeChecker(context);
 		addLocs(node);
@@ -434,11 +475,7 @@ public class TypeCheckerTests {
 	}
 
 	private <N extends Node> N doTypeCheck(N node) {
-		TypeChecker tc = new TypeChecker();
-		addLocs(node);
-		node = tc.performTypeCheck(node);
-		assertFalse(tc.hasError(), "Expected no errors but got some");
-		return node;
+		return doTypeCheck(new TypingContext(), node);
 	}
 	
 	private <N extends Node> void assertTypeCheckError(TypingContext context, N node) {

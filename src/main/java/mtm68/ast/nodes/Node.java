@@ -6,10 +6,12 @@ import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
+import mtm68.exception.SemanticException;
+import mtm68.visit.FunctionCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public abstract class Node implements HasLocation {
+public abstract class Node implements HasLocation, Cloneable {
 	
 	private Location startLoc;
 	
@@ -79,7 +81,11 @@ public abstract class Node implements HasLocation {
 	public abstract Node visitChildren(Visitor v);
 
 	public abstract Node typeCheck(TypeChecker tc);
-
+	
+	public Node extractFunctionDecl(FunctionCollector fc){
+		return this;
+	}
+	
 	public Location getStartLoc() {
 		return startLoc;
 	}
@@ -98,5 +104,17 @@ public abstract class Node implements HasLocation {
 		return startLoc.getColumn();
 	}
 	
+	@SuppressWarnings("unchecked")
+	public <N extends Node> N copy() {
+		try {
+			return (N) clone();
+		} catch (CloneNotSupportedException e) {
+		}
+		return null;
+	}
 	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
 }
