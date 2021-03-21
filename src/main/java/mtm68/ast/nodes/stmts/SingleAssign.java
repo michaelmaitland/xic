@@ -3,6 +3,9 @@ package mtm68.ast.nodes.stmts;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.HasType;
+import mtm68.ast.types.Result;
+import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -57,6 +60,13 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		// This is a safe-cast, but we should be careful
+		Type lhsType = ((HasType) lhs).getType();
+		tc.typeCheck(rhs, lhsType);
+		
+		SingleAssign single = copy();
+		single.result = Result.UNIT;
+
+		return single;
 	}
 }
