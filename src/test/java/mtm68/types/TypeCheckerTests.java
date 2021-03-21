@@ -173,6 +173,24 @@ public class TypeCheckerTests {
 		assertTypeCheckError(context, stmt);
 	}
 
+	@Test
+	void procedureCallDoesntReturnUnit() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), singleton(INT));
+
+		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		assertTypeCheckError(context, stmt);
+	}
+
+	@Test
+	void procedureCallMismatchNumArgs() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", singleton(new SimpleDecl("x", INT)), empty());
+
+		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		assertTypeCheckError(context, stmt);
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// Decl
 	//-------------------------------------------------------------------------------- 
@@ -295,9 +313,11 @@ public class TypeCheckerTests {
 	@Test
 	void fexpValid() {
 		TypingContext context = new TypingContext();
-		context.addFuncDecl("f", empty(), singleton(INT));
+		context.addFuncDecl("f", 
+				elems(new SimpleDecl("x", INT), new SimpleDecl("y", BOOL)), 
+				singleton(INT));
 
-		FExpr exp = new FExpr("f", empty());
+		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
 		exp = doTypeCheck(context, exp);
 
 		assertEquals(Types.INT, exp.getType());
@@ -320,6 +340,24 @@ public class TypeCheckerTests {
 		context.addFuncDecl("f", empty(), empty());
 
 		FExpr exp = new FExpr("f", empty());
+		assertTypeCheckError(context, exp);
+	}
+
+	@Test
+	void fexpMismatchNumberOfArgs() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", singleton(new SimpleDecl("x", INT)), singleton(BOOL));
+
+		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
+		assertTypeCheckError(context, exp);
+	}
+
+	@Test
+	void fexpMismatchArgTypes() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", elems(new SimpleDecl("x", INT), new SimpleDecl("y", INT)), singleton(BOOL));
+
+		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
 		assertTypeCheckError(context, exp);
 	}
 

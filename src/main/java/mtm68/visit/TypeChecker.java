@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
@@ -104,29 +105,40 @@ public class TypeChecker extends Visitor {
 	
 	public void checkProcCall(FunctionCall stmt) {
 		FExpr fexp = stmt.getFexp();
+		
+		typeCheck(fexp, Types.UNIT);
+	}
 
-		if(!context.isFunctionDecl(fexp.getId())) {
-			reportError(stmt, "Identifier \"" + fexp.getId() + "\" is not a valid function");
+	public Type checkFunctionCall(FExpr fexp) {
+		String id = fexp.getId();
+		checkFunctionDecl(fexp, id);
+		checkFunctionArgs(fexp, id, fexp.getArgs());
+		return checkAndGetFunctionReturn(fexp, id, false);
+	}
+	
+	private void checkFunctionDecl(Node base, String id) {
+		if(!context.isFunctionDecl(id)) {
+			reportError(base, "Identifier \"" + id + "\" is not a valid function");
 			return;
 		}
 	}
 
-	public Type checkFunctionCall(FExpr fexp) {
-		if(!context.isFunctionDecl(fexp.getId())) {
-			reportError(fexp, "Identifier \"" + fexp.getId() + "\" is not a valid function");
+	private void checkFunctionArgs(Node base, String id, List<Expr> args) {
+		List<Type> argTys = context.getArgTypes(id);
+		checkTypes(base, args, argTys);
+	}
+
+	private Type checkAndGetFunctionReturn(Node base, String id, boolean isProc) {
+		Type retTy = Types.TVEC(context.getReturnTypes(id));
+		
+		if(!isProc && retTy.equals(Types.UNIT)) {
+			reportError(base, "Function can't return unit");
+			return null;
+		} else if(isProc && !retTy.equals(Types.UNIT)) {
+			reportError(base, "Procedure cannot have return type");
 			return null;
 		}
 		
-		List<Type> argTys = context.getArgTypes(fexp.getId());
-		checkTypes(fexp, fexp.getArgs(), argTys);
-		
-		Type retTy = Types.TVEC(context.getReturnTypes(fexp.getId()));
-		
-		if(retTy.equals(Types.UNIT)) {
-			reportError(fexp, "Function can't return unit");
-			return null;
-		}
-				
 		return retTy;
 	}
 	
