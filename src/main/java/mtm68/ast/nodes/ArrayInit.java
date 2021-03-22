@@ -39,7 +39,9 @@ public class ArrayInit extends Expr {
 	public Node visitChildren(Visitor v) {
 		List<Expr> newItems = acceptList(items, v);
 		if(newItems != items) {
-			return new ArrayInit(newItems);
+			ArrayInit newArrayInit = copy();
+			newArrayInit.items = newItems;
+			return newArrayInit;
 		} else {
 			return this;
 		}

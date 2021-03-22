@@ -2,6 +2,7 @@ package mtm68.types;
 
 import static mtm68.ast.types.Types.ARRAY;
 import static mtm68.ast.types.Types.BOOL;
+import static mtm68.ast.types.Types.EMPTY_ARRAY;
 import static mtm68.ast.types.Types.INT;
 import static mtm68.ast.types.Types.TVEC;
 import static mtm68.ast.types.Types.addArrayDims;
@@ -89,7 +90,7 @@ public class TypeCheckerTests {
 		ArrayInit ai = new ArrayInit(items);
 		ArrayInit newAi = doTypeCheck(ai);
 		
-		assertFalse(true);
+		assertEquals(EMPTY_ARRAY,  newAi.getType());
 	}
 
 	@Test
@@ -408,7 +409,7 @@ public class TypeCheckerTests {
 	//-------------------------------------------------------------------------------- 
 
 	@Test
-	void addHasIntLeftAndIntRightAndIsInt() {
+	void addIntLeftIntRightIsInt() {
 		Add add = new Add(intLit(0L), intLit(1L));
 		Add newAdd = doTypeCheck(add);
 		
@@ -418,7 +419,7 @@ public class TypeCheckerTests {
 	}
 
 	@Test
-	void eqEqWithIntLeftAndIntRightAndIsBool() {
+	void eqEqIntLeftIntRightAndIsBool() {
 		EqEq eq = new EqEq(intLit(0L), intLit(1L));
 		EqEq newEq = doTypeCheck(eq);
 		
@@ -428,7 +429,7 @@ public class TypeCheckerTests {
 	}
 
 	@Test
-	void eqEqWithBoolLeftAndBoolRightAndIsBool() {
+	void eqEqBoolLeftBoolRightAndIsBool() {
 		EqEq eq = new EqEq(arbitraryCondition(), arbitraryCondition());
 		EqEq newEq = doTypeCheck(eq);
 		
@@ -438,7 +439,47 @@ public class TypeCheckerTests {
 	}
 
 	@Test
-	void addFailsWhenNotIntLeftAndIntRight() {
+	void eqEqArrLeftArrRightAndIsBool() {
+		EqEq eq = new EqEq(stringLit("hello"), stringLit("hello"));
+		EqEq newEq = doTypeCheck(eq);
+		
+		assertEquals(ARRAY(INT), newEq.getLeft().getType());
+		assertEquals(ARRAY(INT), newEq.getRight().getType());
+		assertEquals(BOOL, newEq.getType());
+	}
+
+	@Test
+	void eqEqArrEmptyLeftEmptyArrRightAndIsBool() {
+		EqEq eq = new EqEq(emptyArray(), emptyArray());
+		EqEq newEq = doTypeCheck(eq);
+		
+		assertEquals(EMPTY_ARRAY, newEq.getLeft().getType());
+		assertEquals(EMPTY_ARRAY, newEq.getRight().getType());
+		assertEquals(BOOL, newEq.getType());
+	}
+	
+	@Test
+	void eqEqArrLeftEmptyArrRightAndIsBool() {
+		EqEq eq = new EqEq(stringLit("hello"), emptyArray());
+		EqEq newEq = doTypeCheck(eq);
+		
+		assertEquals(ARRAY(INT), newEq.getLeft().getType());
+		assertEquals(EMPTY_ARRAY, newEq.getRight().getType());
+		assertEquals(BOOL, newEq.getType());
+	}
+
+	@Test
+	void eqEqEmptyArrLeftArrRightAndIsBool() {
+		EqEq eq = new EqEq(emptyArray(), stringLit("hello"));
+		EqEq newEq = doTypeCheck(eq);
+		
+		assertEquals(EMPTY_ARRAY, newEq.getLeft().getType());
+		assertEquals(ARRAY(INT), newEq.getRight().getType());
+		assertEquals(BOOL, newEq.getType());
+	}
+
+	@Test
+	void addFailsWhenBoolLeftAndBoolRight() {
 		BinExpr expr = new Add(arbitraryCondition(),arbitraryCondition());
 		assertTypeCheckError(null, expr);
 	}
@@ -456,7 +497,7 @@ public class TypeCheckerTests {
 	}
 
 	@Test
-	void eqEqHasTypeBool() {
+	void eqEqIntLeftIntRightIsTypeBool() {
 		BinExpr eqeq = new EqEq(intLit(0L), intLit(1L));
 		BinExpr newEqEq = doTypeCheck(eqeq);
 		
@@ -465,6 +506,33 @@ public class TypeCheckerTests {
 		assertEquals(BOOL, newEqEq.getType());
 	}
 	
+	@Test
+	void eqEqBoolLeftBoolRightIsTypeBool() {
+		BinExpr eqeq = new EqEq(arbitraryCondition(), arbitraryCondition());
+		BinExpr newEqEq = doTypeCheck(eqeq);
+		
+		assertEquals(BOOL, newEqEq.getLeft().getType());
+		assertEquals(BOOL, newEqEq.getRight().getType());
+		assertEquals(BOOL, newEqEq.getType());
+	}
+	
+	@Test
+	void addArrLeftArrRightIsArr() {
+		Add add = new Add(stringLit("hi"), stringLit("there"));
+		Add newAdd = doTypeCheck(add);
+		
+		assertEquals(ARRAY(INT), newAdd.getLeft().getType());
+		assertEquals(ARRAY(INT), newAdd.getRight().getType());
+		assertEquals(ARRAY(INT), newAdd.getType());
+	}
+	
+	@Test
+	void addArrLeftDifferentArrRightError() {
+		Add add = new Add(stringLit("hi"), arrayWithElems(emptyArray()));
+		assertTypeCheckError(add);
+	}
+
+
 	//-------------------------------------------------------------------------------- 
 	// Assign
 	//-------------------------------------------------------------------------------- 
@@ -850,6 +918,14 @@ public class TypeCheckerTests {
 
 	private Block emptyBlock() {
 		return new Block(ArrayUtils.empty());
+	}
+
+	private ArrayInit emptyArray() {
+		return new ArrayInit(ArrayUtils.empty());
+	}
+	
+	private ArrayInit arrayWithElems(Expr... elems){
+		return new ArrayInit(ArrayUtils.elems(elems));
 	}
 	
 	private void addLocs(Node n) {

@@ -90,9 +90,13 @@ public class TypeChecker extends Visitor {
 	}
 
 	public void typeCheck(HasType actual, Type expected) {
-		if(!expected.equals(actual.getType())){
+		if(!isEqualTypes(actual.getType(), expected)){
 			reportError(actual, "Expected type: " + expected + ", but got: " + actual.getType());
 		}
+	}
+	
+	public boolean isEqualTypes(Type t1, Type t2) {
+		return t1.equals(t2);
 	}
 	
 	public <T extends HasType> void checkTypes(Node base, List<T> actual, List<Type> expected) {
@@ -213,13 +217,11 @@ public class TypeChecker extends Visitor {
 	
 	public Type checkArrayInit(ArrayInit arrayInit) {
 		
-		Type expected;
 		if(arrayInit.getItems().isEmpty()) {
-			expected = null;
-		} else {
-			expected = arrayInit.getItems().get(0).getType();
+			return Types.EMPTY_ARRAY;
 		}
 
+		Type expected = arrayInit.getItems().get(0).getType();
 		checkTypes(arrayInit, arrayInit.getItems(), expected);
 		return Types.ARRAY(expected);
 	}
@@ -259,39 +261,59 @@ public class TypeChecker extends Visitor {
 		Type leftType = be.getLeft().getType();
 		Type rightType  = be.getRight().getType();
 
-		if(intToIntToInt.contains(op) 
-				&& leftType.equals(Types.INT)
-				&& rightType.equals(Types.INT)) {
+		if(checkIntToIntToInt(op, leftType, rightType)) {
 			return Types.INT;
 
-		} else if(intToIntToBool.contains(op) 
-				&& leftType.equals(Types.INT) 
-				&& rightType.equals(Types.INT)) {
+		} else if(checkIntToIntToBool(op, leftType, rightType)) {
 			return Types.BOOL;
 
-		} else if (boolToBoolToBool.contains(op) 
-				&& leftType.equals(Types.BOOL) 
-				&& rightType.equals(Types.BOOL)) {
+		} else if (checkBoolToBoolToBool(op, leftType, rightType)) {
 			return Types.BOOL;
 
-		} else if (arrToArrToBool.contains(op)
-				&& leftType instanceof ArrayType 
-				&& rightType instanceof ArrayType
-				&& ((ArrayType)leftType).getType().equals(((ArrayType)rightType).getType())) {
+		} else if (checkArrToArrToBool(op, leftType, rightType)) {
 			return Types.BOOL;
 
-		} else if (arrToArrToArr.contains(op)
-				&& leftType instanceof ArrayType 
-				&& rightType instanceof ArrayType
-				&& ((ArrayType)leftType).getType().equals(((ArrayType)rightType).getType())) {
-			return Types.ARRAY(((ArrayType)leftType).getType());
+		} else if (checkArrToArrToArr(op, leftType, rightType)) {
+			return Types.getLeastUpperBound(leftType, rightType);
 
 		} else {
 			reportError(be, "Cannot apply operator " + op.toString() + " to types "
-							+ be.getLeft().getType().getPP() + " and "
-							+ be.getRight().getType().getPP());
+							+ be.getLeft().getType() + " and "
+							+ be.getRight().getType());
 			throw new FatalTypeException();
 		}
+	}
+	
+	private boolean  checkIntToIntToInt(Binop op, Type t1, Type t2) {
+		return intToIntToInt.contains(op) 
+				&& t1.equals(Types.INT)
+				&& t2.equals(Types.INT);
+	}
+	
+	private boolean checkIntToIntToBool(Binop op, Type t1, Type t2) {
+		return intToIntToBool.contains(op) 
+				&& t1.equals(Types.INT) 
+				&& t2.equals(Types.INT);
+	}
+	
+	private boolean checkBoolToBoolToBool(Binop op, Type t1, Type t2) {
+	return boolToBoolToBool.contains(op) 
+				&& t1.equals(Types.BOOL) 
+				&& t2.equals(Types.BOOL);
+	}
+	
+	private boolean checkArrToArrToBool(Binop op, Type t1, Type t2) {
+		return arrToArrToBool.contains(op) 
+				&& Types.isArray(t1)
+				&& Types.isArray(t2)
+				&& isCompatibleArrayTypes(t1, t2);
+	}
+	
+	private boolean checkArrToArrToArr(Binop op, Type t1, Type t2) {
+		return arrToArrToArr.contains(op)
+				&& Types.isArray(t1)
+				&& Types.isArray(t2)
+				&& isCompatibleArrayTypes(t1, t2);
 	}
 
 	public List<SemanticError> getTypeErrors() {
@@ -316,6 +338,10 @@ public class TypeChecker extends Visitor {
 				|| node instanceof If
 				|| node instanceof While
 				|| node instanceof FunctionDefn;
+	}
+	
+	private boolean isCompatibleArrayTypes(Type t1, Type t2) {
+		return t1.equals(t2) || t1.equals(Types.EMPTY_ARRAY) || t2.equals(Types.EMPTY_ARRAY);
 	}
 
 }

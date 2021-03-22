@@ -1,9 +1,5 @@
 package mtm68.ast.nodes.binary;
 
-import java.util.Set;
-
-import mtm68.util.ArrayUtils;
-
 public enum Binop {
 	OR("|"),
 	AND("&"),

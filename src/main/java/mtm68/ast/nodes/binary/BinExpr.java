@@ -1,12 +1,9 @@
 package mtm68.ast.nodes.binary;
 
-import java.util.Set;
-
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Type;
-import mtm68.util.ArrayUtils;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -66,7 +63,11 @@ public class BinExpr extends Expr {
 		Expr newRight = right.accept(v);
 		
 		if(newLeft != left || newRight != right) {
-			return new BinExpr(op, left, right);
+			BinExpr newBinExpr = copy();
+			newBinExpr.op = op;
+			newBinExpr.left = newLeft;
+			newBinExpr.right = newRight;
+			return newBinExpr;
 		} else {
 			return this;
 		}

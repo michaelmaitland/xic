@@ -29,7 +29,9 @@ public class Not extends UnExpr {
 	public Node visitChildren(Visitor v) {
 		Expr newExpr = expr.accept(v);
 		if (newExpr != expr) {
-			return new Not(newExpr);
+			Not newNot = copy();
+			newNot.expr = newExpr;
+			return newNot;
         } else {
             return this; 
         }	

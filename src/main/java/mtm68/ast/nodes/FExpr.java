@@ -42,7 +42,9 @@ public class FExpr extends Expr {
 	public Node visitChildren(Visitor v) {
 		List<Expr> newArgs = acceptList(this.args, v);
 		if(newArgs != args) {
-			return new FExpr(id, newArgs);
+			FExpr newFExpr = copy();
+			newFExpr.args = newArgs;
+			return newFExpr;
 		} else {
 			return this;
 		}

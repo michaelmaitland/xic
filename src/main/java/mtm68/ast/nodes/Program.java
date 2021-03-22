@@ -56,7 +56,6 @@ public class Program extends Node implements Root {
 			Program prog = copy();
 			prog.useStmts = newUseStmts;
 			prog.functionDefns = newFunctionDefns;
-
 			return prog;
 		} 
 		return this;

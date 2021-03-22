@@ -39,7 +39,9 @@ public class ArrayLength extends Expr {
 	public Node visitChildren(Visitor v) {
 		Expr newExp = this.exp.accept(v);
 		if(newExp != exp) {
-			return new ArrayLength(newExp);
+			ArrayLength newArrayLength = copy();
+			newArrayLength.exp = newExp;
+			return  newArrayLength;
 		} else {
 			return this;
 		}
