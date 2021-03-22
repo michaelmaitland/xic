@@ -12,12 +12,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.ArrayInit;
+import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.Expr;
@@ -53,25 +56,86 @@ import mtm68.visit.Visitor;
 public class TypeCheckerTests {
 
 	//-------------------------------------------------------------------------------- 
-	// IntLiteral 
+	// ArrayIndex
 	//-------------------------------------------------------------------------------- 
 
 	@Test
-	void intLiteralIsInt() {
-		CharLiteral literal = charLit('c');
-		CharLiteral newLiteral = doTypeCheck(literal);
+	void arrayIndexWithIntArrayIsTypeInt() {
+		ArrayIndex ai = new ArrayIndex(new StringLiteral("hi"), intLit(0L));
+		ArrayIndex newAi = doTypeCheck(ai);
 		
-		assertEquals(INT, newLiteral.getType());
+		assertEquals(INT, newAi.getType());
 	}
 
 	@Test
-	void charIsIntLiteral() {
-		StringLiteral literal = stringLit("hello");
-		StringLiteral newLiteral = doTypeCheck(literal);
+	void arrayIndexWithNoArray() {
+		ArrayIndex ai = new ArrayIndex(arbitraryCondition(), intLit(0L));
+		assertTypeCheckError(ai);
+	}
+
+	@Test
+	void arrayIndexWithNoIntIndex() {
+		ArrayIndex ai = new ArrayIndex(new StringLiteral("hi"), arbitraryCondition());
+		assertTypeCheckError(ai);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// ArrayInit
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void arrayInitEmptyArray() {
+		List<Expr> items = new ArrayList<>();
+		ArrayInit ai = new ArrayInit(items);
+		ArrayInit newAi = doTypeCheck(ai);
 		
-		assertEquals(ARRAY(INT), newLiteral.getType());
+		assertFalse(true);
+	}
+
+	@Test
+	void arrayInitArrayWithSameTypeElems() {
+		List<Expr> items = elems(intLit(0L), intLit(1L));
+		ArrayInit ai = new ArrayInit(items);
+		ArrayInit newAi = doTypeCheck(ai);
+		
+		assertEquals(ARRAY(INT), newAi.getType());
+	}
+
+	@Test
+	void arrayInitArrayWithOneElem() {
+		List<Expr> items = elems(intLit(1L));
+		ArrayInit ai = new ArrayInit(items);
+		ArrayInit newAi = doTypeCheck(ai);
+		
+		assertEquals(ARRAY(INT), newAi.getType());
+	}
+
+	@Test
+	void arrayInitArrayWithDiffTypeElems() {
+		List<Expr> items = elems(intLit(1L), arbitraryCondition());
+		ArrayInit ai = new ArrayInit(items);
+
+		assertTypeCheckError(ai);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// ArrayLength
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void arrayLengthWithArrayHasTypeInt() {
+		ArrayLength ai = new ArrayLength(new StringLiteral("hi"));
+		ArrayLength newAi = doTypeCheck(ai);
+		
+		assertEquals(INT, newAi.getType());
 	}
 	
+	@Test
+	void arrayLengthNotArrayTypeFails() {
+		ArrayLength ai = new ArrayLength(intLit(0L));
+		assertTypeCheckError(ai);
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// BoolLiteral
 	//-------------------------------------------------------------------------------- 
@@ -92,6 +156,207 @@ public class TypeCheckerTests {
 		assertEquals(BOOL, newLiteral.getType());
 	}
 
+
+	//-------------------------------------------------------------------------------- 
+	// CharLiteral 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void charLiteralIsInt() {
+		CharLiteral literal = charLit('c');
+		CharLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(INT, newLiteral.getType());
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// FExp
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void fexpValid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", 
+				elems(new SimpleDecl("x", INT), new SimpleDecl("y", BOOL)), 
+				singleton(INT));
+
+		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
+		exp = doTypeCheck(context, exp);
+
+		assertEquals(Types.INT, exp.getType());
+	}
+
+	@Test
+	void fexpMultipleReturnArgs() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, BOOL));
+
+		FExpr exp = new FExpr("f", empty());
+		exp = doTypeCheck(context, exp);
+
+		assertEquals(TVEC(INT, BOOL), exp.getType());
+	}
+
+	@Test
+	void fexpNoReturnInvalid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), empty());
+
+		FExpr exp = new FExpr("f", empty());
+		assertTypeCheckError(context, exp);
+	}
+
+	@Test
+	void fexpMismatchNumberOfArgs() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", singleton(new SimpleDecl("x", INT)), singleton(BOOL));
+
+		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
+		assertTypeCheckError(context, exp);
+	}
+
+	@Test
+	void fexpMismatchArgTypes() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", elems(new SimpleDecl("x", INT), new SimpleDecl("y", INT)), singleton(BOOL));
+
+		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
+		assertTypeCheckError(context, exp);
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// FunctionDefn
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void procAnyResult() {
+		FunctionDecl fDecl = new FunctionDecl("proc", elems(new SimpleDecl("x", INT)), ArrayUtils.empty());
+		Block voidBlock = new Block(elems(
+				new SimpleDecl("y", INT),
+				new Return(ArrayUtils.empty())
+				));
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		fDefn = doTypeCheck(fDefn);
+		
+		assertEquals(Result.VOID, fDefn.getBody().getResult());
+		
+		Block unitBlock = new Block(elems(
+				new SimpleDecl("y", INT)
+				));
+		
+		FunctionDefn fDefn2 = new FunctionDefn(fDecl, unitBlock);
+		fDefn2 = doTypeCheck(fDefn2);
+		
+		assertEquals(Result.UNIT, fDefn2.getBody().getResult());
+	}
+	
+	@Test
+	void funcOnlyVoidResult() {
+		FunctionDecl fDecl = new FunctionDecl("f", elems(new SimpleDecl("x", INT)), elems(Types.INT));
+		Block voidBlock = new Block(elems(
+				new SimpleDecl("y", INT),
+				new Return(elems(intLit(1L)))
+				));
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		fDefn = doTypeCheck(fDefn);
+		
+		assertEquals(Result.VOID, fDefn.getBody().getResult());
+
+		Block unitBlock = new Block(elems(
+				new SimpleDecl("y", INT)
+				));
+		
+		FunctionDefn fDefn2 = new FunctionDefn(fDecl, unitBlock);
+		assertTypeCheckError(fDefn2);
+	}
+	
+	@Test
+	void funcArgsInBodyScope() {
+		FunctionDecl fDecl = new FunctionDecl("f", elems(new SimpleDecl("x", INT)), elems(Types.INT));
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new Return(elems(intLit(1L)))
+				));
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, block);
+		assertTypeCheckError(fDefn);
+		
+		Block block2 = new Block(elems(
+				new Return(elems(new Var("x")))
+				));
+		
+		FunctionDefn fDefn2 = new FunctionDefn(fDecl, block2);
+		fDefn2 = doTypeCheck(fDefn2);
+		assertEquals(Result.VOID, fDefn2.getBody().getResult());
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Interface
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void testInterface() {
+		assertFalse(true);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// IntLiteral
+	//-------------------------------------------------------------------------------- 
+	@Test
+	void intIsIntLiteral() {
+		IntLiteral literal = intLit(0L);
+		IntLiteral newLiteral = doTypeCheck(literal);
+		
+		assertEquals(INT, newLiteral.getType());
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Negate 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void negateIntIsInt() {
+		Negate n = new Negate(intLit(1L));
+		Negate newN = doTypeCheck(n);
+		
+		assertEquals(INT, newN.getType());
+	}
+
+	@Test
+	void negateBoolIsError() {
+		Negate n = new Negate(arbitraryCondition());
+		assertTypeCheckError(n);
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Not 
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void notBoolIsBool() {
+		Not n = new Not(arbitraryCondition());
+		Not newN = doTypeCheck(n);
+		
+		assertEquals(BOOL, newN.getType());
+	}
+
+	@Test
+	void notIntIsError() {
+		Not n = new Not(intLit(0L));
+		assertTypeCheckError(n);
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Program
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void testProgram() {
+		assert(false);
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// StringLiteral
 	//-------------------------------------------------------------------------------- 
@@ -102,6 +367,38 @@ public class TypeCheckerTests {
 		StringLiteral newLiteral = doTypeCheck(literal);
 		
 		assertEquals(ARRAY(INT), newLiteral.getType());
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Use
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void testUse() {
+		assertFalse(true);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// Var
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void varFailsWhenNotInScope() {
+		TypingContext context = new TypingContext();
+		Var var = new Var("x");
+
+		assertTypeCheckError(context, var);
+	}
+
+	@Test
+	void varIsAssignedFromContext() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", BOOL);
+
+		Var var = new Var("x");
+		Var newVar = doTypeCheck(context, var);
+		
+		assertEquals(BOOL, newVar.getType());
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -140,7 +437,6 @@ public class TypeCheckerTests {
 		assertEquals(BOOL, newEq.getType());
 	}
 
-
 	@Test
 	void addFailsWhenNotIntLeftAndIntRight() {
 		BinExpr expr = new Add(arbitraryCondition(),arbitraryCondition());
@@ -170,89 +466,21 @@ public class TypeCheckerTests {
 	}
 	
 	//-------------------------------------------------------------------------------- 
-	// Var
+	// Assign
 	//-------------------------------------------------------------------------------- 
-	
+
 	@Test
-	void varFailsWhenNotInScope() {
+	void singleAssignValid() {
 		TypingContext context = new TypingContext();
-		Var var = new Var("x");
-
-		assertTypeCheckError(context, var);
-	}
-
-	@Test
-	void varIsAssignedFromContext() {
-		TypingContext context = new TypingContext();
-		context.addIdBinding("x", BOOL);
-
-		Var var = new Var("x");
-		Var newVar = doTypeCheck(context, var);
+		context.addIdBinding("x", INT);
 		
-		assertEquals(BOOL, newVar.getType());
-	}
-	
-	// ArrayIndex
-	
-	@Test
-	void arrayIndexWithIntArrayIsTypeInt() {
-		ArrayIndex ai = new ArrayIndex(new StringLiteral("hi"), intLit(0L));
+		SingleAssign assign = new SingleAssign(new Var("x"), intLit(0L));
+		assign = doTypeCheck(context, assign);
 		
-		ArrayIndex newAi = doTypeCheck(ai);
-		
-		assertEquals(INT, newAi.getType());
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
 	}
 
-	@Test
-	void arrayIndexWithNoArray() {
-		ArrayIndex ai = new ArrayIndex(arbitraryCondition(), intLit(0L));
-		assertTypeCheckError(null, ai);
-	}
-
-	@Test
-	void arrayIndexWithNoIntIndex() {
-		ArrayIndex ai = new ArrayIndex(new StringLiteral("hi"), arbitraryCondition());
-		assertTypeCheckError(null, ai);
-	}
-
-	//-------------------------------------------------------------------------------- 
-	// Negate 
-	//-------------------------------------------------------------------------------- 
-
-
-	@Test
-	void negateIntIsInt() {
-		Negate n = new Negate(intLit(1L));
-		Negate newN = doTypeCheck(n);
-		
-		assertEquals(INT, newN.getType());
-	}
-
-	@Test
-	void negateBoolIsError() {
-		Negate n = new Negate(arbitraryCondition());
-		assertTypeCheckError(n);
-	}
-	
-	//-------------------------------------------------------------------------------- 
-	// Not 
-	//-------------------------------------------------------------------------------- 
-
-
-	@Test
-	void notBoolIsBool() {
-		Not n = new Not(arbitraryCondition());
-		Not newN = doTypeCheck(n);
-		
-		assertEquals(BOOL, newN.getType());
-	}
-
-	@Test
-	void notIntIsError() {
-		Not n = new Not(intLit(0L));
-		assertTypeCheckError(n);
-	}
-	
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 
@@ -300,6 +528,63 @@ public class TypeCheckerTests {
 				), new Return(empty()));
 
 		assertTypeCheckError(context, block);
+	}
+
+	//-------------------------------------------------------------------------------- 
+	// Decl
+	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void declAddsToContext() {
+		TypingContext context = new TypingContext();
+		SimpleDecl decl = new SimpleDecl("x", INT);
+		decl = doTypeCheck(context, decl);
+		
+		assertEquals(Result.UNIT, decl.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void declAlreadyInScopeError() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", BOOL);
+
+		SimpleDecl decl = new SimpleDecl("x", INT);
+		assertTypeCheckError(context, decl);
+	}
+
+	@Test
+	void extendedDeclAlreadyInScopeError() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", BOOL);
+
+		ExtendedDecl decl = new ExtendedDecl("x", new DeclType(INT, 
+				elems(intLit(3L)), 
+				1));
+		assertTypeCheckError(context, decl);
+	}
+
+	@Test
+	void extendedDeclArrayValid() {
+		TypingContext context = new TypingContext();
+		ExtendedDecl decl = new ExtendedDecl("x", new DeclType(INT, 
+				elems(intLit(3L)), 
+				1));
+
+		decl = doTypeCheck(context, decl);
+		
+		assertEquals(Result.UNIT, decl.getResult());
+		assertEquals(addArrayDims(INT, 2), context.getIdType("x"));
+	}
+
+	@Test
+	void extendedDeclArrayNonIntIndex() {
+		TypingContext context = new TypingContext();
+		ExtendedDecl decl = new ExtendedDecl("x", new DeclType(INT, 
+				elems(boolLit(false)), 
+				1));
+
+		assertTypeCheckError(context, decl);
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -450,79 +735,6 @@ public class TypeCheckerTests {
 	}
 
 	//-------------------------------------------------------------------------------- 
-	// Decl
-	//-------------------------------------------------------------------------------- 
-
-	@Test
-	void declAddsToContext() {
-		TypingContext context = new TypingContext();
-		SimpleDecl decl = new SimpleDecl("x", INT);
-		decl = doTypeCheck(context, decl);
-		
-		assertEquals(Result.UNIT, decl.getResult());
-		assertTrue(context.isDefined("x"));
-	}
-
-	@Test
-	void declAlreadyInScopeError() {
-		TypingContext context = new TypingContext();
-		context.addIdBinding("x", BOOL);
-
-		SimpleDecl decl = new SimpleDecl("x", INT);
-		assertTypeCheckError(context, decl);
-	}
-
-	@Test
-	void extendedDeclAlreadyInScopeError() {
-		TypingContext context = new TypingContext();
-		context.addIdBinding("x", BOOL);
-
-		ExtendedDecl decl = new ExtendedDecl("x", new DeclType(INT, 
-				elems(intLit(3L)), 
-				1));
-		assertTypeCheckError(context, decl);
-	}
-
-	@Test
-	void extendedDeclArrayValid() {
-		TypingContext context = new TypingContext();
-		ExtendedDecl decl = new ExtendedDecl("x", new DeclType(INT, 
-				elems(intLit(3L)), 
-				1));
-
-		decl = doTypeCheck(context, decl);
-		
-		assertEquals(Result.UNIT, decl.getResult());
-		assertEquals(addArrayDims(INT, 2), context.getIdType("x"));
-	}
-
-	@Test
-	void extendedDeclArrayNonIntIndex() {
-		TypingContext context = new TypingContext();
-		ExtendedDecl decl = new ExtendedDecl("x", new DeclType(INT, 
-				elems(boolLit(false)), 
-				1));
-
-		assertTypeCheckError(context, decl);
-	}
-
-	//-------------------------------------------------------------------------------- 
-	// Assign
-	//-------------------------------------------------------------------------------- 
-
-	@Test
-	void singleAssignValid() {
-		TypingContext context = new TypingContext();
-		context.addIdBinding("x", INT);
-		
-		SingleAssign assign = new SingleAssign(new Var("x"), intLit(0L));
-		assign = doTypeCheck(context, assign);
-		
-		assertEquals(Result.UNIT, assign.getResult());
-		assertTrue(context.isDefined("x"));
-	}
-
-	//-------------------------------------------------------------------------------- 
 	// Return
 	//-------------------------------------------------------------------------------- 
 	
@@ -579,130 +791,6 @@ public class TypeCheckerTests {
 		Return ret = new Return(elems(arbitraryCondition(), intLit(0L)));
 		assertTypeCheckError(gamma, ret);
 	}
-
-	//-------------------------------------------------------------------------------- 
-	// FExp
-	//-------------------------------------------------------------------------------- 
-	
-	@Test
-	void fexpValid() {
-		TypingContext context = new TypingContext();
-		context.addFuncDecl("f", 
-				elems(new SimpleDecl("x", INT), new SimpleDecl("y", BOOL)), 
-				singleton(INT));
-
-		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
-		exp = doTypeCheck(context, exp);
-
-		assertEquals(Types.INT, exp.getType());
-	}
-
-	@Test
-	void fexpMultipleReturnArgs() {
-		TypingContext context = new TypingContext();
-		context.addFuncDecl("f", empty(), elems(INT, BOOL));
-
-		FExpr exp = new FExpr("f", empty());
-		exp = doTypeCheck(context, exp);
-
-		assertEquals(TVEC(INT, BOOL), exp.getType());
-	}
-
-	@Test
-	void fexpNoReturnInvalid() {
-		TypingContext context = new TypingContext();
-		context.addFuncDecl("f", empty(), empty());
-
-		FExpr exp = new FExpr("f", empty());
-		assertTypeCheckError(context, exp);
-	}
-
-	@Test
-	void fexpMismatchNumberOfArgs() {
-		TypingContext context = new TypingContext();
-		context.addFuncDecl("f", singleton(new SimpleDecl("x", INT)), singleton(BOOL));
-
-		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
-		assertTypeCheckError(context, exp);
-	}
-
-	@Test
-	void fexpMismatchArgTypes() {
-		TypingContext context = new TypingContext();
-		context.addFuncDecl("f", elems(new SimpleDecl("x", INT), new SimpleDecl("y", INT)), singleton(BOOL));
-
-		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
-		assertTypeCheckError(context, exp);
-	}
-	
-	//-------------------------------------------------------------------------------- 
-	// FunctionDefn
-	//-------------------------------------------------------------------------------- 
-	
-	@Test
-	void procAnyResult() {
-		FunctionDecl fDecl = new FunctionDecl("proc", elems(new SimpleDecl("x", INT)), ArrayUtils.empty());
-		Block voidBlock = new Block(elems(
-				new SimpleDecl("y", INT),
-				new Return(ArrayUtils.empty())
-				));
-		
-		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
-		fDefn = doTypeCheck(fDefn);
-		
-		assertEquals(Result.VOID, fDefn.getBody().getResult());
-		
-		Block unitBlock = new Block(elems(
-				new SimpleDecl("y", INT)
-				));
-		
-		FunctionDefn fDefn2 = new FunctionDefn(fDecl, unitBlock);
-		fDefn2 = doTypeCheck(fDefn2);
-		
-		assertEquals(Result.UNIT, fDefn2.getBody().getResult());
-	}
-	
-	@Test
-	void funcOnlyVoidResult() {
-		FunctionDecl fDecl = new FunctionDecl("f", elems(new SimpleDecl("x", INT)), elems(Types.INT));
-		Block voidBlock = new Block(elems(
-				new SimpleDecl("y", INT),
-				new Return(elems(intLit(1L)))
-				));
-		
-		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
-		fDefn = doTypeCheck(fDefn);
-		
-		assertEquals(Result.VOID, fDefn.getBody().getResult());
-
-		Block unitBlock = new Block(elems(
-				new SimpleDecl("y", INT)
-				));
-		
-		FunctionDefn fDefn2 = new FunctionDefn(fDecl, unitBlock);
-		assertTypeCheckError(fDefn2);
-	}
-	
-	@Test
-	void funcArgsInBodyScope() {
-		FunctionDecl fDecl = new FunctionDecl("f", elems(new SimpleDecl("x", INT)), elems(Types.INT));
-		Block block = new Block(elems(
-				new SimpleDecl("x", INT),
-				new Return(elems(intLit(1L)))
-				));
-		
-		FunctionDefn fDefn = new FunctionDefn(fDecl, block);
-		assertTypeCheckError(fDefn);
-		
-		Block block2 = new Block(elems(
-				new Return(elems(new Var("x")))
-				));
-		
-		FunctionDefn fDefn2 = new FunctionDefn(fDecl, block2);
-		fDefn2 = doTypeCheck(fDefn2);
-		assertEquals(Result.VOID, fDefn2.getBody().getResult());
-	}
-	
 
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods

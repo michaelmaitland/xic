@@ -47,10 +47,7 @@ public class ArrayLength extends Expr {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		Type type = tc.checkArrayLength(this);
-		
-		ArrayLength copy = copy();
-		setType(type);
-		return copy;
+		return copyAndSetType(type);
 	}
 	
 	
