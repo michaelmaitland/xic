@@ -1,5 +1,6 @@
 package mtm68.types;
 
+import static mtm68.ast.types.Types.ARRAY;
 import static mtm68.ast.types.Types.BOOL;
 import static mtm68.ast.types.Types.INT;
 import static mtm68.ast.types.Types.TVEC;
@@ -22,10 +23,11 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
-import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.StringLiteral;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.ast.nodes.binary.BinExpr;
+import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -54,7 +56,7 @@ public class TypeCheckerTests {
 		CharLiteral literal = charLit('c');
 		CharLiteral newLiteral = doTypeCheck(literal);
 		
-		assertEquals(Types.INT, newLiteral.getType());
+		assertEquals(INT, newLiteral.getType());
 	}
 
 	@Test
@@ -62,7 +64,7 @@ public class TypeCheckerTests {
 		StringLiteral literal = stringLit("hello");
 		StringLiteral newLiteral = doTypeCheck(literal);
 		
-		assertEquals(Types.ARRAY(INT), newLiteral.getType());
+		assertEquals(ARRAY(INT), newLiteral.getType());
 	}
 	
 	//-------------------------------------------------------------------------------- 
@@ -74,7 +76,7 @@ public class TypeCheckerTests {
 		BoolLiteral literal = boolLit(true);
 		BoolLiteral newLiteral = doTypeCheck(literal);
 		
-		assertEquals(Types.BOOL, newLiteral.getType());
+		assertEquals(BOOL, newLiteral.getType());
 	}
 
 	@Test
@@ -82,7 +84,7 @@ public class TypeCheckerTests {
 		BoolLiteral literal = boolLit(false);
 		BoolLiteral newLiteral = doTypeCheck(literal);
 		
-		assertEquals(Types.BOOL, newLiteral.getType());
+		assertEquals(BOOL, newLiteral.getType());
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -94,7 +96,7 @@ public class TypeCheckerTests {
 		StringLiteral literal = stringLit("hello");
 		StringLiteral newLiteral = doTypeCheck(literal);
 		
-		assertEquals(Types.ARRAY(INT), newLiteral.getType());
+		assertEquals(ARRAY(INT), newLiteral.getType());
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -108,10 +110,10 @@ public class TypeCheckerTests {
 		BinExpr add = new Add(intLit(0L), intLit(1L));
 		BinExpr newAdd = doTypeCheck(add);
 		
-		assertEquals(Types.INT, newAdd.getLeft().getType());
-		assertEquals(Types.INT, newAdd.getRight().getType());
+		assertEquals(INT, newAdd.getLeft().getType());
+		assertEquals(INT, newAdd.getRight().getType());
+		assertEquals(INT, newAdd.getType());
 	}
-
 
 	@Test
 	void addFailsWhenNotIntLeftAndIntRight() {
@@ -131,6 +133,38 @@ public class TypeCheckerTests {
 		assertTypeCheckError(null, expr);
 	}
 
+	@Test
+	void eqEqHasTypeBool() {
+		BinExpr eqeq = new EqEq(intLit(0L), intLit(1L));
+		BinExpr newEqEq = doTypeCheck(eqeq);
+		
+		assertEquals(INT, newEqEq.getLeft().getType());
+		assertEquals(INT, newEqEq.getRight().getType());
+		assertEquals(BOOL, newEqEq.getType());
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Var
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void varFailsWhenNotInScope() {
+		TypingContext context = new TypingContext();
+		Var var = new Var("x");
+
+		assertTypeCheckError(context, var);
+	}
+
+	@Test
+	void varIsAssignedFromContext() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", BOOL);
+
+		Var var = new Var("x");
+		Var newVar = doTypeCheck(context, var);
+		
+		assertEquals(Types.BOOL, newVar.getType());
+	}
 
 
 	//-------------------------------------------------------------------------------- 

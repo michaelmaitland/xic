@@ -1,6 +1,7 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -29,8 +30,18 @@ public class Var extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		Type type = tc.checkVar(this);
+		
+		Var copy = copy();
+		copy.setType(type);
+		return copy;
 	}
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }

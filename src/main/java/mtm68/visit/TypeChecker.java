@@ -9,6 +9,7 @@ import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -174,6 +175,20 @@ public class TypeChecker extends Visitor {
 		if(!isProc && fDefn.getBody().getResult().equals(Result.VOID)){
 			reportError(fDefn, "Function body must have void result.");
 		}
+	}
+
+	/**
+	 * Gets the type of the var from the context
+	 * @param v The var 
+	 * @return The type of var if it exists in the context, null otherwise.
+	 */
+	public Type checkVar(Var v) {
+		Type type = context.getIdType(v.getId());
+		
+		if(type == null) {
+			reportError(v, "Variable used before declaration.");
+		}
+		return type;
 	}
 	
 	public List<SemanticError> getTypeErrors() {

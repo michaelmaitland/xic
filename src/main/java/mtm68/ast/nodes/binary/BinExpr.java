@@ -65,7 +65,7 @@ public class BinExpr extends Expr {
 	public Node typeCheck(TypeChecker tc) {
 		tc.checkBinExpr(left, right);
 		
-		BinExpr copy = this.copy();
+		BinExpr copy = copy();
 		copy.setType(Types.INT);
 		return copy;
 	}
