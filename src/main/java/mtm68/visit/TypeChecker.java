@@ -76,7 +76,7 @@ public class TypeChecker extends Visitor {
 	@Override
 	public Visitor enter(Node n) {
 		if(isScopeNode(n)) context.enterScope();
-		if(n instanceof FunctionDefn) checkFuncBindings((FunctionDefn) n);
+		if(n instanceof FunctionDefn) addFuncReturn((FunctionDefn) n);
 
 		return this;
 	}
@@ -92,6 +92,23 @@ public class TypeChecker extends Visitor {
 	public void typeCheck(HasType actual, Type expected) {
 		if(!isEqualTypes(actual.getType(), expected)){
 			reportError(actual, "Expected type: " + expected + ", but got: " + actual.getType());
+		}
+	}
+
+	public void checkSubtype(Node base, Type subType, Type superType) {
+		if(subType.equals(superType) || superType.equals(Types.UNIT)) return;
+
+		reportError(base, subType + " is not a subtype of " + superType);
+	}
+
+	public void checkSubtypes(Node base, List<Type> subTypes, List<Type> superTypes) {
+		if(subTypes.size() != superTypes.size()) {
+			reportError(base, "Size mismatch in type vectors");
+			return;
+		}
+		
+		for(int i = 0; i < subTypes.size(); i++) {
+			checkSubtype(base, subTypes.get(i), superTypes.get(i));
 		}
 	}
 	
@@ -144,11 +161,7 @@ public class TypeChecker extends Visitor {
 		context.addIdBinding(decl.getId(), decl.getType());
 	}
 	
-	public void checkFuncBindings(FunctionDefn fDefn) {
-//		List<SimpleDecl> decls = fDefn.getFunctionDecl().getArgs();
-//		for(Decl decl : decls) {
-//			checkDecl(decl);
-//		}
+	public void addFuncReturn(FunctionDefn fDefn) {
 		context.addReturnTypeInScope(fDefn.getFunctionDecl().getReturnTypes());
 	}
 	

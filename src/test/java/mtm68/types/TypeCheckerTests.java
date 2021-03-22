@@ -1,20 +1,14 @@
 package mtm68.types;
 
-import static mtm68.ast.types.Types.ARRAY;
-import static mtm68.ast.types.Types.BOOL;
-import static mtm68.ast.types.Types.EMPTY_ARRAY;
-import static mtm68.ast.types.Types.INT;
-import static mtm68.ast.types.Types.TVEC;
-import static mtm68.ast.types.Types.addArrayDims;
-import static mtm68.util.ArrayUtils.elems;
+import static java.util.Optional.*;
+import static mtm68.ast.types.Types.*;
+import static mtm68.util.ArrayUtils.*;
 import static mtm68.util.ArrayUtils.empty;
-import static mtm68.util.ArrayUtils.singleton;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +35,7 @@ import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
+import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
@@ -542,11 +537,278 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addIdBinding("x", INT);
 		
+		// x = 0
 		SingleAssign assign = new SingleAssign(new Var("x"), intLit(0L));
 		assign = doTypeCheck(context, assign);
 		
 		assertEquals(Result.UNIT, assign.getResult());
 		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void singleAssignDeclValid() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		
+		// y:int = 0
+		SingleAssign assign = new SingleAssign(new SimpleDecl("y", INT), intLit(0L));
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+		assertTrue(context.isDefined("y"));
+	}
+
+	@Test
+	void singleAssignDeclAlreadyDeclared() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		
+		// x:int = 0
+		SingleAssign assign = new SingleAssign(new SimpleDecl("x", INT), intLit(0L));
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void singleAssignDeclMismatchType() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		
+		// y:bool = 0
+		SingleAssign assign = new SingleAssign(new SimpleDecl("y", BOOL), intLit(0L));
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void singleAssignDecEmptyArray() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		
+		// y:int[] = {}
+		SingleAssign assign = new SingleAssign(
+				new SimpleDecl("y", ARRAY(INT)), 
+				new ArrayInit(empty()));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+		assertTrue(context.isDefined("y"));
+	}
+
+	@Test
+	void singleAssignIntoArray() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", ARRAY(BOOL));
+		
+		// x[0] = true
+		SingleAssign assign = new SingleAssign(
+				new ArrayIndex(new Var("x"), intLit(0L)), 
+				boolLit(true));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void singleAssignIntoArrayTypeMismatch() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", ARRAY(INT));
+		
+		// x[0] = true 
+		SingleAssign assign = new SingleAssign(
+				new ArrayIndex(new Var("x"), intLit(0L)), 
+				boolLit(true));
+		
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void singleAssignIntoArrayEmptyArray() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", ARRAY(ARRAY(INT)));
+		
+		// x[0] = {}
+		SingleAssign assign = new SingleAssign(
+				new ArrayIndex(new Var("x"), intLit(0L)), 
+				new ArrayInit(empty()));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void singleAssignIntoMultiArray() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", ARRAY(ARRAY(INT)));
+		
+		// x[0][1] = 2 
+		SingleAssign assign = new SingleAssign(
+				new ArrayIndex(new ArrayIndex(new Var("x"), intLit(0L)), intLit(1L)), 
+				intLit(2L));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void singleAssignFunctionResult() {
+		TypingContext context = new TypingContext();
+		context.addIdBinding("x", INT);
+		context.addFuncDecl("f", empty(), singleton(INT));
+		
+		// x = f() 
+		SingleAssign assign = new SingleAssign(
+				new Var("x"), 
+				new FExpr("f", empty()));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void multiAssignValid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, BOOL));
+		
+		// x:int, y:bool = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						of(new SimpleDecl("x", INT)),
+						of(new SimpleDecl("y", BOOL))
+					), 
+				new FExpr("f", empty()));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+		assertTrue(context.isDefined("y"));
+	}
+
+	@Test
+	void multiAssignSingleWildcard() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT));
+		
+		// _ = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						Optional.empty()
+					), 
+				new FExpr("f", empty()));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+	}
+
+	@Test
+	void multiAssignMultipleWithWildcards() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, ARRAY(INT), BOOL));
+		
+		// _, x:int, _ = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						Optional.empty(),
+						of(simDecl("x", ARRAY(INT))),
+						Optional.empty()
+					), 
+				new FExpr("f", empty()));
+
+		assign = doTypeCheck(context, assign);
+		
+		assertEquals(Result.UNIT, assign.getResult());
+		assertTrue(context.isDefined("x"));
+	}
+
+	@Test
+	void multiAssignMismatchTypeVectorSize() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(ARRAY(INT), INT, BOOL));
+		
+		// _, x:int = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						Optional.empty(),
+						of(simDecl("x", INT))
+					), 
+				new FExpr("f", empty()));
+
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void multiAssignOverlappingIdents() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, INT));
+		
+		// x:int, x:int = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						of(simDecl("x", INT)),
+						of(simDecl("x", INT))
+					), 
+				new FExpr("f", empty()));
+
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void multiAssignTypeMismatch() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, INT));
+		
+		// x:int, y:bool = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						of(simDecl("x", INT)),
+						of(simDecl("y", BOOL))
+					), 
+				new FExpr("f", empty()));
+
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void multiAssignProcedureFail() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), empty());
+		
+		// _ = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						Optional.empty()
+					), 
+				new FExpr("f", empty()));
+
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
+	void multiAssignIdentAlreadyInContext() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), elems(INT, INT));
+		context.addIdBinding("x", BOOL);
+		
+		// x:int, y:int = f() 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						of(simDecl("x", INT)),
+						of(simDecl("y", INT))
+					), 
+				new FExpr("f", empty()));
+
+		assertTypeCheckError(context, assign);
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -914,6 +1176,10 @@ public class TypeCheckerTests {
 
 	private StringLiteral stringLit(String value) {
 		return new StringLiteral(value);
+	}
+	
+	private SimpleDecl simDecl(String id, Type type) {
+		return new SimpleDecl(id, type);
 	}
 
 	private Block emptyBlock() {
