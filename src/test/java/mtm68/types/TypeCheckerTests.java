@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
+import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.Expr;
@@ -165,9 +166,19 @@ public class TypeCheckerTests {
 		Var var = new Var("x");
 		Var newVar = doTypeCheck(context, var);
 		
-		assertEquals(Types.BOOL, newVar.getType());
+		assertEquals(BOOL, newVar.getType());
 	}
-
+	
+	// ArrayIndex
+	
+	@Test
+	void arrayIndexWithIntArrayIsTypeInt() {
+		ArrayIndex ai = new ArrayIndex(new StringLiteral("hi"), intLit(0L));
+		
+		ArrayIndex newAi = doTypeCheck(ai);
+		
+		assertEquals(INT, newAi.getType());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// Block
