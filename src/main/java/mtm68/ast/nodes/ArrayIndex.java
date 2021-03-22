@@ -1,7 +1,7 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.types.Types;
+import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -51,9 +51,10 @@ public class ArrayIndex extends Expr  {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 	
-		//tc.typeCheck(arr, Types.ARRAY_TYPE);
-		tc.typeCheck(index, Types.INT);
+		Type type = tc.checkArrayIndex(this);
 		
-		return null;
+		ArrayIndex newArrayIndex = copy();
+		newArrayIndex.setType(type);
+		return newArrayIndex;
 	}
 }

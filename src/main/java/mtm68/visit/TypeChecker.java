@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDefn;
@@ -15,8 +16,8 @@ import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
-import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.While;
+import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.HasResult;
 import mtm68.ast.types.HasType;
@@ -190,7 +191,18 @@ public class TypeChecker extends Visitor {
 		}
 		return type;
 	}
-	
+
+	public Type checkArrayIndex(ArrayIndex arrayIndex) {
+		typeCheck(arrayIndex.getIndex(), Types.INT);
+		
+		Type arrType = arrayIndex.getArr().getType();
+		
+		if(!(arrType instanceof ArrayType)) {
+			reportError(arrayIndex, "Must index into an array");
+		}
+		return ((ArrayType)arrType).getType();
+	}
+
 	public List<SemanticError> getTypeErrors() {
 		return typeErrors;
 	}
@@ -214,6 +226,5 @@ public class TypeChecker extends Visitor {
 				|| node instanceof While
 				|| node instanceof FunctionDefn;
 	}
-
 
 }
