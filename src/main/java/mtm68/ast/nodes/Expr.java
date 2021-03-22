@@ -15,4 +15,16 @@ public abstract class Expr extends Node implements HasType {
 	public void setType(Type type) {
 		this.type = type;
 	}
+	
+	/**
+	 * Copies this Expr, sets the type of the copied Expr,
+	 *  and returns that copied Expr.
+	 * @param type the type to set the copied Expr
+	 * @return the copied Expr
+	 */
+	public <E extends Expr> E copyAndSetType(Type type) {
+		E newE = this.copy();
+		newE.setType(type);
+		return newE;
+	}
 }

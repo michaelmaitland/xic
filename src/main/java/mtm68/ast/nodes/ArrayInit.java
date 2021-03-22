@@ -3,6 +3,7 @@ package mtm68.ast.nodes;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.Type;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -11,6 +12,14 @@ public class ArrayInit extends Expr {
 	private List<Expr> items;
 
 	public ArrayInit(List<Expr> items) {
+		this.items = items;
+	}
+
+	public List<Expr> getItems() {
+		return items;
+	}
+
+	public void setItems(List<Expr> items) {
 		this.items = items;
 	}
 
@@ -38,7 +47,9 @@ public class ArrayInit extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO Auto-generated method stub
-		return null;
+		Type type = tc.checkArrayInit(this);
+		return copyAndSetType(type);
 	}
+	
+	
 }

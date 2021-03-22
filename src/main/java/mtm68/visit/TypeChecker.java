@@ -3,14 +3,20 @@ package mtm68.visit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.ArrayInit;
+import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
+import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Not;
 import mtm68.ast.nodes.Var;
+import mtm68.ast.nodes.binary.BinExpr;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -88,6 +94,13 @@ public class TypeChecker extends Visitor {
 			typeCheck(actual.get(i), expected.get(i));
 		}	
 	}
+
+	public <T extends HasType> void checkTypes(Node base, List<T> items, Type expected) {
+		List<Type> expectedList = items.stream()
+									   .map(i -> expected)
+									   .collect(Collectors.toList());
+		checkTypes(base, items, expectedList);
+	}
 	
 	public void checkResultIsUnit(HasResult result) {
 		if(result.getResult() != Result.UNIT) {
@@ -140,11 +153,7 @@ public class TypeChecker extends Visitor {
 		return checkAndGetFunctionReturn(fexp, id, false);
 	}
 
-	public void checkBinExpr(Expr left, Expr right) {
-		typeCheck(left, Types.INT);
-		typeCheck(right, Types.INT);
-	}
-	
+
 	private void checkFunctionDecl(Node base, String id) {
 		if(!context.isFunctionDecl(id)) {
 			reportError(base, "Identifier \"" + id + "\" is not a valid function");
@@ -178,6 +187,53 @@ public class TypeChecker extends Visitor {
 		}
 	}
 
+	public Type checkArrayIndex(ArrayIndex arrayIndex) {
+		typeCheck(arrayIndex.getIndex(), Types.INT);
+		
+		Type arrType = arrayIndex.getArr().getType();
+		
+		if(!(arrType instanceof ArrayType)) {
+			reportError(arrayIndex, "Must index into an array");
+			throw new FatalTypeException();
+		}
+
+		return ((ArrayType)arrType).getType();
+	}
+	
+	public Type checkArrayInit(ArrayInit arrayInit) {
+		
+		Type expected;
+		if(arrayInit.getItems().isEmpty()) {
+			expected = null;
+		} else {
+			expected = arrayInit.getItems().get(0).getType();
+		}
+
+		checkTypes(arrayInit, arrayInit.getItems(), expected);
+		return Types.ARRAY(expected);
+	}
+
+	public Type checkArrayLength(ArrayLength arrayLength) {
+		
+		if(arrayLength.getExp().getType() instanceof ArrayType) {
+			return Types.INT;
+		} else {
+			reportError(arrayLength, "Length takes an argument of type Array.");
+			return null;
+		}
+	}
+	
+	public Type checkNegate(Negate negate) {
+		typeCheck(negate.getExpr(), Types.INT);
+		return Types.INT;
+	}
+
+	public Type checkNot(Not not) {
+		typeCheck(not.getExpr(), Types.BOOL);
+		return Types.BOOL;
+
+	}
+
 	/**
 	 * Gets the type of the var from the context
 	 * @param v The var 
@@ -192,17 +248,11 @@ public class TypeChecker extends Visitor {
 		return type;
 	}
 
-	public Type checkArrayIndex(ArrayIndex arrayIndex) {
-		typeCheck(arrayIndex.getIndex(), Types.INT);
+	public Type checkBinExpr(BinExpr be) {
+		typeCheck(be.getLeft(), be.getOp().getExpectedType());
+		typeCheck(be.getRight(), be.getOp().getExpectedType());
 		
-		Type arrType = arrayIndex.getArr().getType();
-		
-		if(!(arrType instanceof ArrayType)) {
-			reportError(arrayIndex, "Must index into an array");
-			throw new FatalTypeException();
-		}
-
-		return ((ArrayType)arrType).getType();
+		return be.getOp().getReturnType();
 	}
 
 	public List<SemanticError> getTypeErrors() {

@@ -25,7 +25,9 @@ import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.IntLiteral;
+import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Not;
 import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
@@ -109,14 +111,35 @@ public class TypeCheckerTests {
 	//-------------------------------------------------------------------------------- 
 
 	@Test
-	void addHasIntLeftAndIntRight() {
-		BinExpr add = new Add(intLit(0L), intLit(1L));
-		BinExpr newAdd = doTypeCheck(add);
+	void addHasIntLeftAndIntRightAndIsInt() {
+		Add add = new Add(intLit(0L), intLit(1L));
+		Add newAdd = doTypeCheck(add);
 		
 		assertEquals(INT, newAdd.getLeft().getType());
 		assertEquals(INT, newAdd.getRight().getType());
 		assertEquals(INT, newAdd.getType());
 	}
+
+	@Test
+	void eqEqWithIntLeftAndIntRightAndIsBool() {
+		EqEq eq = new EqEq(intLit(0L), intLit(1L));
+		EqEq newEq = doTypeCheck(eq);
+		
+		assertEquals(INT, newEq.getLeft().getType());
+		assertEquals(INT, newEq.getRight().getType());
+		assertEquals(BOOL, newEq.getType());
+	}
+
+	@Test
+	void eqEqWithBoolLeftAndBoolRightAndIsBool() {
+		EqEq eq = new EqEq(arbitraryCondition(), arbitraryCondition());
+		EqEq newEq = doTypeCheck(eq);
+		
+		assertEquals(BOOL, newEq.getLeft().getType());
+		assertEquals(BOOL, newEq.getRight().getType());
+		assertEquals(BOOL, newEq.getType());
+	}
+
 
 	@Test
 	void addFailsWhenNotIntLeftAndIntRight() {
@@ -192,6 +215,44 @@ public class TypeCheckerTests {
 		assertTypeCheckError(null, ai);
 	}
 
+	//-------------------------------------------------------------------------------- 
+	// Negate 
+	//-------------------------------------------------------------------------------- 
+
+
+	@Test
+	void negateIntIsInt() {
+		Negate n = new Negate(intLit(1L));
+		Negate newN = doTypeCheck(n);
+		
+		assertEquals(INT, newN.getType());
+	}
+
+	@Test
+	void negateBoolIsError() {
+		Negate n = new Negate(arbitraryCondition());
+		assertTypeCheckError(n);
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Not 
+	//-------------------------------------------------------------------------------- 
+
+
+	@Test
+	void notBoolIsBool() {
+		Not n = new Not(arbitraryCondition());
+		Not newN = doTypeCheck(n);
+		
+		assertEquals(BOOL, newN.getType());
+	}
+
+	@Test
+	void notIntIsError() {
+		Not n = new Not(intLit(0L));
+		assertTypeCheckError(n);
+	}
+	
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 
