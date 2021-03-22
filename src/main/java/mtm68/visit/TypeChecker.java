@@ -94,6 +94,23 @@ public class TypeChecker extends Visitor {
 			reportError(actual, "Expected type: " + expected + ", but got: " + actual.getType());
 		}
 	}
+
+	public void checkSubtype(Node base, Type subType, Type superType) {
+		if(subType.equals(superType) || superType.equals(Types.UNIT)) return;
+
+		reportError(base, subType + " is not a subtype of " + superType);
+	}
+
+	public void checkSubtypes(Node base, List<Type> subTypes, List<Type> superTypes) {
+		if(subTypes.size() != superTypes.size()) {
+			reportError(base, "Size mismatch in type vectors");
+			return;
+		}
+		
+		for(int i = 0; i < subTypes.size(); i++) {
+			checkSubtype(base, subTypes.get(i), superTypes.get(i));
+		}
+	}
 	
 	public <T extends HasType> void checkTypes(Node base, List<T> actual, List<Type> expected) {
 		if(expected.size() != actual.size()) {

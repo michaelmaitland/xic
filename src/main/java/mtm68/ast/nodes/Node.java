@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
-import mtm68.exception.SemanticException;
 import mtm68.visit.FunctionCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;

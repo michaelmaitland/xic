@@ -3,10 +3,14 @@ package mtm68.ast.nodes.stmts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.types.Result;
+import mtm68.ast.types.Type;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -83,6 +87,18 @@ public class MultipleAssign extends Assign {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		Type funcType = rhs.getType();
+		List<Type> returnTypes = Types.toList(funcType);
+
+		List<Type> declTypes = decls.stream()
+				.map(d -> d.map(SimpleDecl::getType))
+				.map(d -> d.orElse(Types.UNIT))
+				.collect(Collectors.toList());
+		
+		tc.checkSubtypes(this, returnTypes, declTypes);
+		
+		MultipleAssign assign = copy();
+		assign.result = Result.UNIT;
+		return assign;
 	}
 }
