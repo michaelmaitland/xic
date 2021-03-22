@@ -409,6 +409,73 @@ public class PrettyPrintTests {
 		
 		testPrettyPrint(setUpParser(prog, FileType.XI), expected);
 	}
+	
+	@Test
+	void testNewlineChar() {
+		String prog = "foo() {\r\n"
+				+ "    s: int= '\\n'"
+				+ "}";
+		String expected = "(()\r\n"
+				+ " ((foo () ()\r\n"
+				+ "   ((= (s int) '\\n')\r\n"
+				+ "   )\r\n"
+				+ "  )\r\n"
+				+ " )\r\n"
+				+ ")\r\n"
+				+ "";
+		
+		testPrettyPrint(setUpParser(prog, FileType.XI), expected);
+	}
+	
+	@Test
+	void testFExpr() {
+		String prog = "foo(): bool, int {\n"
+				+ "  expr: int = 1 - 2 * 3 * -4 *\n"
+				+ "  5pred: bool = true & true | false;\n"
+				+ "  if (expr <= 47) { }\n"
+				+ "  else pred = !pred\n"
+				+ "  if (pred) { expr = 59 }\n"
+				+ "  return pred, expr;\n"
+				+ "}\n"
+				+ "\n"
+				+ "bar() {\n"
+				+ "  _, i: int = foo()\n"
+				+ "  b: int[f(x)][]\n"
+				+ "  b[0] = {1, 0}\n"
+				+ "}\n"
+				+ "";
+		String expected = "( ()\n"
+				+ "  ( (foo () (bool int)\n"
+				+ "      ( (= (expr int)\n"
+				+ "          (- 1 (* (* (* 2 3) (- 4))\n"
+				+ "                  5\n"
+				+ "               )\n"
+				+ "          )\n"
+				+ "        )\n"
+				+ "        (= (pred bool)\n"
+				+ "          (| (& true true) false)\n"
+				+ "        )\n"
+				+ "        (if (<= expr 47)\n"
+				+ "          ()\n"
+				+ "          (= pred (! pred))\n"
+				+ "        )\n"
+				+ "        (if pred ((= expr 59)))\n"
+				+ "        (return pred expr)\n"
+				+ "      )\n"
+				+ "    )\n"
+				+ "    (bar () ()\n"
+				+ "      ( (= (_ (i int)) (foo))\n"
+				+ "        (b ([] ([] int) (f x)))\n"
+				+ "        (= ([] b 0) (1 0))\n"
+				+ "      )\n"
+				+ "    )\n"
+				+ "  )\n"
+				+ ")\n"
+				+ "";
+		
+		testPrettyPrint(setUpParser(prog, FileType.XI), expected);
+	}
+
 
 	private String superTrim (String s) {
 		return s.replaceAll("[\\n\\t\\r ]",  "").trim();

@@ -1,7 +1,11 @@
 package mtm68.ast.types;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
+import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 
 public class DeclType { 
@@ -70,9 +74,20 @@ public class DeclType {
 		if(n == indices.size()) {
 			return typePP;
 		}
+		
+		StringWriter indexOut = new StringWriter();
+		PrintWriter writer = new PrintWriter(indexOut);
+		SExpPrinter indexPrinter = new CodeWriterSExpPrinter(writer);
+
 		String outerBracket = typePP.substring(0, 4);
 		String nestedType = typePP.substring(4, typePP.length()-1);
 		
-		return  outerBracket + addIndicesToPP(nestedType, indices, n+1) + " " + indices.get(n) + ")";
+		indices.get(n).prettyPrint(indexPrinter);
+		indexPrinter.flush();
+		String indexPP = indexOut.toString();
+		
+		writer.close();
+		
+		return  outerBracket + addIndicesToPP(nestedType, indices, n+1) + " " + indexPP + ")";
 	}
 }
