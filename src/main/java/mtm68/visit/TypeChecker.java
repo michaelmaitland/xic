@@ -116,10 +116,10 @@ public class TypeChecker extends Visitor {
 	}
 	
 	public void checkFuncBindings(FunctionDefn fDefn) {
-		List<SimpleDecl> decls = fDefn.getFunctionDecl().getArgs();
-		for(Decl decl : decls) {
-			checkDecl(decl);
-		}
+//		List<SimpleDecl> decls = fDefn.getFunctionDecl().getArgs();
+//		for(Decl decl : decls) {
+//			checkDecl(decl);
+//		}
 		context.addReturnTypeInScope(fDefn.getFunctionDecl().getReturnTypes());
 	}
 	
@@ -172,7 +172,7 @@ public class TypeChecker extends Visitor {
 		Type retTy = Types.TVEC(fDefn.getFunctionDecl().getReturnTypes());
 		boolean isProc = retTy.equals(Types.UNIT);
 		
-		if(!isProc && fDefn.getBody().getResult().equals(Result.VOID)){
+		if(!isProc && fDefn.getBody().getResult().equals(Result.UNIT)){
 			reportError(fDefn, "Function body must have void result.");
 		}
 	}

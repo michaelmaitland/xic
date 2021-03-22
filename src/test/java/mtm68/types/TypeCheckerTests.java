@@ -21,6 +21,8 @@ import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.FunctionDecl;
+import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.StringLiteral;
@@ -548,6 +550,68 @@ public class TypeCheckerTests {
 		FExpr exp = new FExpr("f", elems(intLit(0L), boolLit(true)));
 		assertTypeCheckError(context, exp);
 	}
+	
+	//-------------------------------------------------------------------------------- 
+	// FunctionDefn
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void procAnyResult() {
+		FunctionDecl fDecl = new FunctionDecl("proc", elems(new SimpleDecl("x", INT)), ArrayUtils.empty());
+		Block voidBlock = new Block(elems(
+				new SimpleDecl("y", INT),
+				new Return(ArrayUtils.empty())
+				));
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		fDefn = doTypeCheck(fDefn);
+		
+		assertEquals(Result.VOID, fDefn.getBody().getResult());
+		
+		Block unitBlock = new Block(elems(
+				new SimpleDecl("y", INT)
+				));
+		
+		FunctionDefn fDefn2 = new FunctionDefn(fDecl, unitBlock);
+		fDefn2 = doTypeCheck(fDefn2);
+		
+		assertEquals(Result.UNIT, fDefn2.getBody().getResult());
+	}
+	
+	@Test
+	void funcOnlyVoidResult() {
+		FunctionDecl fDecl = new FunctionDecl("f", elems(new SimpleDecl("x", INT)), elems(Types.INT));
+		Block voidBlock = new Block(elems(
+				new SimpleDecl("y", INT),
+				new Return(elems(intLit(1L)))
+				));
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		fDefn = doTypeCheck(fDefn);
+		
+		assertEquals(Result.VOID, fDefn.getBody().getResult());
+
+		Block unitBlock = new Block(elems(
+				new SimpleDecl("y", INT)
+				));
+		
+		FunctionDefn fDefn2 = new FunctionDefn(fDecl, unitBlock);
+		assertTypeCheckError(fDefn2);
+	}
+	
+	@Test
+	void funcArgsInBodyScope() {
+		FunctionDecl fDecl = new FunctionDecl("f", elems(new SimpleDecl("x", INT)), elems(Types.INT));
+		Block block = new Block(elems(
+				new SimpleDecl("x", INT),
+				new Return(elems(intLit(1L)))
+				));
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, block);
+		assertTypeCheckError(fDefn);
+
+	}
+	
 
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods
