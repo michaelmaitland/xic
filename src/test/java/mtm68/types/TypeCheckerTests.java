@@ -180,6 +180,18 @@ public class TypeCheckerTests {
 		assertEquals(INT, newAi.getType());
 	}
 
+	@Test
+	void arrayIndexWithNoArray() {
+		ArrayIndex ai = new ArrayIndex(arbitraryCondition(), intLit(0L));
+		assertTypeCheckError(null, ai);
+	}
+
+	@Test
+	void arrayIndexWithNoIntIndex() {
+		ArrayIndex ai = new ArrayIndex(new StringLiteral("hi"), arbitraryCondition());
+		assertTypeCheckError(null, ai);
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 

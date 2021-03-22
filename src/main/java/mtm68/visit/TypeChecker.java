@@ -199,7 +199,9 @@ public class TypeChecker extends Visitor {
 		
 		if(!(arrType instanceof ArrayType)) {
 			reportError(arrayIndex, "Must index into an array");
+			throw new FatalTypeException();
 		}
+
 		return ((ArrayType)arrType).getType();
 	}
 
