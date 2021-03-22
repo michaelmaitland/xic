@@ -609,7 +609,14 @@ public class TypeCheckerTests {
 		
 		FunctionDefn fDefn = new FunctionDefn(fDecl, block);
 		assertTypeCheckError(fDefn);
-
+		
+		Block block2 = new Block(elems(
+				new Return(elems(new Var("x")))
+				));
+		
+		FunctionDefn fDefn2 = new FunctionDefn(fDecl, block2);
+		fDefn2 = doTypeCheck(fDefn2);
+		assertEquals(Result.VOID, fDefn2.getBody().getResult());
 	}
 	
 
