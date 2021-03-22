@@ -1,4 +1,4 @@
-# Programming Assignment 2 - Implementing Semantic Analysis
+# Programming Assignment 2 - Implementing Syntactic Analysis
 
 ## Collaborators
 * Michael Maitland, mtm68
