@@ -54,6 +54,6 @@ public class Interface extends Node implements Root {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		return this;
 	}
 }
