@@ -1,9 +1,12 @@
 package mtm68.ast.nodes.binary;
 
+import java.util.Set;
+
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Type;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -72,9 +75,6 @@ public class BinExpr extends Expr {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		Type type = tc.checkBinExpr(this);
-		
-		BinExpr copy = copy();
-		copy.setType(type);
-		return copy;
+		return copyAndSetType(type);
 	}
 }
