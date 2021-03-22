@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -46,8 +47,8 @@ public class ArrayLength extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		Type type = tc.checkArrayLength(this);
-		return copyAndSetType(type);
+		tc.checkArrayLength(this);
+		return copyAndSetType(Types.INT);
 	}
 	
 	

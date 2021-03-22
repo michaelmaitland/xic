@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
+import mtm68.ast.types.Types;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -36,8 +37,7 @@ public class Not extends UnExpr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		Type type = tc.checkNot(this);
-		
-		return copyAndSetType(type);
+		tc.checkNot(this);
+		return copyAndSetType(Types.BOOL);
 	}
 }

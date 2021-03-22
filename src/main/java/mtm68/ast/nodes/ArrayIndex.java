@@ -51,9 +51,6 @@ public class ArrayIndex extends Expr  {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		Type type = tc.checkArrayIndex(this);
-		
-		ArrayIndex newArrayIndex = copy();
-		newArrayIndex.setType(type);
-		return newArrayIndex;
+		return copyAndSetType(type);
 	}
 }

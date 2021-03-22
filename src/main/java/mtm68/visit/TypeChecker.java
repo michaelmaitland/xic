@@ -213,25 +213,18 @@ public class TypeChecker extends Visitor {
 		return Types.ARRAY(expected);
 	}
 
-	public Type checkArrayLength(ArrayLength arrayLength) {
-		
-		if(arrayLength.getExp().getType() instanceof ArrayType) {
-			return Types.INT;
-		} else {
+	public void checkArrayLength(ArrayLength arrayLength) {
+		if(!(arrayLength.getExp().getType() instanceof ArrayType)) {
 			reportError(arrayLength, "Length takes an argument of type Array.");
-			return null;
 		}
 	}
 	
-	public Type checkNegate(Negate negate) {
+	public void checkNegate(Negate negate) {
 		typeCheck(negate.getExpr(), Types.INT);
-		return Types.INT;
 	}
 
-	public Type checkNot(Not not) {
+	public void checkNot(Not not) {
 		typeCheck(not.getExpr(), Types.BOOL);
-		return Types.BOOL;
-
 	}
 
 	/**

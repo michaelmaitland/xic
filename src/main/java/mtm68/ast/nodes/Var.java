@@ -31,10 +31,7 @@ public class Var extends Expr {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		Type type = tc.checkVar(this);
-		
-		Var copy = copy();
-		copy.setType(type);
-		return copy;
+		return copyAndSetType(type);
 	}
 
 	public String getId() {
