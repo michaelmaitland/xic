@@ -3,6 +3,7 @@ package mtm68.visit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import mtm68.ast.nodes.ArrayIndex;
@@ -17,6 +18,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Not;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.BinExpr;
+import mtm68.ast.nodes.binary.Binop;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -34,11 +36,20 @@ import mtm68.ast.types.TypingContext;
 import mtm68.exception.BaseError;
 import mtm68.exception.FatalTypeException;
 import mtm68.exception.SemanticError;
+import mtm68.util.ArrayUtils;
 
 public class TypeChecker extends Visitor {
 	TypingContext context;
 	
 	private List<SemanticError> typeErrors;
+
+	// Sets described in the typing rules
+	private	Set<Binop> intToIntToInt = ArrayUtils.newHashSet(Binop.ADD, Binop.SUB, Binop.ADD, Binop.HIGH_MULT, Binop.DIV, Binop.MOD);
+	private	Set<Binop> intToIntToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ, Binop.LT, Binop.LEQ, Binop.GT, Binop.GEQ);
+	private	Set<Binop> boolToBoolToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ, Binop.AND, Binop.OR);
+	private	Set<Binop> arrToArrToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ);
+	private	Set<Binop> arrToArrToArr = ArrayUtils.newHashSet(Binop.ADD);
+
 
 	public TypeChecker(Map<String, ContextType> initSymTable) {
 		this(new TypingContext(initSymTable));
@@ -241,11 +252,46 @@ public class TypeChecker extends Visitor {
 		return type;
 	}
 
+	
 	public Type checkBinExpr(BinExpr be) {
-		typeCheck(be.getLeft(), be.getOp().getExpectedType());
-		typeCheck(be.getRight(), be.getOp().getExpectedType());
 		
-		return be.getOp().getReturnType();
+		Binop op = be.getOp();
+		Type leftType = be.getLeft().getType();
+		Type rightType  = be.getRight().getType();
+
+		if(intToIntToInt.contains(op) 
+				&& leftType.equals(Types.INT)
+				&& rightType.equals(Types.INT)) {
+			return Types.INT;
+
+		} else if(intToIntToBool.contains(op) 
+				&& leftType.equals(Types.INT) 
+				&& rightType.equals(Types.INT)) {
+			return Types.BOOL;
+
+		} else if (boolToBoolToBool.contains(op) 
+				&& leftType.equals(Types.BOOL) 
+				&& rightType.equals(Types.BOOL)) {
+			return Types.BOOL;
+
+		} else if (arrToArrToBool.contains(op)
+				&& leftType instanceof ArrayType 
+				&& rightType instanceof ArrayType
+				&& ((ArrayType)leftType).getType().equals(((ArrayType)rightType).getType())) {
+			return Types.BOOL;
+
+		} else if (arrToArrToArr.contains(op)
+				&& leftType instanceof ArrayType 
+				&& rightType instanceof ArrayType
+				&& ((ArrayType)leftType).getType().equals(((ArrayType)rightType).getType())) {
+			return Types.ARRAY(((ArrayType)leftType).getType());
+
+		} else {
+			reportError(be, "Cannot apply operator " + op.toString() + " to types "
+							+ be.getLeft().getType().getPP() + " and "
+							+ be.getRight().getType().getPP());
+			throw new FatalTypeException();
+		}
 	}
 
 	public List<SemanticError> getTypeErrors() {
