@@ -109,7 +109,7 @@ public class FunctionCollectorTests {
 	private void addLocs(Node n) {
 		n.accept(new Visitor() {
 			@Override
-			public Node leave(Node n, Node old) {
+			public Node leave(Node parent, Node n) {
 				n.setStartLoc(new Location(0, 0));
 				return n;
 			}

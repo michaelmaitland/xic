@@ -74,18 +74,24 @@ public class TypeChecker extends Visitor {
 	}
 
 	@Override
-	public Visitor enter(Node n) {
-		if(isScopeNode(n)) context.enterScope();
+	public Visitor enter(Node parent, Node n) {
+		if(isScopeNode(n) || parent instanceof If) context.enterScope();
+
 		if(n instanceof FunctionDefn) addFuncReturn((FunctionDefn) n);
 
 		return this;
 	}
 
 	@Override
-	public Node leave(Node n, Node old) {
+	public Node leave(Node parent, Node n) {
 		if(isScopeNode(n)) context.leaveScope();
+		
+		n = n.typeCheck(this);
 
-		return n.typeCheck(this);
+		// Help me
+		if(parent instanceof If && !isScopeNode(n)) context.leaveScope();
+
+		return n;
 	}
 
 	public void typeCheck(HasType actual, Type expected) {
@@ -350,7 +356,6 @@ public class TypeChecker extends Visitor {
 	
 	private boolean isScopeNode(Node node) {
 		return node instanceof Block
-				|| node instanceof If
 				|| node instanceof While
 				|| node instanceof FunctionDefn;
 	}

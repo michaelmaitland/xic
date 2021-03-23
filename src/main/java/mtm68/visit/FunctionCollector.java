@@ -26,7 +26,7 @@ public class FunctionCollector extends Visitor{
 	}
 
 	@Override
-	public Node leave(Node n, Node old) {
+	public Node leave(Node parent, Node n) {
 		return n.extractFunctionDecl(this);
 	}
 
