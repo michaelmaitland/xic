@@ -23,6 +23,8 @@ One choice is that indexing into an empty array initializer will not pass type c
 
 Another choice we made is how and when to report errors for inconsistencies in context bindings (whether strictly within the source file or between a source file and interface). First, if a library interface is not found or not lexed/parsed correctly, this is considered a Semantic error in type checking. We also decided that mismatches between function declarations in source files or interfaces should throw an error immediately at the location of either the Use statement (if it is an interface - interface problem) or at the function definition that has the mismatch (if it is a source file to interface problem). We decided that type checking should end immediately as it cannot continue if there is any ambiguity in the context. We also end the process if any variable is declared under a name that is already in scope. Otherwise, we report non-fatal errors and continue type-checking.
 
+Another choice related to error handling is how to handle the case "_ = 2". The provided typecheck tests have this fail as a semantic error, however, we handled this at the parsing stage. Therefore, we throw a syntax error rather than semantic. This is sensible as the "_" can only be used in the left hand side of a function expression which we can detect during syntax analysis
+
 **INSERT**
 
 ## Design and Implementation 
