@@ -58,7 +58,7 @@ public class While extends Statement {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		tc.typeCheck(condition, Types.BOOL);
+		tc.checkType(condition, Types.BOOL);
 		
 		While stmt = copy();
 		stmt.result = Result.UNIT;
