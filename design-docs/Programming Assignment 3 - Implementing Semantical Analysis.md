@@ -25,6 +25,8 @@ Another choice we made is how and when to report errors for inconsistencies in c
 
 Another choice related to error handling is how to handle the case "_ = 2". The provided typecheck tests have this fail as a semantic error, however, we handled this at the parsing stage. Therefore, we throw a syntax error rather than semantic. This is sensible as the "_" can only be used in the left hand side of a function expression which we can detect during syntax analysis
 
+Another thing we would like to mention is related to a single failing test case from pa1. We are failing the test case `"""` because we report line:column pair `1:3` while the tests expect `1:1`. We are lexing where the first two quotes make up the empty string and then a dangling single quote. The dangling single quote is character `1:3` which we are correctly reporting. The test case expects `1:1` because its interpreting the input as a string with an unescaped double quote in the middle. Regardless, both report this correctly as an error.
+
 ## Design and Implementation 
 
 ### Architecture ###
