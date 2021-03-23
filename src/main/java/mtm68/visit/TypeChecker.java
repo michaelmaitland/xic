@@ -44,7 +44,7 @@ public class TypeChecker extends Visitor {
 	private List<SemanticError> typeErrors;
 
 	// Sets described in the typing rules
-	private	Set<Binop> intToIntToInt = ArrayUtils.newHashSet(Binop.ADD, Binop.SUB, Binop.ADD, Binop.HIGH_MULT, Binop.DIV, Binop.MOD);
+	private	Set<Binop> intToIntToInt = ArrayUtils.newHashSet(Binop.ADD, Binop.SUB, Binop.MULT, Binop.HIGH_MULT, Binop.DIV, Binop.MOD);
 	private	Set<Binop> intToIntToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ, Binop.LT, Binop.LEQ, Binop.GT, Binop.GEQ);
 	private	Set<Binop> boolToBoolToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ, Binop.AND, Binop.OR);
 	private	Set<Binop> arrToArrToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ);

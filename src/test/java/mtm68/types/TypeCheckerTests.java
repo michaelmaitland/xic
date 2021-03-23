@@ -1,10 +1,18 @@
 package mtm68.types;
 
-import static java.util.Optional.*;
-import static mtm68.ast.types.Types.*;
-import static mtm68.util.ArrayUtils.*;
+import static java.util.Optional.of;
+import static mtm68.ast.types.Types.ARRAY;
+import static mtm68.ast.types.Types.BOOL;
+import static mtm68.ast.types.Types.EMPTY_ARRAY;
+import static mtm68.ast.types.Types.INT;
+import static mtm68.ast.types.Types.TVEC;
+import static mtm68.ast.types.Types.addArrayDims;
+import static mtm68.util.ArrayUtils.elems;
 import static mtm68.util.ArrayUtils.empty;
-import static org.junit.jupiter.api.Assertions.*;
+import static mtm68.util.ArrayUtils.singleton;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +39,7 @@ import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.ast.nodes.binary.BinExpr;
 import mtm68.ast.nodes.binary.EqEq;
+import mtm68.ast.nodes.binary.Mult;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -407,6 +416,18 @@ public class TypeCheckerTests {
 		Add add = new Add(new Var("x"), intLit(1L));
 		assertTypeCheckError(add);
 	}
+
+	@Test
+	void multIntLeftIntRight() {
+		Mult mult = new Mult(intLit(0L), intLit(1L));
+		Mult newMult= doTypeCheck(mult);
+
+		assertEquals(INT, newMult.getLeft().getType());
+		assertEquals(INT, newMult.getRight().getType());
+		assertEquals(INT, newMult.getType());
+	}
+
+
 	@Test
 	void addIntLeftIntRightIsInt() {
 		Add add = new Add(intLit(0L), intLit(1L));
