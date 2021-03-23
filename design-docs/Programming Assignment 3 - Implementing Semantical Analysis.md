@@ -25,8 +25,6 @@ Another choice we made is how and when to report errors for inconsistencies in c
 
 Another choice related to error handling is how to handle the case "_ = 2". The provided typecheck tests have this fail as a semantic error, however, we handled this at the parsing stage. Therefore, we throw a syntax error rather than semantic. This is sensible as the "_" can only be used in the left hand side of a function expression which we can detect during syntax analysis
 
-**INSERT**
-
 ## Design and Implementation 
 
 ### Architecture ###
