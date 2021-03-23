@@ -75,6 +75,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			new Main().parseCmdLine(args);
+			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Failed to compile: xic exit code 1");

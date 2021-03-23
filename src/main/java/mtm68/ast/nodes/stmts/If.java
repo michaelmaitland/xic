@@ -65,8 +65,8 @@ public class If extends Statement {
 	@Override
 	public Node visitChildren(Visitor v) {
 		Expr newCondition = condition.accept(v);
-		Statement newIfBranch = ifBranch.accept(v);
-		Optional<Statement> newElseBranch = acceptOptional(elseBranch, v);
+		Statement newIfBranch = ifBranch.accept(this, v);
+		Optional<Statement> newElseBranch = acceptOptional(this, elseBranch, v);
 		
 		if(newCondition != condition
 				|| newIfBranch != ifBranch
@@ -84,7 +84,7 @@ public class If extends Statement {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		tc.typeCheck(condition, Types.BOOL);
+		tc.checkType(condition, Types.BOOL);
 
 		If stmt = copy(); 
 		

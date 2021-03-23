@@ -39,7 +39,8 @@ import mtm68.exception.SemanticError;
 import mtm68.util.ArrayUtils;
 
 public class TypeChecker extends Visitor {
-	TypingContext context;
+
+	private TypingContext context;
 	
 	private List<SemanticError> typeErrors;
 
@@ -74,21 +75,27 @@ public class TypeChecker extends Visitor {
 	}
 
 	@Override
-	public Visitor enter(Node n) {
-		if(isScopeNode(n)) context.enterScope();
+	public Visitor enter(Node parent, Node n) {
+		if(isScopeNode(n) || parent instanceof If) context.enterScope();
+
 		if(n instanceof FunctionDefn) addFuncReturn((FunctionDefn) n);
 
 		return this;
 	}
 
 	@Override
-	public Node leave(Node n, Node old) {
+	public Node leave(Node parent, Node n) {
 		if(isScopeNode(n)) context.leaveScope();
+		
+		n = n.typeCheck(this);
 
-		return n.typeCheck(this);
+		// Help me
+		if(parent instanceof If && !isScopeNode(n)) context.leaveScope();
+
+		return n;
 	}
 
-	public void typeCheck(HasType actual, Type expected) {
+	public void checkType(HasType actual, Type expected) {
 		if(!isEqualTypes(actual.getType(), expected)){
 			reportError(actual, "Expected type: " + expected + ", but got: " + actual.getType());
 		}
@@ -112,7 +119,8 @@ public class TypeChecker extends Visitor {
 	}
 	
 	public boolean isEqualTypes(Type t1, Type t2) {
-		return t1.equals(t2);
+		return t1.equals(t2)
+				|| (Types.isArray(t1) && Types.isArray(t2) && isCompatibleArrayTypes(t1, t2));
 	}
 	
 	public <T extends HasType> void checkTypes(Node base, List<T> actual, List<Type> expected) {
@@ -122,7 +130,7 @@ public class TypeChecker extends Visitor {
 		}
 		
 		for(int i = 0; i < actual.size(); i++) {
-			typeCheck(actual.get(i), expected.get(i));
+			checkType(actual.get(i), expected.get(i));
 		}	
 	}
 
@@ -148,7 +156,7 @@ public class TypeChecker extends Visitor {
 		}
 		
 		for(int i = 0; i < retTypes.size(); i++) {
-			typeCheck(retTypes.get(i), expected.get(i));
+			checkType(retTypes.get(i), expected.get(i));
 		}
 	}
 	
@@ -215,7 +223,7 @@ public class TypeChecker extends Visitor {
 	}
 
 	public Type checkArrayIndex(ArrayIndex arrayIndex) {
-		typeCheck(arrayIndex.getIndex(), Types.INT);
+		checkType(arrayIndex.getIndex(), Types.INT);
 		
 		Type arrType = arrayIndex.getArr().getType();
 		
@@ -245,11 +253,11 @@ public class TypeChecker extends Visitor {
 	}
 	
 	public void checkNegate(Negate negate) {
-		typeCheck(negate.getExpr(), Types.INT);
+		checkType(negate.getExpr(), Types.INT);
 	}
 
 	public void checkNot(Not not) {
-		typeCheck(not.getExpr(), Types.BOOL);
+		checkType(not.getExpr(), Types.BOOL);
 	}
 
 	/**
@@ -350,7 +358,6 @@ public class TypeChecker extends Visitor {
 	
 	private boolean isScopeNode(Node node) {
 		return node instanceof Block
-				|| node instanceof If
 				|| node instanceof While
 				|| node instanceof FunctionDefn;
 	}
