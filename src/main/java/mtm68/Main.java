@@ -160,7 +160,7 @@ public class Main {
 						
 						if(Debug.DEBUG_ON) System.out.println(new TypingContext(funcCollector.getContext()));
 						
-						root.accept(typeChecker);
+						root = typeChecker.performTypeCheck(root);
 						if(typeCheck) {
 							writeToFile(filename, 
 								typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
