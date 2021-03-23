@@ -84,7 +84,7 @@ public class If extends Statement {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		tc.typeCheck(condition, Types.BOOL);
+		tc.checkType(condition, Types.BOOL);
 
 		If stmt = copy(); 
 		

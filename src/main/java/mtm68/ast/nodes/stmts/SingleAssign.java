@@ -62,7 +62,7 @@ public class SingleAssign extends Assign {
 	public Node typeCheck(TypeChecker tc) {
 		// This is a safe-cast, but we should be careful
 		Type lhsType = ((HasType) lhs).getType();
-		tc.typeCheck(rhs, lhsType);
+		tc.checkType(rhs, lhsType);
 		
 		SingleAssign single = copy();
 		single.result = Result.UNIT;
