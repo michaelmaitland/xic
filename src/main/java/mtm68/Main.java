@@ -151,12 +151,13 @@ public class Main {
 						
 						FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
 						root.accept(funcCollector);
+						Map<String, ContextType> startingContext = funcCollector.getContext();
 						if(funcCollector.hasError()) {
 							if(typeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
 							continue;
 						}
 						
-						TypeChecker typeChecker = new TypeChecker(funcCollector.getContext());
+						TypeChecker typeChecker = new TypeChecker(startingContext);
 						
 						if(Debug.DEBUG_ON) System.out.println(new TypingContext(funcCollector.getContext()));
 						
