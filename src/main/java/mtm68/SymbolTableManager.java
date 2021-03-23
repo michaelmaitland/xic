@@ -13,7 +13,9 @@ import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Use;
 import mtm68.exception.SemanticException;
+import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
+import mtm68.lexer.TokenFactory;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.ErrorUtils;
@@ -53,8 +55,9 @@ public class SymbolTableManager {
 	private void generateSymbolTableFromLib(Use use) throws FileNotFoundException, SemanticException {
 		String filename = use.getId() + ".ixi";
 		
-		Lexer lexer = new Lexer(new FileReader(libPath.resolve(filename).toString()));
-		Parser parser = new Parser(lexer, new ComplexSymbolFactory());
+		TokenFactory tokenFactory = new TokenFactory();
+		Lexer lexx = new FileTypeLexer(filename, libPath, FileType.parseFileType(filename), tokenFactory);
+		Parser parser = new Parser(lexx, tokenFactory);
 		
 		ParseResult parseResult = new ParseResult(parser);
 		ErrorUtils.printErrors(parseResult, filename);		
