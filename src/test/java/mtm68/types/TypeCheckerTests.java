@@ -402,7 +402,11 @@ public class TypeCheckerTests {
 	//			HighMult, LessThan, LessThanOrEqual, Mod, Mult,
 	//			Or, Sub)
 	//-------------------------------------------------------------------------------- 
-
+	@Test
+	void addVarLeftIntRightIsInt() {
+		Add add = new Add(new Var("x"), intLit(1L));
+		assertTypeCheckError(add);
+	}
 	@Test
 	void addIntLeftIntRightIsInt() {
 		Add add = new Add(intLit(0L), intLit(1L));

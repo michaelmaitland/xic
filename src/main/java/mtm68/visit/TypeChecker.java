@@ -263,10 +263,13 @@ public class TypeChecker extends Visitor {
 		
 		if(type == null) {
 			reportError(v, "Variable used before declaration.");
+			throw new FatalTypeException();
 		}
+
 		return type;
 	}
 
+	//      x = x + 1
 	
 	public Type checkBinExpr(BinExpr be) {
 		
