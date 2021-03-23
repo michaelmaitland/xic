@@ -574,6 +574,16 @@ public class TypeCheckerTests {
 	}
 
 	@Test
+	void singleAssignToProcedureIsError() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", empty(), empty());
+		
+		// x:int = f()
+		SingleAssign assign = new SingleAssign(new SimpleDecl("x", INT), new FExpr("f", empty()));
+		assertTypeCheckError(context, assign);
+	}
+
+	@Test
 	void singleAssignDeclMismatchType() {
 		TypingContext context = new TypingContext();
 		context.addIdBinding("x", INT);

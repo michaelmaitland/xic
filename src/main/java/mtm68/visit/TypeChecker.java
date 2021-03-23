@@ -83,7 +83,6 @@ public class TypeChecker extends Visitor {
 
 	@Override
 	public Node leave(Node n, Node old) {
-		// TODO: if n == old, we need to make a copy of n before modifying it. It should then return the modified copy
 		if(isScopeNode(n)) context.leaveScope();
 
 		return n.typeCheck(this);

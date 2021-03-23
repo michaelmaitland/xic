@@ -54,7 +54,7 @@ public class FExpr extends Expr {
 	public Node typeCheck(TypeChecker tc) {
 		Type type = tc.checkFunctionCall(this);
 
-		FExpr exp = new FExpr(id, args);
+		FExpr exp = copy();
 		exp.type = type;
 
 		return exp;
