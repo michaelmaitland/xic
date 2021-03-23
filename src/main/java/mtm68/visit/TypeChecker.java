@@ -39,7 +39,8 @@ import mtm68.exception.SemanticError;
 import mtm68.util.ArrayUtils;
 
 public class TypeChecker extends Visitor {
-	TypingContext context;
+
+	private TypingContext context;
 	
 	private List<SemanticError> typeErrors;
 
