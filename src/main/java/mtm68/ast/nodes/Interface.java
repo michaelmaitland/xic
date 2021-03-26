@@ -45,7 +45,6 @@ public class Interface extends Node implements Root {
 		if(newFunctionDecls != functionDecls) {
 			Interface i = copy();
 			i.functionDecls = newFunctionDecls;
-
 			return i;
 		} 
 
@@ -54,6 +53,6 @@ public class Interface extends Node implements Root {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		return this;
 	}
 }

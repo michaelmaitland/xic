@@ -45,7 +45,6 @@ public class FunctionDefn extends Node {
 			FunctionDefn defn = copy();
 			defn.functionDecl = newFunctionDecl;
 			defn.body = newBody;
-
 			return defn;
 		}
 		return this;

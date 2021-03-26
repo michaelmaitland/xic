@@ -3,14 +3,22 @@ package mtm68.visit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.ArrayInit;
+import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
+import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Not;
 import mtm68.ast.nodes.Var;
+import mtm68.ast.nodes.binary.BinExpr;
+import mtm68.ast.nodes.binary.Binop;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.FunctionCall;
@@ -28,11 +36,21 @@ import mtm68.ast.types.TypingContext;
 import mtm68.exception.BaseError;
 import mtm68.exception.FatalTypeException;
 import mtm68.exception.SemanticError;
+import mtm68.util.ArrayUtils;
 
 public class TypeChecker extends Visitor {
-	TypingContext context;
+
+	private TypingContext context;
 	
 	private List<SemanticError> typeErrors;
+
+	// Sets described in the typing rules
+	private	Set<Binop> intToIntToInt = ArrayUtils.newHashSet(Binop.ADD, Binop.SUB, Binop.MULT, Binop.HIGH_MULT, Binop.DIV, Binop.MOD);
+	private	Set<Binop> intToIntToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ, Binop.LT, Binop.LEQ, Binop.GT, Binop.GEQ);
+	private	Set<Binop> boolToBoolToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ, Binop.AND, Binop.OR);
+	private	Set<Binop> arrToArrToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ);
+	private	Set<Binop> arrToArrToArr = ArrayUtils.newHashSet(Binop.ADD);
+
 
 	public TypeChecker(Map<String, ContextType> initSymTable) {
 		this(new TypingContext(initSymTable));
@@ -57,25 +75,52 @@ public class TypeChecker extends Visitor {
 	}
 
 	@Override
-	public Visitor enter(Node n) {
-		if(isScopeNode(n)) context.enterScope();
-		if(n instanceof FunctionDefn) checkFuncBindings((FunctionDefn) n);
+	public Visitor enter(Node parent, Node n) {
+		if(isScopeNode(n) || parent instanceof If) context.enterScope();
+
+		if(n instanceof FunctionDefn) addFuncReturn((FunctionDefn) n);
 
 		return this;
 	}
 
 	@Override
-	public Node leave(Node n, Node old) {
-		// TODO: if n == old, we need to make a copy of n before modifying it. It should then return the modified copy
+	public Node leave(Node parent, Node n) {
 		if(isScopeNode(n)) context.leaveScope();
+		
+		n = n.typeCheck(this);
 
-		return n.typeCheck(this);
+		// Help me
+		if(parent instanceof If && !isScopeNode(n)) context.leaveScope();
+
+		return n;
 	}
 
-	public void typeCheck(HasType actual, Type expected) {
-		if(!expected.equals(actual.getType())){
+	public void checkType(HasType actual, Type expected) {
+		if(!isEqualTypes(actual.getType(), expected)){
 			reportError(actual, "Expected type: " + expected + ", but got: " + actual.getType());
 		}
+	}
+
+	public void checkSubtype(Node base, Type subType, Type superType) {
+		if(subType.equals(superType) || superType.equals(Types.UNIT)) return;
+
+		reportError(base, subType + " is not a subtype of " + superType);
+	}
+
+	public void checkSubtypes(Node base, List<Type> subTypes, List<Type> superTypes) {
+		if(subTypes.size() != superTypes.size()) {
+			reportError(base, "Size mismatch in type vectors");
+			return;
+		}
+		
+		for(int i = 0; i < subTypes.size(); i++) {
+			checkSubtype(base, subTypes.get(i), superTypes.get(i));
+		}
+	}
+	
+	public boolean isEqualTypes(Type t1, Type t2) {
+		return t1.equals(t2)
+				|| (Types.isArray(t1) && Types.isArray(t2) && isCompatibleArrayTypes(t1, t2));
 	}
 	
 	public <T extends HasType> void checkTypes(Node base, List<T> actual, List<Type> expected) {
@@ -85,8 +130,15 @@ public class TypeChecker extends Visitor {
 		}
 		
 		for(int i = 0; i < actual.size(); i++) {
-			typeCheck(actual.get(i), expected.get(i));
+			checkType(actual.get(i), expected.get(i));
 		}	
+	}
+
+	public <T extends HasType> void checkTypes(Node base, List<T> items, Type expected) {
+		List<Type> expectedList = items.stream()
+									   .map(i -> expected)
+									   .collect(Collectors.toList());
+		checkTypes(base, items, expectedList);
 	}
 	
 	public void checkResultIsUnit(HasResult result) {
@@ -104,7 +156,7 @@ public class TypeChecker extends Visitor {
 		}
 		
 		for(int i = 0; i < retTypes.size(); i++) {
-			typeCheck(retTypes.get(i), expected.get(i));
+			checkType(retTypes.get(i), expected.get(i));
 		}
 	}
 	
@@ -116,11 +168,7 @@ public class TypeChecker extends Visitor {
 		context.addIdBinding(decl.getId(), decl.getType());
 	}
 	
-	public void checkFuncBindings(FunctionDefn fDefn) {
-//		List<SimpleDecl> decls = fDefn.getFunctionDecl().getArgs();
-//		for(Decl decl : decls) {
-//			checkDecl(decl);
-//		}
+	public void addFuncReturn(FunctionDefn fDefn) {
 		context.addReturnTypeInScope(fDefn.getFunctionDecl().getReturnTypes());
 	}
 	
@@ -140,11 +188,7 @@ public class TypeChecker extends Visitor {
 		return checkAndGetFunctionReturn(fexp, id, false);
 	}
 
-	public void checkBinExpr(Expr left, Expr right) {
-		typeCheck(left, Types.INT);
-		typeCheck(right, Types.INT);
-	}
-	
+
 	private void checkFunctionDecl(Node base, String id) {
 		if(!context.isFunctionDecl(id)) {
 			reportError(base, "Identifier \"" + id + "\" is not a valid function");
@@ -178,6 +222,44 @@ public class TypeChecker extends Visitor {
 		}
 	}
 
+	public Type checkArrayIndex(ArrayIndex arrayIndex) {
+		checkType(arrayIndex.getIndex(), Types.INT);
+		
+		Type arrType = arrayIndex.getArr().getType();
+		
+		if(!(arrType instanceof ArrayType)) {
+			reportError(arrayIndex, "Must index into an array");
+			throw new FatalTypeException();
+		}
+
+		return ((ArrayType)arrType).getType();
+	}
+	
+	public Type checkArrayInit(ArrayInit arrayInit) {
+		
+		if(arrayInit.getItems().isEmpty()) {
+			return Types.EMPTY_ARRAY;
+		}
+
+		Type expected = arrayInit.getItems().get(0).getType();
+		checkTypes(arrayInit, arrayInit.getItems(), expected);
+		return Types.ARRAY(expected);
+	}
+
+	public void checkArrayLength(ArrayLength arrayLength) {
+		if(!(arrayLength.getExp().getType() instanceof ArrayType)) {
+			reportError(arrayLength, "Length takes an argument of type Array.");
+		}
+	}
+	
+	public void checkNegate(Negate negate) {
+		checkType(negate.getExpr(), Types.INT);
+	}
+
+	public void checkNot(Not not) {
+		checkType(not.getExpr(), Types.BOOL);
+	}
+
 	/**
 	 * Gets the type of the var from the context
 	 * @param v The var 
@@ -188,19 +270,73 @@ public class TypeChecker extends Visitor {
 		
 		if(type == null) {
 			reportError(v, "Variable used before declaration.");
+			throw new FatalTypeException();
 		}
+
 		return type;
 	}
 
-	public Type checkArrayIndex(ArrayIndex arrayIndex) {
-		typeCheck(arrayIndex.getIndex(), Types.INT);
+	//      x = x + 1
+	
+	public Type checkBinExpr(BinExpr be) {
 		
-		Type arrType = arrayIndex.getArr().getType();
-		
-		if(!(arrType instanceof ArrayType)) {
-			reportError(arrayIndex, "Must index into an array");
+		Binop op = be.getOp();
+		Type leftType = be.getLeft().getType();
+		Type rightType  = be.getRight().getType();
+
+		if(checkIntToIntToInt(op, leftType, rightType)) {
+			return Types.INT;
+
+		} else if(checkIntToIntToBool(op, leftType, rightType)) {
+			return Types.BOOL;
+
+		} else if (checkBoolToBoolToBool(op, leftType, rightType)) {
+			return Types.BOOL;
+
+		} else if (checkArrToArrToBool(op, leftType, rightType)) {
+			return Types.BOOL;
+
+		} else if (checkArrToArrToArr(op, leftType, rightType)) {
+			return Types.getLeastUpperBound(leftType, rightType);
+
+		} else {
+			reportError(be, "Cannot apply operator " + op.toString() + " to types "
+							+ be.getLeft().getType() + " and "
+							+ be.getRight().getType());
+			throw new FatalTypeException();
 		}
-		return ((ArrayType)arrType).getType();
+	}
+	
+	private boolean  checkIntToIntToInt(Binop op, Type t1, Type t2) {
+		return intToIntToInt.contains(op) 
+				&& t1.equals(Types.INT)
+				&& t2.equals(Types.INT);
+	}
+	
+	private boolean checkIntToIntToBool(Binop op, Type t1, Type t2) {
+		return intToIntToBool.contains(op) 
+				&& t1.equals(Types.INT) 
+				&& t2.equals(Types.INT);
+	}
+	
+	private boolean checkBoolToBoolToBool(Binop op, Type t1, Type t2) {
+	return boolToBoolToBool.contains(op) 
+				&& t1.equals(Types.BOOL) 
+				&& t2.equals(Types.BOOL);
+	}
+	
+	private boolean checkArrToArrToBool(Binop op, Type t1, Type t2) {
+		return arrToArrToBool.contains(op) 
+				&& Types.isArray(t1)
+				&& Types.isArray(t2)
+				&& isCompatibleArrayTypes(t1, t2);
+	}
+	
+	private boolean checkArrToArrToArr(Binop op, Type t1, Type t2) {
+		return arrToArrToArr.contains(op)
+				&& Types.isArray(t1)
+				&& Types.isArray(t2)
+				&& isCompatibleArrayTypes(t1, t2);
 	}
 
 	public List<SemanticError> getTypeErrors() {
@@ -222,9 +358,12 @@ public class TypeChecker extends Visitor {
 	
 	private boolean isScopeNode(Node node) {
 		return node instanceof Block
-				|| node instanceof If
 				|| node instanceof While
 				|| node instanceof FunctionDefn;
+	}
+	
+	private boolean isCompatibleArrayTypes(Type t1, Type t2) {
+		return t1.equals(t2) || t1.equals(Types.EMPTY_ARRAY) || t2.equals(Types.EMPTY_ARRAY);
 	}
 
 }

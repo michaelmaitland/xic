@@ -16,6 +16,10 @@ public class TypeVector implements Type {
 	public TypeVector(List<Type> types) {
 		this.types = types;
 	}
+	
+	public List<Type> getTypes() {
+		return types;
+	}
 
 	@Override
 	public TypeType getTypeType() {

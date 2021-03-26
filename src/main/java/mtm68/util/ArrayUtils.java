@@ -1,7 +1,10 @@
 package mtm68.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ArrayUtils {
 	
@@ -17,7 +20,7 @@ public class ArrayUtils {
 	/** 
 	 *  Returns list composed of all arguments
 	 */
-	@SuppressWarnings("unchecked")
+	@SafeVarargs
 	public static <T> List<T> elems(T... elems) {
 		List<T> ret = new ArrayList<T>(); 
 		for(T elem : elems) {
@@ -49,4 +52,13 @@ public class ArrayUtils {
 		return new ArrayList<T>();
 	}
 
+	/** 
+	 *  Returns set composed of all arguments
+	 */
+	@SuppressWarnings("unchecked")
+	public static final <T> Set<T> newHashSet(T... objs) {
+	    Set<T> set = new HashSet<T>();
+	    Collections.addAll(set, objs);
+	    return set;
+	}
 }

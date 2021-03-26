@@ -28,7 +28,9 @@ public class Negate extends UnExpr {
 	public Node visitChildren(Visitor v) {
 		Expr newExpr = expr.accept(v);
 		if (newExpr != expr) {
-			return new Negate(expr);
+			Negate newNegate = copy();
+			newNegate.expr = newExpr;
+			return newNegate;
         } else {
             return this; // no new node needed
         }	
@@ -36,9 +38,7 @@ public class Negate extends UnExpr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		tc.typeCheck(expr , Types.INT);
-		
-		return null;
+		tc.checkNegate(this);
+		return copyAndSetType(Types.INT);
 	}
-
 }

@@ -42,19 +42,18 @@ public class ArrayIndex extends Expr  {
 		Expr newArr = arr.accept(v);
         Expr newIndex = index.accept(v);
         if (newArr != arr|| newIndex != index) {
-            return new ArrayIndex(newArr, newIndex);
+        	ArrayIndex newArrayIndex = copy();
+        	newArrayIndex.arr = newArr;
+        	newArrayIndex.index = newIndex;
+        	return newArrayIndex;
         } else {
-            return this; // no new node needed
+            return this;
         }
 	}
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-	
 		Type type = tc.checkArrayIndex(this);
-		
-		ArrayIndex newArrayIndex = copy();
-		newArrayIndex.setType(type);
-		return newArrayIndex;
+		return copyAndSetType(type);
 	}
 }

@@ -62,7 +62,6 @@ public class FunctionDecl extends Node {
 		if(newArgs != args) {
 			FunctionDecl decl = copy();
 			decl.args = newArgs;
-
 			return decl;
 		} 
 

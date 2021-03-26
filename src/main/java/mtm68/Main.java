@@ -75,6 +75,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			new Main().parseCmdLine(args);
+			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Failed to compile: xic exit code 1");
@@ -151,16 +152,17 @@ public class Main {
 						
 						FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
 						root.accept(funcCollector);
+						Map<String, ContextType> startingContext = funcCollector.getContext();
 						if(funcCollector.hasError()) {
 							if(typeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
 							continue;
 						}
 						
-						TypeChecker typeChecker = new TypeChecker(funcCollector.getContext());
+						TypeChecker typeChecker = new TypeChecker(startingContext);
 						
 						if(Debug.DEBUG_ON) System.out.println(new TypingContext(funcCollector.getContext()));
 						
-						root.accept(typeChecker);
+						root = typeChecker.performTypeCheck(root);
 						if(typeCheck) {
 							writeToFile(filename, 
 								typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
