@@ -29,6 +29,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.TypingContext;
+import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
@@ -49,13 +50,13 @@ public class Main {
 	private boolean help = false;
 
 	@Option(name = "--lex", usage = "saves lexed tokens from source file to <filename>.lexed")
-	private boolean lex;
+	private boolean outputLex;
 	
 	@Option(name = "--parse", usage = "saves AST generated from source file to <filename>.parsed")
-	private boolean parse;
+	private boolean outputParse;
 	
 	@Option(name = "--typecheck", usage = "saves result of typechecking AST generated from source file to <filename>.typed")
-	private boolean typeCheck;
+	private boolean outputTypeCheck;
 
 	@Option(name = "--debug", usage = "turns on debug output", hidden = true)
 	private boolean debug;
@@ -115,6 +116,7 @@ public class Main {
 		});
 		
 		for (String filename : sourceFiles) {
+			//Check valid file and file exists
 			if(!filename.endsWith(".xi") && !filename.endsWith(".ixi")) {
 				System.out.println("Skipping file: \'" + filename + "\' as it is not a .xi or .ixi file.");
 				continue;
@@ -123,6 +125,7 @@ public class Main {
 				System.out.println("Skipping " + filename + " as it cannot be found.");
 				continue;				
 			}
+			//Lex and parse
 			TokenFactory tokenFactory = new TokenFactory();
 			Lexer lexx = new FileTypeLexer(filename, sourcePath, FileType.parseFileType(filename), tokenFactory);
 			Parser parser = new Parser(lexx, tokenFactory);
@@ -130,54 +133,52 @@ public class Main {
 			ParseResult parseResult = new ParseResult(parser);
 			ErrorUtils.printErrors(parseResult, filename);
 			
-			if(parse) writeToFile(filename, parseResult);
-			
-			if (lex) {
+			if(outputLex){
 				SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 				List<Token> tokens = lexer.getTokens();	
 				writeToFile(filename, tokens);
 			}
 			
-			if(parseResult.isValidAST()) {
-				Node root = parseResult.getNode().get();
-				
-				if(Debug.DEBUG_ON) {
-					SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-					root.prettyPrint(printer);
-					printer.flush();
-				}
-				if(root instanceof Program) {
-					try {
-						Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
-						
-						FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
-						root.accept(funcCollector);
-						Map<String, ContextType> startingContext = funcCollector.getContext();
-						if(funcCollector.hasError()) {
-							if(typeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
-							continue;
-						}
-						
-						TypeChecker typeChecker = new TypeChecker(startingContext);
-						
-						if(Debug.DEBUG_ON) System.out.println(new TypingContext(funcCollector.getContext()));
-						
-						root = typeChecker.performTypeCheck(root);
-						if(typeCheck) {
-							writeToFile(filename, 
-								typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
-						}
-					}
-					catch(SemanticException e) {
-						SemanticError error = new SemanticError(e.getErrorNode(), e.getMessage());
-						if(typeCheck) writeToFile(filename, Optional.of(error));
+			if(outputParse) writeToFile(filename, parseResult);
+			
+			if(!parseResult.isValidAST()) {
+				if(outputTypeCheck) writeToFile(filename, Optional.of(parseResult.getFirstError()));
+				continue;
+			}
+			
+			Node root = parseResult.getNode().get();
+			
+			//Typecheck
+			if(root instanceof Program) {
+				try {
+					Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
+					
+					FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
+					root.accept(funcCollector);
+					Map<String, ContextType> startingContext = funcCollector.getContext();
+					if(funcCollector.hasError()) {
+						if(outputTypeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
 						continue;
 					}
+					
+					TypeChecker typeChecker = new TypeChecker(startingContext);					
+					root = typeChecker.performTypeCheck(root);
+					if(outputTypeCheck) {
+						writeToFile(filename, 
+							typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
+					}
 				}
-				if(root instanceof Interface) {
-					symTableManager.generateSymbolTableFromAST(filename.substring(0, filename.length()-4), (Interface) root); 
+				catch(SemanticException e) {
+					SemanticError error = new SemanticError(e.getErrorNode(), e.getMessage());
+					System.out.println(error.getPrintErrorMessage(filename));
+					if(outputTypeCheck) writeToFile(filename, Optional.of(error));
+					continue;
 				}
 			}
+			if(root instanceof Interface) {
+				symTableManager.generateSymbolTableFromAST(filename.substring(0, filename.length()-4), (Interface) root); 
+			}	
+			
 		}
 	}
 	
@@ -239,7 +240,7 @@ public class Main {
 	 * @param filename the name of the file parsed
 	 * @param error    the semantic error to be written
 	 */
-	public void writeToFile(String filename, Optional<SemanticError> error) {
+	public void writeToFile(String filename, Optional<BaseError> error) {
 		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".typed");
 		Path outpath = dPath.resolve(outfile);
 		String msg = error.isPresent() ? error.get().getFileErrorMessage() : "Valid Xi Program";
