@@ -157,12 +157,14 @@ public class Main {
 					root.accept(funcCollector);
 					Map<String, ContextType> startingContext = funcCollector.getContext();
 					if(funcCollector.hasError()) {
+						ErrorUtils.printErrors(funcCollector.getErrors(), filename);
 						if(outputTypeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
 						continue;
 					}
 					
-					TypeChecker typeChecker = new TypeChecker(startingContext);					
+					TypeChecker typeChecker = new TypeChecker(startingContext);	
 					root = typeChecker.performTypeCheck(root);
+					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 					if(outputTypeCheck) {
 						writeToFile(filename, 
 							typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());

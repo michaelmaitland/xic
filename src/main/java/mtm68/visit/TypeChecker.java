@@ -42,7 +42,7 @@ public class TypeChecker extends Visitor {
 
 	private TypingContext context;
 	
-	private List<SemanticError> typeErrors;
+	private List<BaseError> typeErrors;
 
 	// Sets described in the typing rules
 	private	Set<Binop> intToIntToInt = ArrayUtils.newHashSet(Binop.ADD, Binop.SUB, Binop.MULT, Binop.HIGH_MULT, Binop.DIV, Binop.MOD);
@@ -339,11 +339,11 @@ public class TypeChecker extends Visitor {
 				&& isCompatibleArrayTypes(t1, t2);
 	}
 
-	public List<SemanticError> getTypeErrors() {
+	public List<BaseError> getTypeErrors() {
 		return typeErrors;
 	}
 
-	public SemanticError getFirstError() {
+	public BaseError getFirstError() {
 		typeErrors.sort(BaseError.getComparator());
 		return typeErrors.get(0);
 	}

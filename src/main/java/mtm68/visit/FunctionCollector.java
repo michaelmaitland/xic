@@ -11,13 +11,14 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.types.ContextType;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
+import mtm68.parser.ParseResult;
 
 public class FunctionCollector extends Visitor{
 
 	private Map<String, ContextType> initSymbolTable;
 	private Map<String, FunctionDecl> functionDecls;
 	
-	private List<SemanticError> errors;
+	private List<BaseError> errors;
 	
 	public FunctionCollector(Map<String, ContextType> initSymbolTable) {
 		this.initSymbolTable = initSymbolTable;
@@ -55,16 +56,19 @@ public class FunctionCollector extends Visitor{
 	}
 	
 	public void reportError(HasLocation location, String description) {
-		System.out.println(description);
 		errors.add(new SemanticError(location, description));
 	}
 	
-	public SemanticError getFirstError() {
+	public BaseError getFirstError() {
 		errors.sort(BaseError.getComparator());
 		return errors.get(0);
 	}
 	
 	public boolean hasError() {
 		return errors.size() > 0;
+	}
+
+	public List<BaseError> getErrors() {
+		return errors;
 	}
 }
