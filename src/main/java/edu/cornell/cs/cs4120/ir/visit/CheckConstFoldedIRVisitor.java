@@ -1,6 +1,6 @@
-package edu.cornell.cs.cs4120.xic.ir.visit;
+package edu.cornell.cs.cs4120.ir.visit;
 
-import edu.cornell.cs.cs4120.xic.ir.IRNode;
+import edu.cornell.cs.cs4120.ir.IRNode;
 
 public class CheckConstFoldedIRVisitor extends AggregateVisitor<Boolean> {
 

@@ -1,7 +1,7 @@
-package edu.cornell.cs.cs4120.xic.ir;
+package edu.cornell.cs.cs4120.ir;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import edu.cornell.cs.cs4120.xic.ir.visit.InsnMapsBuilder;
+import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 
 /**
  * An intermediate representation for naming a memory address

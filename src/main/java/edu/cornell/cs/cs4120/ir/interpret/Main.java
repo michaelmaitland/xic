@@ -1,4 +1,4 @@
-package edu.cornell.cs.cs4120.xic.ir.interpret;
+package edu.cornell.cs.cs4120.ir.interpret;
 
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -7,23 +7,23 @@ import java.util.Arrays;
 
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import edu.cornell.cs.cs4120.xic.ir.IRBinOp;
-import edu.cornell.cs.cs4120.xic.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.xic.ir.IRCallStmt;
-import edu.cornell.cs.cs4120.xic.ir.IRCompUnit;
-import edu.cornell.cs.cs4120.xic.ir.IRConst;
-import edu.cornell.cs.cs4120.xic.ir.IRFuncDecl;
-import edu.cornell.cs.cs4120.xic.ir.IRMove;
-import edu.cornell.cs.cs4120.xic.ir.IRName;
-import edu.cornell.cs.cs4120.xic.ir.IRNodeFactory_c;
-import edu.cornell.cs.cs4120.xic.ir.IRReturn;
-import edu.cornell.cs.cs4120.xic.ir.IRSeq;
-import edu.cornell.cs.cs4120.xic.ir.IRStmt;
-import edu.cornell.cs.cs4120.xic.ir.IRTemp;
-import edu.cornell.cs.cs4120.xic.ir.parse.IRLexer;
-import edu.cornell.cs.cs4120.xic.ir.parse.IRParser;
-import edu.cornell.cs.cs4120.xic.ir.visit.CheckCanonicalIRVisitor;
-import edu.cornell.cs.cs4120.xic.ir.visit.CheckConstFoldedIRVisitor;
+import edu.cornell.cs.cs4120.ir.IRBinOp;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRCompUnit;
+import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRFuncDecl;
+import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.IRReturn;
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRStmt;
+import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.ir.parse.IRLexer;
+import edu.cornell.cs.cs4120.ir.parse.IRParser;
+import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import jdk.javadoc.internal.doclets.formats.html.resources.standard;
 
 public class Main {

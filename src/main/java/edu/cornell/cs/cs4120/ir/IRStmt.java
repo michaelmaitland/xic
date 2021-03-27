@@ -1,4 +1,4 @@
-package edu.cornell.cs.cs4120.xic.ir;
+package edu.cornell.cs.cs4120.ir;
 
 /**
  * An intermediate representation for statements

@@ -1,6 +1,6 @@
 
 
-package edu.cornell.cs.cs4120.xic.ir.parse;
+package edu.cornell.cs.cs4120.ir.parse;
 
 /** CUP generated class containing symbol constants. */
 public class IRSym {

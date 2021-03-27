@@ -1,13 +1,13 @@
-package edu.cornell.cs.cs4120.xic.ir;
+package edu.cornell.cs.cs4120.ir;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import edu.cornell.cs.cs4120.xic.ir.visit.AggregateVisitor;
-import edu.cornell.cs.cs4120.xic.ir.visit.CheckCanonicalIRVisitor;
-import edu.cornell.cs.cs4120.xic.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
+import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 
 /**
  * An intermediate representation for a call statement.

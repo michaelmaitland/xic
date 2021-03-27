@@ -1,4 +1,4 @@
-package edu.cornell.cs.cs4120.xic.ir;
+package edu.cornell.cs.cs4120.ir;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import edu.cornell.cs.cs4120.xic.ir.visit.AggregateVisitor;
-import edu.cornell.cs.cs4120.xic.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 
 /**
  * An intermediate representation for a compilation unit

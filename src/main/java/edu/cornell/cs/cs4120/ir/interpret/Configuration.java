@@ -1,4 +1,4 @@
-package edu.cornell.cs.cs4120.xic.ir.interpret;
+package edu.cornell.cs.cs4120.ir.interpret;
 
 /**
  * Constants for interpreting intermediate code.

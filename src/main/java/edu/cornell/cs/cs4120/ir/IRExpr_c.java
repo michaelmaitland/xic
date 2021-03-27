@@ -1,6 +1,6 @@
-package edu.cornell.cs.cs4120.xic.ir;
+package edu.cornell.cs.cs4120.ir;
 
-import edu.cornell.cs.cs4120.xic.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 
 /**
  * An intermediate representation for expressions

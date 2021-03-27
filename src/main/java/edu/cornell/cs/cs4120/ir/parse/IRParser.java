@@ -1,8 +1,8 @@
 
 
-package edu.cornell.cs.cs4120.xic.ir.parse;
+package edu.cornell.cs.cs4120.ir.parse;
 
-import edu.cornell.cs.cs4120.xic.ir.*;
+import edu.cornell.cs.cs4120.ir.*;
 import java_cup.runtime.ComplexSymbolFactory;
 import java.util.ArrayList;
 import java.util.Collections;

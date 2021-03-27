@@ -1,9 +1,9 @@
-package edu.cornell.cs.cs4120.xic.ir;
+package edu.cornell.cs.cs4120.ir;
 
 import java.util.List;
 import java.util.Map;
 
-import edu.cornell.cs.cs4120.xic.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 
 public class IRNodeFactory_c implements IRNodeFactory {
 
