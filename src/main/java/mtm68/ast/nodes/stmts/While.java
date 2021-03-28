@@ -5,6 +5,7 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Types;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -16,6 +17,14 @@ public class While extends Statement {
 	public While(Expr condition, Statement body) {
 		this.condition = condition;
 		this.body = body;
+	}
+
+	public Expr getCondition() {
+		return condition;
+	}
+	
+	public Statement getBody() {
+		return body;
 	}
 
 	@Override
@@ -30,14 +39,6 @@ public class While extends Statement {
 		condition.prettyPrint(p);
 		body.prettyPrint(p);
 		p.endList();
-	}
-	
-	public Expr getCondition() {
-		return condition;
-	}
-	
-	public Statement getBody() {
-		return body;
 	}
 
 	@Override
@@ -64,5 +65,11 @@ public class While extends Statement {
 		stmt.result = Result.UNIT;
 
 		return stmt;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

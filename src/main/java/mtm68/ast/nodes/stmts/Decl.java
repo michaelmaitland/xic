@@ -13,5 +13,4 @@ public abstract class Decl extends Statement implements HasType {
 	public String getId() {
 		return id;
 	}
-
 }

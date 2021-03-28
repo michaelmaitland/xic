@@ -7,6 +7,7 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -18,6 +19,10 @@ public class FunctionCall extends Statement {
 		this.fexp = fexp;
 	}
 
+	public FExpr getFexp() {
+		return fexp;
+	}
+	
 	@Override
 	public String toString() {
 		return "FunctionCall [fexp=" + fexp + "]";
@@ -27,11 +32,7 @@ public class FunctionCall extends Statement {
 	public void prettyPrint(SExpPrinter p) {
 		fexp.prettyPrint(p);
 	}
-	
-	public FExpr getFexp() {
-		return fexp;
-	}
-	
+
 	@Override
 	public Node visitChildren(Visitor v) {
 		// We traverse like this because we don't actually want the FExp
@@ -58,5 +59,10 @@ public class FunctionCall extends Statement {
 
 		return stmt;
 	}
-	
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

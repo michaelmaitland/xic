@@ -7,6 +7,7 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Types;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -30,6 +31,18 @@ public class If extends Statement {
 		this.elseBranch = elseBranch;
 	}
 
+	public Expr getCondition() {
+		return condition;
+	}
+
+	public Statement getIfBranch() {
+		return ifBranch;
+	}
+
+	public Optional<Statement> getElseBranch() {
+		return elseBranch;
+	}
+
 	@Override
 	public String toString() {
 		return "If [condition=" + condition + ", ifBranch=" + ifBranch + ", elseBranch=" + elseBranch + "]";
@@ -48,18 +61,6 @@ public class If extends Statement {
 			ifBranch.prettyPrint(p);
 		}
 		p.endList();
-	}
-
-	public Expr getCondition() {
-		return condition;
-	}
-
-	public Statement getIfBranch() {
-		return ifBranch;
-	}
-
-	public Optional<Statement> getElseBranch() {
-		return elseBranch;
 	}
 
 	@Override
@@ -95,5 +96,10 @@ public class If extends Statement {
 
 		return stmt;
 	}
-	
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

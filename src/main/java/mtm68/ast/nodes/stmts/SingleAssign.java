@@ -6,6 +6,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -18,6 +19,14 @@ public class SingleAssign extends Assign {
 	public SingleAssign(Node lhs, Expr rhs) {
 		this.lhs = lhs;
 		this.rhs = rhs;
+	}
+
+	public Node getLhs() {
+		return lhs;
+	}
+	
+	public Expr getRhs() {
+		return rhs;
 	}
 
 	@Override
@@ -35,14 +44,6 @@ public class SingleAssign extends Assign {
 		p.endList();
 	}
 	
-	public Node getLhs() {
-		return lhs;
-	}
-	
-	public Expr getRhs() {
-		return rhs;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		Node newLhs = lhs.accept(v);
@@ -68,5 +69,11 @@ public class SingleAssign extends Assign {
 		single.result = Result.UNIT;
 
 		return single;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

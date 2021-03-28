@@ -6,6 +6,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -15,6 +16,10 @@ public class Return extends Statement {
 
 	public Return(List<Expr> retList) {
 		this.retList = retList;
+	}
+
+	public List<Expr> getRetList() {
+		return retList;
 	}
 
 	@Override
@@ -30,10 +35,6 @@ public class Return extends Statement {
 		p.endList();
 	}
 	
-	public List<Expr> getRetList() {
-		return retList;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<Expr> newRetList = acceptList(retList, v);
@@ -56,5 +57,11 @@ public class Return extends Statement {
 		ret.result = Result.VOID;
 
 		return ret;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -11,6 +11,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -22,6 +23,14 @@ public class MultipleAssign extends Assign {
 	public MultipleAssign(List<Optional<SimpleDecl>> decls, FExpr rhs) {
 		this.decls = decls;
 		this.rhs = rhs;
+	}
+
+	public List<Optional<SimpleDecl>> getDecls() {
+		return decls;
+	}
+	
+	public FExpr getRhs() {
+		return rhs;
 	}
 
 	@Override
@@ -42,14 +51,6 @@ public class MultipleAssign extends Assign {
 		p.endList();
 	}
 	
-	public List<Optional<SimpleDecl>> getDecls() {
-		return decls;
-	}
-	
-	public FExpr getRhs() {
-		return rhs;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		if(decls == null) {
@@ -100,5 +101,11 @@ public class MultipleAssign extends Assign {
 		MultipleAssign assign = copy();
 		assign.result = Result.UNIT;
 		return assign;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

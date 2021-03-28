@@ -7,6 +7,7 @@ import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
 import mtm68.exception.SemanticException;
 import mtm68.visit.FunctionCollector;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -20,6 +21,18 @@ public class FunctionDecl extends Node {
 		this.id = id;
 		this.args = args;
 		this.returnTypes = returnTypes;
+	}
+
+	public String getId() {
+		return id;
+	}
+	
+	public List<SimpleDecl> getArgs() {
+		return args;
+	}
+	
+	public List<Type> getReturnTypes() {
+		return returnTypes;
 	}
 
 	@Override
@@ -44,18 +57,6 @@ public class FunctionDecl extends Node {
 		p.endList();
 	}
 	
-	public String getId() {
-		return id;
-	}
-	
-	public List<SimpleDecl> getArgs() {
-		return args;
-	}
-	
-	public List<Type> getReturnTypes() {
-		return returnTypes;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<SimpleDecl> newArgs = acceptList(this.args, v);
@@ -77,5 +78,11 @@ public class FunctionDecl extends Node {
 	public Node extractFunctionDecl(FunctionCollector fc) {
 		fc.addFunctionDecl(this);
 		return this;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

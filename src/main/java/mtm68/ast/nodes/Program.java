@@ -3,6 +3,7 @@ package mtm68.ast.nodes;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -14,6 +15,14 @@ public class Program extends Node implements Root {
 	public Program(List<Use> useStmts, List<FunctionDefn> fDefns) {
 		this.useStmts = useStmts;
 		this.functionDefns = fDefns;
+	}
+
+	public List<Use> getUseStmts() {
+		return useStmts;
+	}
+	
+	public List<FunctionDefn> getFunctionDefns() {
+		return functionDefns;
 	}
 
 	@Override
@@ -39,14 +48,6 @@ public class Program extends Node implements Root {
 		p.endList();
 	}
 	
-	public List<Use> getUseStmts() {
-		return useStmts;
-	}
-	
-	public List<FunctionDefn> getFunctionDefns() {
-		return functionDefns;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<Use> newUseStmts = acceptList(useStmts, v);
@@ -64,5 +65,11 @@ public class Program extends Node implements Root {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		return this;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

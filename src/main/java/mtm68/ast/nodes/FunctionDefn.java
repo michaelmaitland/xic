@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -15,6 +16,14 @@ public class FunctionDefn extends Node {
 		this.body = body;
 	}
 
+	public FunctionDecl getFunctionDecl() {
+		return functionDecl;
+	}
+	
+	public Block getBody() {
+		return body;
+	}
+
 	@Override
 	public String toString() {
 		return "FunctionDefn [fDecl=" + functionDecl + ", body=" + body + "]";
@@ -26,14 +35,6 @@ public class FunctionDefn extends Node {
 		functionDecl.prettyPrint(p);
 		body.prettyPrint(p);
 		p.endList();
-	}
-	
-	public FunctionDecl getFunctionDecl() {
-		return functionDecl;
-	}
-	
-	public Block getBody() {
-		return body;
 	}
 
 	@Override
@@ -56,4 +57,9 @@ public class FunctionDefn extends Node {
 		return this;
 	}
 
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

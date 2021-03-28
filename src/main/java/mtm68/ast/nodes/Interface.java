@@ -3,6 +3,7 @@ package mtm68.ast.nodes;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -12,6 +13,10 @@ public class Interface extends Node implements Root {
 
 	public Interface(List<FunctionDecl> fDecls) {
 		this.functionDecls = fDecls;
+	}
+
+	public List<FunctionDecl> getFunctionDecls() {
+		return functionDecls;
 	}
 
 	@Override
@@ -34,10 +39,6 @@ public class Interface extends Node implements Root {
 		p.endList();
 	}
 	
-	public List<FunctionDecl> getFunctionDecls() {
-		return functionDecls;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<FunctionDecl> newFunctionDecls = acceptList(functionDecls, v);
@@ -54,5 +55,11 @@ public class Interface extends Node implements Root {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		return this;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

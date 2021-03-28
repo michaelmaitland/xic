@@ -7,6 +7,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.util.ArrayUtils;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -28,6 +29,14 @@ public class Block extends Statement {
 		this.returnStmt = returnStmt; 
 	}
 
+	public List<Statement> getStmts() {
+		return stmts;
+	}
+
+	public Optional<Return> getReturnStmt() {
+		return returnStmt;
+	}
+	
 	@Override
 	public String toString() {
 		return "Block [stmts=" + stmts + ", returnStmt=" + returnStmt + "]";
@@ -44,21 +53,6 @@ public class Block extends Statement {
 		p.endList();
 	}
 	
-	public List<Statement> getStmts() {
-		return stmts;
-	}
-
-	public Optional<Return> getReturnStmt() {
-		return returnStmt;
-	}
-	
-	private List<Statement> getStmtsIncludingReturn() {
-		List<Statement> ret = ArrayUtils.empty();
-		stmts.forEach(ret::add);
-		returnStmt.ifPresent(ret::add);
-		return ret;
-	}
-
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<Statement> newStmts = acceptList(stmts, v);
@@ -95,5 +89,18 @@ public class Block extends Statement {
 		newBlock.result = result;
 
 		return newBlock;
+	}
+
+	private List<Statement> getStmtsIncludingReturn() {
+		List<Statement> ret = ArrayUtils.empty();
+		stmts.forEach(ret::add);
+		returnStmt.ifPresent(ret::add);
+		return ret;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

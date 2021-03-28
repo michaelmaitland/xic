@@ -4,6 +4,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -48,6 +49,10 @@ public class SimpleDecl extends Decl {
 
 		return decl;
 	}
-	
-	
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -16,5 +16,4 @@ public abstract class Literal<T> extends Expr {
 	public String toString() {
 		return value.toString();
 	}
-
 }

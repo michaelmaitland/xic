@@ -3,6 +3,7 @@ package mtm68.ast.nodes;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
 import mtm68.util.StringUtils;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -31,5 +32,11 @@ public class CharLiteral extends Literal<Character>{
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		return this;
+	}
+
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

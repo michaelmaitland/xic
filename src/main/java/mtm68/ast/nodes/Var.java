@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -13,6 +14,14 @@ public class Var extends Expr {
 		this.id = id;
 	}
 	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	@Override
 	public String toString() {
 		return id;
@@ -34,11 +43,9 @@ public class Var extends Expr {
 		return copyAndSetType(type);
 	}
 
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
