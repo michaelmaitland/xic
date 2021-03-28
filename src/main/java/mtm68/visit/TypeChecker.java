@@ -62,7 +62,7 @@ public class TypeChecker extends Visitor {
 	}
 	
 	public TypeChecker() {
-		this.context = new TypingContext();
+		this(new TypingContext());
 		typeErrors = new ArrayList<>();
 	}
 	
@@ -276,8 +276,6 @@ public class TypeChecker extends Visitor {
 		return type;
 	}
 
-	//      x = x + 1
-	
 	public Type checkBinExpr(BinExpr be) {
 		
 		Binop op = be.getOp();
