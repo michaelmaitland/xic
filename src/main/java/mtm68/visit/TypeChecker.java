@@ -1,6 +1,5 @@
 package mtm68.visit;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,6 @@ import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDefn;
-import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Not;
@@ -33,16 +31,12 @@ import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
-import mtm68.exception.BaseError;
 import mtm68.exception.FatalTypeException;
-import mtm68.exception.SemanticError;
 import mtm68.util.ArrayUtils;
 
 public class TypeChecker extends Visitor {
 
 	private TypingContext context;
-	
-	private List<BaseError> typeErrors;
 
 	// Sets described in the typing rules
 	private	Set<Binop> intToIntToInt = ArrayUtils.newHashSet(Binop.ADD, Binop.SUB, Binop.MULT, Binop.HIGH_MULT, Binop.DIV, Binop.MOD);
@@ -51,19 +45,17 @@ public class TypeChecker extends Visitor {
 	private	Set<Binop> arrToArrToBool = ArrayUtils.newHashSet(Binop.EQEQ, Binop.NEQ);
 	private	Set<Binop> arrToArrToArr = ArrayUtils.newHashSet(Binop.ADD);
 
-
 	public TypeChecker(Map<String, ContextType> initSymTable) {
 		this(new TypingContext(initSymTable));
 	}
 
 	public TypeChecker(TypingContext context) {
+		super();
 		this.context = context;
-		typeErrors = new ArrayList<>();
 	}
 	
 	public TypeChecker() {
-		this.context = new TypingContext();
-		typeErrors = new ArrayList<>();
+		this(new TypingContext());
 	}
 	
 	public <N extends Node> N performTypeCheck(N root) {
@@ -276,8 +268,6 @@ public class TypeChecker extends Visitor {
 		return type;
 	}
 
-	//      x = x + 1
-	
 	public Type checkBinExpr(BinExpr be) {
 		
 		Binop op = be.getOp();
@@ -339,23 +329,6 @@ public class TypeChecker extends Visitor {
 				&& isCompatibleArrayTypes(t1, t2);
 	}
 
-	public List<BaseError> getTypeErrors() {
-		return typeErrors;
-	}
-
-	public BaseError getFirstError() {
-		typeErrors.sort(BaseError.getComparator());
-		return typeErrors.get(0);
-	}
-	
-	public boolean hasError() {
-		return typeErrors.size() > 0;
-	}
-	
-	public void reportError(HasLocation location, String description) {
-		typeErrors.add(new SemanticError(location, description));
-	}
-	
 	private boolean isScopeNode(Node node) {
 		return node instanceof Block
 				|| node instanceof While
@@ -365,5 +338,4 @@ public class TypeChecker extends Visitor {
 	private boolean isCompatibleArrayTypes(Type t1, Type t2) {
 		return t1.equals(t2) || t1.equals(Types.EMPTY_ARRAY) || t2.equals(Types.EMPTY_ARRAY);
 	}
-
 }
