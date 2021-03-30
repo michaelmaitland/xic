@@ -1,7 +1,6 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.ir.IRExpr;
-import edu.cornell.cs.cs4120.ir.IRNode;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Type;
 

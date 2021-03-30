@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.binary;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -82,7 +83,6 @@ public class BinExpr extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		return copyAndSetIRNode(new IRBinOp(op.convertToOpType(),left.getIrNode(), right.getIrNode()));
 	}
 }

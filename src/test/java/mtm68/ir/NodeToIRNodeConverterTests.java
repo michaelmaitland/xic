@@ -3,16 +3,20 @@ package mtm68.ir;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.intLit;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.binary.Add;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -63,6 +67,7 @@ public class NodeToIRNodeConverterTests {
 		assertTrue(newLiteral.getIrNode().isConstant());
 		assertEquals('a', newLiteral.getIrNode().constant());
 	}
+
 	//-------------------------------------------------------------------------------- 
 	// FExp
 	//-------------------------------------------------------------------------------- 
@@ -103,6 +108,25 @@ public class NodeToIRNodeConverterTests {
 	//			HighMult, LessThan, LessThanOrEqual, Mod, Mult,
 	//			Or, Sub)
 	//-------------------------------------------------------------------------------- 
+
+	@Test
+	public void testAdd() {
+		Add add = new Add(intLit(0L), intLit(1L));
+		Add newAdd = doConversion(add);
+
+		assertTrue(newAdd.getIrNode() instanceof IRBinOp);
+		assertEquals(OpType.ADD, ((IRBinOp)newAdd.getIrNode()).opType());
+	}
+	
+	@Test
+	public void testBinExprLeftRightSet() {
+		Add add = new Add(intLit(0L), intLit(1L));
+		Add newAdd = doConversion(add);
+
+		assertTrue(newAdd.getIrNode() instanceof IRBinOp);
+		assertNotNull(((IRBinOp)newAdd.getIrNode()).left());
+		assertNotNull(((IRBinOp)newAdd.getIrNode()).right());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// Assign
