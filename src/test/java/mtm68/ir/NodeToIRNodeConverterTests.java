@@ -1,6 +1,8 @@
 package mtm68.ir;
 
-import static mtm68.util.NodeTestUtil.*;
+import static mtm68.util.NodeTestUtil.boolLit;
+import static mtm68.util.NodeTestUtil.charLit;
+import static mtm68.util.NodeTestUtil.intLit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
+import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -52,7 +55,14 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// CharLiteral 
 	//-------------------------------------------------------------------------------- 
-
+	@Test
+	void convertCharLiteral() {
+		CharLiteral literal = charLit('a');
+		CharLiteral newLiteral = doConversion(literal);
+		
+		assertTrue(newLiteral.getIrNode().isConstant());
+		assertEquals('a', newLiteral.getIrNode().constant());
+	}
 	//-------------------------------------------------------------------------------- 
 	// FExp
 	//-------------------------------------------------------------------------------- 
