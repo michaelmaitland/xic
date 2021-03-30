@@ -5,7 +5,7 @@ import mtm68.exception.FatalTypeException;
 
 public class NodeToIRNodeConverter extends Visitor {
 
-	public <R extends IRNode, N extends Node> R performConvertToIR(N root) {
+	public <N extends Node> N performConvertToIR(N root) {
 		try {
 			return root.accept(this);
 		} catch(FatalTypeException e) {
@@ -14,7 +14,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	@Override
-	public IRNode leave(Node n, Node old) {
+	public Node leave(Node parent, Node n) {
 		return n.convertToIR(this);
 	}
 }

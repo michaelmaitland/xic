@@ -1,10 +1,11 @@
 package mtm68.ir;
 
 import static mtm68.util.NodeTestUtil.boolLit;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import edu.cornell.cs.cs4120.ir.IRNode;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Node;
@@ -31,14 +32,21 @@ public class NodeToIRNodeConverterTests {
 
 	@Test
 	void convertTrue() {
-		BoolLiteral b = boolLit(true);
-		IRNode ir = doConversion(b);
+		BoolLiteral literal = boolLit(true);
+		BoolLiteral newLiteral = doConversion(literal);
 		
+		assertTrue(newLiteral.getIrNode().isConstant());
+		assertEquals(1, newLiteral.getIrNode().constant());
 	}
 
 	@Test
 	void convertFalse() {
+		BoolLiteral literal = boolLit(false);
+		BoolLiteral newLiteral = doConversion(literal);
 		
+		assertTrue(newLiteral.getIrNode().isConstant());
+		assertEquals(0, newLiteral.getIrNode().constant());
+
 	}
 	//-------------------------------------------------------------------------------- 
 	// CharLiteral 
@@ -110,7 +118,7 @@ public class NodeToIRNodeConverterTests {
 	// Helper Methods
 	//-------------------------------------------------------------------------------- 
 
-	private <R extends IRNode, N extends Node> R doConversion(N node) {
+	private <N extends Node> N doConversion(N node) {
 		NodeToIRNodeConverter conv = new NodeToIRNodeConverter();
 		addLocs(node);
 		return conv.performConvertToIR(node);
