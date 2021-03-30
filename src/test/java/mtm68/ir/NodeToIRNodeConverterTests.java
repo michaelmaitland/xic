@@ -11,11 +11,13 @@ import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
@@ -102,6 +104,15 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// Var
 	//-------------------------------------------------------------------------------- 
+	@Test
+	public void testVar() {
+		Var var = new Var("x");
+		Var newVar = doConversion(var);
+
+		assertTrue(newVar.getIrNode() instanceof IRTemp);
+		assertEquals("x", ((IRTemp)newVar.getIrNode()).name());
+	}
+	
 
 	//-------------------------------------------------------------------------------- 
 	// BinExpr (Add, And, Div, EqEq, GreaterThan, GreaterThanOrEqual,
