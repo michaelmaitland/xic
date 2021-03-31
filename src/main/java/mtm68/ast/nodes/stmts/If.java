@@ -3,11 +3,14 @@ package mtm68.ast.nodes.stmts;
 import java.util.Optional;
 
 import edu.cornell.cs.cs4120.ir.IRCJump;
+import edu.cornell.cs.cs4120.ir.IRLabel;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -102,8 +105,15 @@ public class If extends Statement {
 	public Node convertToIR(NodeToIRNodeConverter cv) {
 		// TODO: do condition conversion ourselves
 		//IfToIRNodeConverter conv = new .conv..
-		Node newCondition = conv.perform(condition);
+		//Node newCondition = conv.perform(condition);
 
-		IRCJump cjump = new IRCJump(newCondition, cv.getFreshLabel(), cv.getFreshLabel());
+		IRLabel trueLabel =  new IRLabel(cv.getFreshLabelName());
+		IRLabel falseLabel = new IRLabel(cv.getFreshLabelName());
+		IRCJump cjump = new IRCJump(condition.getIrExpr(), trueLabel.name(), falseLabel.name());
+		
+		
+		IRSeq seq = new IRSeq(ArrayUtils.elems(cjump, trueLabel, ifBranch.getIrStmt(), falseLabel));
+				
+		return copyAndSetIRStmt(seq);
 	}
 }

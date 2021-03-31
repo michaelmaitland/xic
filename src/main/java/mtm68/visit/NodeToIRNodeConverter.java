@@ -11,7 +11,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.labelCounter = 0;
 	}
 
-	public String getFreshLabel() {
+	public String getFreshLabelName() {
 		labelCounter++;
 		return labelCounter + "";
 	}
