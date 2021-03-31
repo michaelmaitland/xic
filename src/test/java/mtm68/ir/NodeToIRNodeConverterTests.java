@@ -9,7 +9,7 @@ import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.emptyBlock;
-import static mtm68.util.NodeTestUtil.intLit;
+import static mtm68.util.NodeTestUtil.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +31,7 @@ import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.ArrayIndex;
+import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.FExpr;
@@ -72,6 +73,40 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// ArrayInit
 	//-------------------------------------------------------------------------------- 
+
+	@Test
+	public void testArrayInitEmpty() {
+		ArrayInit ai = emptyArray();
+		ArrayInit newAi = doConversion(ai);
+		assertArrayInit(newAi, 0);
+	}
+	
+
+	@Test
+	public void testArrayInitOneElem() {
+		ArrayInit ai = arrayWithElems(intLit(1L));
+		ArrayInit newAi = doConversion(ai);
+		assertArrayInit(newAi, 1);
+	}
+	
+		@Test
+	public void testArrayInitMultipleElem() {
+		ArrayInit ai = arrayWithElems(intLit(1L), intLit(0L));
+		ArrayInit newAi = doConversion(ai);
+		assertArrayInit(newAi, 2);
+	}
+		
+	private void assertArrayInit(ArrayInit converted, int numElems) {
+		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, converted.getIrExpr());
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, eseq.stmt());
+		assertEquals(2 + numElems, seq.stmts().size()); // one to alloc, one to set length
+		assertInstanceOf(IRMove.class, seq.stmts().get(0)); 
+		IRMove moveLength = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(1)); 
+		IRConst length = assertInstanceOfAndReturn(IRConst.class, moveLength.source());
+		assertEquals(numElems, length.constant());
+		assertInstanceOf(IRBinOp.class, eseq.expr());
+	
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// ArrayLength
