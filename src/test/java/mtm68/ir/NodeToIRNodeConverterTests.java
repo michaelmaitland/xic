@@ -3,10 +3,10 @@ package mtm68.ir;
 import static mtm68.util.ArrayUtils.elems;
 import static mtm68.util.ArrayUtils.empty;
 import static mtm68.util.NodeTestUtil.arbitraryCondition;
+import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.intLit;
-import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,6 +20,7 @@ import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRExp;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
@@ -29,8 +30,13 @@ import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
+import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ProcedureCall;
+import mtm68.ast.nodes.stmts.Return;
+import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
+import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -175,6 +181,51 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void testEmptyBlock() {
+		Block block = new Block(empty());
+		Block newBlock = doConversion(block);
+		
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newBlock.getIrStmt());
+		assertTrue(seq.stmts().isEmpty());
+	}
+	
+	@Test
+	void testBlockNoRet() {
+		Block block = new Block(elems(
+				new SimpleDecl("x", Types.INT),
+				new SimpleDecl("y", Types.INT),
+				new SimpleDecl("z", Types.INT)
+				));
+		Block newBlock = doConversion(block);
+		
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newBlock.getIrStmt());
+		assertEquals(3, seq.stmts().size());
+	}
+	
+	@Test
+	void testBlockOnlyRet() {
+		Block block = new Block(empty(), new Return(empty()));
+		Block newBlock = doConversion(block);
+		
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newBlock.getIrStmt());
+		assertEquals(1, seq.stmts().size());
+	}
+	
+	@Test
+	void testBlockStmtsAndRet() {
+		Block block = new Block(elems(
+				new SimpleDecl("x", Types.INT),
+				new SimpleDecl("y", Types.INT),
+				new SimpleDecl("z", Types.INT)
+				), new Return(empty()));
+		Block newBlock = doConversion(block);
+		
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newBlock.getIrStmt());
+		assertEquals(4, seq.stmts().size());
+
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// Decl

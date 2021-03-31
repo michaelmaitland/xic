@@ -2,7 +2,10 @@ package mtm68.ast.nodes.stmts;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
@@ -100,7 +103,10 @@ public class Block extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		List<IRStmt> seq = getStmtsIncludingReturn().stream()
+								  .map(Statement::getIrStmt)
+								  .collect(Collectors.toList());
+		
+		return copyAndSetIRStmt(new IRSeq(seq));
 	}
 }
