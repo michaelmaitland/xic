@@ -89,7 +89,7 @@ public class NodeToIRNodeConverterTests {
 		assertArrayInit(newAi, 1);
 	}
 	
-		@Test
+	@Test
 	public void testArrayInitMultipleElem() {
 		ArrayInit ai = arrayWithElems(intLit(1L), intLit(0L));
 		ArrayInit newAi = doConversion(ai);
@@ -105,7 +105,6 @@ public class NodeToIRNodeConverterTests {
 		IRConst length = assertInstanceOfAndReturn(IRConst.class, moveLength.source());
 		assertEquals(numElems, length.constant());
 		assertInstanceOf(IRBinOp.class, eseq.expr());
-	
 	}
 
 	//-------------------------------------------------------------------------------- 

@@ -13,9 +13,9 @@ import mtm68.visit.Visitor;
 
 public class BinExpr extends Expr {
 	
-	private Binop op;
-	private Expr left;
-	private Expr right;
+	protected Binop op;
+	protected Expr left;
+	protected Expr right;
 
 	public BinExpr(Binop op, Expr left, Expr right) {
 		this.op = op;

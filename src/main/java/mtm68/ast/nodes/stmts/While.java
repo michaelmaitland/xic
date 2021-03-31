@@ -1,10 +1,18 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.List;
+
+import edu.cornell.cs.cs4120.ir.IRJump;
+import edu.cornell.cs.cs4120.ir.IRLabel;
+import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -69,7 +77,19 @@ public class While extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+
+		String header = cv.getFreshLabel();
+		String trueLabel = cv.getFreshLabel();
+		String falseLabel = cv.getFreshLabel();
+
+		List<IRStmt> stmts = ArrayUtils.empty();
+		stmts.add(0, new IRLabel(header));
+		stmts.add(cv.getCtrlFlow(condition, trueLabel, falseLabel));
+		stmts.add(new IRLabel(trueLabel));
+		stmts.add(body.getIrStmt());
+		stmts.add(new IRJump(new IRName(header)));
+		stmts.add(new IRLabel(falseLabel));
+		
+		return copyAndSetIRStmt(new IRSeq(stmts));
 	}
 }

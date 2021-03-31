@@ -1,10 +1,11 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.List;
 import java.util.Optional;
 
-import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -103,18 +104,18 @@ public class If extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO: do condition conversion ourselves
-		//IfToIRNodeConverter conv = new .conv..
-		//Node newCondition = conv.perform(condition);
 
-		IRLabel trueLabel =  new IRLabel(cv.getFreshLabelName());
-		IRLabel falseLabel = new IRLabel(cv.getFreshLabelName());
-		IRCJump cjump = new IRCJump(condition.getIrExpr(), trueLabel.name(), falseLabel.name());
-		
-		
-		IRSeq seq = new IRSeq(ArrayUtils.elems(cjump, trueLabel, ifBranch.getIrStmt(), falseLabel));
-				
-		// TODO: what about else branch?
-		return copyAndSetIRStmt(seq);
+		String trueLabel = cv.getFreshLabel();
+		String falseLabel = cv.getFreshLabel();
+		List<IRStmt> stmts = ArrayUtils.empty();
+		stmts.add(cv.getCtrlFlow(condition, trueLabel, falseLabel));
+		stmts.add(new IRLabel(trueLabel));
+		stmts.add(ifBranch.getIrStmt());
+		stmts.add(new IRLabel(falseLabel));
+		if(elseBranch.isPresent()) {
+			stmts.add(elseBranch.get().getIrStmt());
+		}
+
+		return copyAndSetIRStmt(new IRSeq(stmts));
 	}
 }
