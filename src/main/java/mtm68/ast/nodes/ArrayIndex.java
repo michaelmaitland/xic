@@ -72,23 +72,29 @@ public class ArrayIndex extends Expr implements LHS  {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
 	
-		IRTemp tempArr = new IRTemp("arr");
-		IRTemp tempIndex = new IRTemp("index");
- 
-		// index is going to be at mem address: (mem addr of arr) + (8 * index)
-		IRExpr e = new IRBinOp(OpType.MUL, new IRConst(8L), tempIndex);
+		IRTemp tempArr = new IRTemp(cv.newTemp());
+		IRTemp tempIndex = new IRTemp(cv.newTemp());
+
+		// Add Bounds checking
+		IRLabel ok = new IRLabel(cv.getFreshLabel());
+		String errLabel = cv.getOutOfBoundsLabel();
+		IRMem lenAddr = new IRMem(new IRBinOp(OpType.SUB, tempArr, new IRConst(cv.getWordSize())));
+		IRBinOp boundsCheck = new IRBinOp(OpType.ULT, tempIndex, lenAddr);
+
+		IRSeq seq = new IRSeq(new IRMove(tempArr, arr.getIrExpr()),
+							  new IRMove(tempIndex, index.getIrExpr()),
+							  new IRCJump(boundsCheck, ok.name(), errLabel),
+							  ok);
+
+		/*
+		 * index is going to be at mem address: (mem addr of arr) + (WORD_SIZE * index).
+		 * We can us the temp's here because it will be executed after
+		 * a seq that does the temp setup
+		 */
+		IRExpr e = new IRBinOp(OpType.MUL, new IRConst(cv.getWordSize()), tempIndex);
 		IRExpr e2 = new IRBinOp(OpType.ADD, tempArr, e); 
 		IRMem mem = new IRMem(e2);
 	
-		// Add Bounds checking
-		IRLabel ok = new IRLabel("ok");
-		IRLabel err = new IRLabel("err");
-		IRMem len = new IRMem(new IRBinOp(OpType.SUB, tempArr, new IRConst(8L)));
-		IRBinOp boundsCheck = new IRBinOp(OpType.ULT, tempIndex, len);
-		IRSeq seq = new IRSeq(new IRMove(tempArr, arr.getIrExpr()),
-							  new IRMove(tempIndex, index.getIrExpr()),
-							  new IRCJump(boundsCheck, ok.name(), err.name()),
-							  ok);
 		IRESeq eseq = new IRESeq(seq, mem);
 
 		return copyAndSetIRExpr(eseq);

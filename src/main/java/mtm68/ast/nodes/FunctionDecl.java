@@ -82,6 +82,7 @@ public class FunctionDecl extends Node {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
 		/* There is no IR conversion that needs to be done */
+		// TODO: do i need to do something with the simple decls?
 		return this;
 	}
 }
