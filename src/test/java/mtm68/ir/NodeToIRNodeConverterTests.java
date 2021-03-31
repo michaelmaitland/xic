@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCall;
+import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
@@ -175,6 +176,10 @@ public class NodeToIRNodeConverterTests {
 		FunctionCall newStmt = doConversion(stmt);
 		
 		assertTrue(newStmt.getIrNode() instanceof IRCall);
+		IRCall call = (IRCall)newStmt.getIrNode();
+		assertTrue(call.target() instanceof IRName);
+		IRName name = (IRName)call.target();
+		assertEquals("f", name.name());
 	}
 	
 	@Test
@@ -183,6 +188,10 @@ public class NodeToIRNodeConverterTests {
 		FunctionCall newStmt = doConversion(stmt);
 
 		assertTrue(newStmt.getIrNode() instanceof IRCall);
+		IRCall call = (IRCall)newStmt.getIrNode();
+		assertTrue(call.target() instanceof IRName);
+		IRName name = (IRName)call.target();
+		assertEquals("f", name.name());
 	}
 
 	@Test
@@ -192,6 +201,10 @@ public class NodeToIRNodeConverterTests {
 		FunctionCall newStmt = doConversion(stmt);
 
 		assertTrue(newStmt.getIrNode() instanceof IRCall);
+		IRCall call = (IRCall)newStmt.getIrNode();
+		assertTrue(call.target() instanceof IRName);
+		IRName name = (IRName)call.target();
+		assertEquals("f", name.name());
 	}
 	
 	//-------------------------------------------------------------------------------- 
