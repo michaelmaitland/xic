@@ -7,14 +7,23 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	int labelCounter;
 	
+	int tmpCounter;
+	
 	public NodeToIRNodeConverter() {
 		this.labelCounter = 0;
+		this.tmpCounter = 0;
 	}
 
 	public String getFreshLabelName() {
 		labelCounter++;
-		return labelCounter + "";
+		return "_l" + labelCounter; 
 	}
+	
+	public String newTemp() {
+		tmpCounter++;
+		return "_t" + tmpCounter;
+	}
+	
 	
 	public <N extends Node> N performConvertToIR(N root) {
 		try {

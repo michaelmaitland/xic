@@ -44,6 +44,14 @@ public class ArrayUtils {
 		list.add(elem);
 		return list;
 	}
+	
+	/** 
+	 *  Returns list with elem prepended
+	 */
+	public static <T> List<T> prepend(T elem, List<T> list) {
+		list.add(0, elem);
+		return list;
+	}
 
 	/** 
 	 *  Returns empty list

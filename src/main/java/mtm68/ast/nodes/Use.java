@@ -36,12 +36,13 @@ public class Use extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
+		// TODO: why not return this?
 		return null;
 	}
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		/** There is no conversion to be done */
+		return this;
 	}
 }

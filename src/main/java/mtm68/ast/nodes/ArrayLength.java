@@ -1,5 +1,6 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -55,7 +56,9 @@ public class ArrayLength extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		assert exp.getIrExpr() instanceof IRMem;
+		IRMem arr = (IRMem)exp.getIrExpr();
+		
+		IRConst len = new IRConst()
 	}
 }

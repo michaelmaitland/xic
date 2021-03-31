@@ -1,5 +1,16 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCJump;
+import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRLabel;
+import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -60,7 +71,26 @@ public class ArrayIndex extends Expr implements LHS  {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	
+		IRTemp tempArr = new IRTemp("arr");
+		IRTemp tempIndex = new IRTemp("index");
+ 
+		// index is going to be at mem address: (mem addr of arr) + (8 * index)
+		IRExpr e = new IRBinOp(OpType.MUL, new IRConst(8L), tempIndex);
+		IRExpr e2 = new IRBinOp(OpType.ADD, tempArr, e); 
+		IRMem mem = new IRMem(e2);
+	
+		// Add Bounds checking
+		IRLabel ok = new IRLabel("ok");
+		IRLabel err = new IRLabel("err");
+		IRMem len = new IRMem(new IRBinOp(OpType.SUB, tempArr, new IRConst(8L)));
+		IRBinOp boundsCheck = new IRBinOp(OpType.ULT, tempIndex, len);
+		IRSeq seq = new IRSeq(new IRMove(tempArr, arr.getIrExpr()),
+							  new IRMove(tempIndex, index.getIrExpr()),
+							  new IRCJump(boundsCheck, ok.name(), err.name()),
+							  ok);
+		IRESeq eseq = new IRESeq(seq, mem);
+
+		return copyAndSetIRExpr(eseq);
 	}
 }

@@ -56,7 +56,6 @@ public class ArrayInit extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		IREseq eseq =  new IRESeq
 	}
 }
