@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.FunctionCollector;
@@ -16,9 +15,38 @@ public abstract class Node implements HasLocation, Cloneable {
 
 	private Location startLoc;
 
-	protected IRExpr irNode;
+	public Location getStartLoc() {
+		return startLoc;
+	}
+
+	public void setStartLoc(Location startLoc) {
+		this.startLoc = startLoc;
+	}
+
+	@Override
+	public int getLine() {
+		return startLoc.getLine();
+	}
+
+	@Override
+	public int getColumn() {
+		return startLoc.getColumn();
+	}
 
 	public abstract void prettyPrint(SExpPrinter p);
+
+	/**
+	 * Visit all children that belong to {@code this}.
+	 * 
+	 * @param v
+	 *           The visitor to visit with
+	 * @return The node returned from visiting all of its children.
+	 */
+	public abstract Node visitChildren(Visitor v);
+
+	public abstract Node typeCheck(TypeChecker tc);
+
+	public abstract Node convertToIR(NodeToIRNodeConverter cv);
 
 	/**
 	 * Accepts a visitor
@@ -89,47 +117,8 @@ public abstract class Node implements HasLocation, Cloneable {
 		return acceptOptional(null, opt, v);
 	}
 
-	/**
-	 * Visit all children that belong to {@code this}.
-	 * 
-	 * @param v
-	 *           The visitor to visit with
-	 * @return The node returned from visiting all of its children.
-	 */
-	public abstract Node visitChildren(Visitor v);
-
-	public abstract Node typeCheck(TypeChecker tc);
-
-	public abstract Node convertToIR(NodeToIRNodeConverter cv);
-
 	public Node extractFunctionDecl(FunctionCollector fc) {
 		return this;
-	}
-
-	public Location getStartLoc() {
-		return startLoc;
-	}
-
-	public void setStartLoc(Location startLoc) {
-		this.startLoc = startLoc;
-	}
-
-	@Override
-	public int getLine() {
-		return startLoc.getLine();
-	}
-
-	@Override
-	public int getColumn() {
-		return startLoc.getColumn();
-	}
-	
-	public IRExpr getIrNode() {
-		return irNode;
-	}
-
-	public void setIrNode(IRExpr irNode) {
-		this.irNode = irNode;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -144,17 +133,5 @@ public abstract class Node implements HasLocation, Cloneable {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
-	}
-	
-	/**
-	 * Copies this Expr, sets the irNode of the copied Expr,
-	 * and returns that copied Expr.
-	 * @param node the IRNode to set the copied Expr
-	 * @return the copied Expr
-	 */
-	public <E extends Node> E copyAndSetIRNode(IRExpr node) {
-		E newE = this.copy();
-		newE.setIrNode(node);
-		return newE;
 	}
 }

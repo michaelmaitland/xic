@@ -31,6 +31,6 @@ public class IntLiteral extends Literal<Long> {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		return copyAndSetIRNode(new IRConst(value));
+		return copyAndSetIRExpr(new IRConst(value));
 	}
 }

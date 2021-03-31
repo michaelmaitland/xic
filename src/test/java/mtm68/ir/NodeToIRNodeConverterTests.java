@@ -6,6 +6,7 @@ import static mtm68.util.NodeTestUtil.arbitraryCondition;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.intLit;
+import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCall;
+import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRExp;
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
@@ -25,7 +29,8 @@ import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
-import mtm68.ast.nodes.stmts.FunctionCall;
+import mtm68.ast.nodes.stmts.ProcedureCall;
+import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -52,8 +57,9 @@ public class NodeToIRNodeConverterTests {
 		BoolLiteral literal = boolLit(true);
 		BoolLiteral newLiteral = doConversion(literal);
 		
-		assertTrue(newLiteral.getIrNode().isConstant());
-		assertEquals(1, newLiteral.getIrNode().constant());
+		IRConst c = assertInstanceOfAndReturn(IRConst.class, newLiteral.getIrExpr());
+		assertTrue(c.isConstant());
+		assertEquals(1,c.constant());
 	}
 
 	@Test
@@ -61,10 +67,12 @@ public class NodeToIRNodeConverterTests {
 		BoolLiteral literal = boolLit(false);
 		BoolLiteral newLiteral = doConversion(literal);
 		
-		assertTrue(newLiteral.getIrNode().isConstant());
-		assertEquals(0, newLiteral.getIrNode().constant());
+		IRConst c = assertInstanceOfAndReturn(IRConst.class, newLiteral.getIrExpr());
 
+		assertTrue(c.isConstant());
+		assertEquals(0, c.constant());
 	}
+
 	//-------------------------------------------------------------------------------- 
 	// CharLiteral 
 	//-------------------------------------------------------------------------------- 
@@ -72,9 +80,11 @@ public class NodeToIRNodeConverterTests {
 	void convertCharLiteral() {
 		CharLiteral literal = charLit('a');
 		CharLiteral newLiteral = doConversion(literal);
-		
-		assertTrue(newLiteral.getIrNode().isConstant());
-		assertEquals('a', newLiteral.getIrNode().constant());
+
+		IRConst c = assertInstanceOfAndReturn(IRConst.class, newLiteral.getIrExpr());
+
+		assertTrue(c.isConstant());
+		assertEquals('a', c.constant());
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -93,8 +103,10 @@ public class NodeToIRNodeConverterTests {
 		IntLiteral literal = intLit(10L);
 		IntLiteral newLiteral = doConversion(literal);
 		
-		assertTrue(newLiteral.getIrNode().isConstant());
-		assertEquals(10L, newLiteral.getIrNode().constant());
+		IRConst c = assertInstanceOfAndReturn(IRConst.class, newLiteral.getIrExpr());
+
+		assertTrue(c.isConstant());
+		assertEquals(10L, c.constant());
 	}
 	//-------------------------------------------------------------------------------- 
 	// Negate 
@@ -116,8 +128,8 @@ public class NodeToIRNodeConverterTests {
 		Var var = new Var("x");
 		Var newVar = doConversion(var);
 
-		assertTrue(newVar.getIrNode() instanceof IRTemp);
-		assertEquals("x", ((IRTemp)newVar.getIrNode()).name());
+		IRTemp t = assertInstanceOfAndReturn(IRTemp.class, newVar.getIrExpr());
+		assertEquals("x", t.name());
 	}
 	
 
@@ -132,8 +144,8 @@ public class NodeToIRNodeConverterTests {
 		Add add = new Add(intLit(0L), intLit(1L));
 		Add newAdd = doConversion(add);
 
-		assertTrue(newAdd.getIrNode() instanceof IRBinOp);
-		assertEquals(OpType.ADD, ((IRBinOp)newAdd.getIrNode()).opType());
+		IRBinOp b = assertInstanceOfAndReturn(IRBinOp.class, newAdd.getIrExpr());
+		assertEquals(OpType.ADD, b.opType());
 	}
 	
 	@Test
@@ -141,14 +153,24 @@ public class NodeToIRNodeConverterTests {
 		Add add = new Add(intLit(0L), intLit(1L));
 		Add newAdd = doConversion(add);
 
-		assertTrue(newAdd.getIrNode() instanceof IRBinOp);
-		assertNotNull(((IRBinOp)newAdd.getIrNode()).left());
-		assertNotNull(((IRBinOp)newAdd.getIrNode()).right());
+		IRBinOp b = assertInstanceOfAndReturn(IRBinOp.class, newAdd.getIrExpr());
+		assertNotNull(b.left());
+		assertNotNull(b.right());
 	}
 
 	//-------------------------------------------------------------------------------- 
 	// Assign
 	//-------------------------------------------------------------------------------- 
+
+	@Test
+	void testSingleAssign() {
+		SingleAssign assign = new SingleAssign(
+				new Var("x"), intLit(0L));
+		SingleAssign newAssign = doConversion(assign);
+		
+		IRMove move = assertInstanceOfAndReturn(IRMove.class, newAssign.getIrStmt());
+		assertTrue(move.target() instanceof IRTemp);
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// Block
@@ -172,38 +194,35 @@ public class NodeToIRNodeConverterTests {
 	
 	@Test
 	public void testFunctionCallNoArgs() {
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
-		FunctionCall newStmt = doConversion(stmt);
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
+		ProcedureCall newStmt = doConversion(stmt);
 		
-		assertTrue(newStmt.getIrNode() instanceof IRCall);
-		IRCall call = (IRCall)newStmt.getIrNode();
-		assertTrue(call.target() instanceof IRName);
-		IRName name = (IRName)call.target();
+		IRExp exp = assertInstanceOfAndReturn(IRExp.class, newStmt.getIrStmt());
+		IRCall call = assertInstanceOfAndReturn(IRCall.class, exp.expr());
+		IRName name = assertInstanceOfAndReturn(IRName.class, call.target());
 		assertEquals("f", name.name());
 	}
 	
 	@Test
 	public void testFunctionCallOneArg() {
-		FunctionCall stmt = new FunctionCall(new FExpr("f", elems(intLit(0L))));
-		FunctionCall newStmt = doConversion(stmt);
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", elems(intLit(0L))));
+		ProcedureCall newStmt = doConversion(stmt);
 
-		assertTrue(newStmt.getIrNode() instanceof IRCall);
-		IRCall call = (IRCall)newStmt.getIrNode();
-		assertTrue(call.target() instanceof IRName);
-		IRName name = (IRName)call.target();
+		IRExp exp = assertInstanceOfAndReturn(IRExp.class, newStmt.getIrStmt());
+		IRCall call = assertInstanceOfAndReturn(IRCall.class, exp.expr());
+		IRName name = assertInstanceOfAndReturn(IRName.class, call.target());
 		assertEquals("f", name.name());
 	}
 
 	@Test
 	public void testFunctionCallMultiArg() {
-		FunctionCall stmt = new FunctionCall(new FExpr("f",
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f",
 						elems(intLit(0L), arbitraryCondition())));
-		FunctionCall newStmt = doConversion(stmt);
+		ProcedureCall newStmt = doConversion(stmt);
 
-		assertTrue(newStmt.getIrNode() instanceof IRCall);
-		IRCall call = (IRCall)newStmt.getIrNode();
-		assertTrue(call.target() instanceof IRName);
-		IRName name = (IRName)call.target();
+		IRExp exp = assertInstanceOfAndReturn(IRExp.class, newStmt.getIrStmt());
+		IRCall call = assertInstanceOfAndReturn(IRCall.class, exp.expr());
+		IRName name = assertInstanceOfAndReturn(IRName.class, call.target());
 		assertEquals("f", name.name());
 	}
 	

@@ -42,7 +42,7 @@ import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Mult;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
-import mtm68.ast.nodes.stmts.FunctionCall;
+import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.Return;
@@ -1040,7 +1040,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", empty(), empty());
 
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		stmt = doTypeCheck(context, stmt);
 		
 		assertEquals(Result.UNIT, stmt.getResult());
@@ -1051,7 +1051,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", empty(), empty());
 
-		FunctionCall stmt = new FunctionCall(new FExpr("g", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("g", empty()));
 		assertTypeCheckError(context, stmt);
 	}
 
@@ -1060,7 +1060,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", empty(), singleton(INT));
 
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		assertTypeCheckError(context, stmt);
 	}
 
@@ -1069,7 +1069,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", singleton(new SimpleDecl("x", INT)), empty());
 
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		assertTypeCheckError(context, stmt);
 	}
 

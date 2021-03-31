@@ -1,7 +1,9 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.LHS;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
@@ -13,15 +15,15 @@ import mtm68.visit.Visitor;
 public class SingleAssign extends Assign {
 	
 	// TODO change parser to return a node
-	private Node lhs;
+	private LHS lhs;
 	private Expr rhs;
 
-	public SingleAssign(Node lhs, Expr rhs) {
+	public SingleAssign(LHS lhs, Expr rhs) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
 
-	public Node getLhs() {
+	public LHS getLhs() {
 		return lhs;
 	}
 	
@@ -46,7 +48,7 @@ public class SingleAssign extends Assign {
 	
 	@Override
 	public Node visitChildren(Visitor v) {
-		Node newLhs = lhs.accept(v);
+		LHS newLhs = lhs.accept(v);
 		Expr newRhs = rhs.accept(v);
 		
 		if(newLhs != lhs || newRhs != rhs) {
@@ -73,7 +75,7 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		IRMove move = new IRMove(lhs.getIrExpr(), rhs.getIrExpr());
+		return copyAndSetIRStmt(move);
 	}
 }

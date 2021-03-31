@@ -33,6 +33,6 @@ public class BoolLiteral extends Literal<Boolean>{
 	public Node convertToIR(NodeToIRNodeConverter cv) {
 		long constVal = value ? 1L : 0L;
 		
-		return copyAndSetIRNode(new IRConst(constVal));
+		return copyAndSetIRExpr(new IRConst(constVal));
 	}
 }

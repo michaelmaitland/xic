@@ -2,6 +2,7 @@ package mtm68.ast.nodes.stmts;
 
 import java.util.Optional;
 
+import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -99,7 +100,10 @@ public class If extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO: do condition conversion ourselves
+		//IfToIRNodeConverter conv = new .conv..
+		Node newCondition = conv.perform(condition);
+
+		IRCJump cjump = new IRCJump(newCondition, cv.getFreshLabel(), cv.getFreshLabel());
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCall;
+import edu.cornell.cs.cs4120.ir.IRExp;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -15,11 +16,11 @@ import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class FunctionCall extends Statement {
+public class ProcedureCall extends Statement {
 	
 	private FExpr fexp;
 
-	public FunctionCall(FExpr fexp) {
+	public ProcedureCall(FExpr fexp) {
 		this.fexp = fexp;
 	}
 
@@ -45,7 +46,7 @@ public class FunctionCall extends Statement {
 		List<Expr> newArgs = acceptList(fexp.getArgs(), v);
 		
 		if(newArgs != fexp.getArgs()) {
-			FunctionCall call = copy();
+			ProcedureCall call = copy();
 
 			call.fexp = new FExpr(fexp.getId(), newArgs);
 			return call;
@@ -58,7 +59,7 @@ public class FunctionCall extends Statement {
 	public Node typeCheck(TypeChecker tc) {
 		tc.checkProcCall(this);
 
-		FunctionCall stmt = copy();
+		ProcedureCall stmt = copy();
 		stmt.result = Result.UNIT;
 
 		return stmt;
@@ -70,9 +71,10 @@ public class FunctionCall extends Statement {
 		IRName name = new IRName(fexp.getId());
 		List<IRExpr> args = fexp.getArgs()
 								  .stream()
-								  .map(Expr::getIrNode)
+								  .map(Expr::getIrExpr)
 								  .collect(Collectors.toList());
 
-		return copyAndSetIRNode(new IRCall(name, args));
+		IRExp exp = new IRExp(new IRCall(name, args));
+		return copyAndSetIRStmt(exp);
 	}
 }

@@ -1,5 +1,7 @@
 package mtm68.util;
 
+import static org.junit.Assert.assertTrue;
+
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.BoolLiteral;
@@ -60,4 +62,16 @@ public class NodeTestUtil {
 			}
 		});
 	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T assertInstanceOfAndReturn(Class<T> clazz, Object obj) {
+		assertTrue(obj.getClass() + " is not an instanceof " + clazz , clazz.isAssignableFrom(obj.getClass()));
+		return (T) obj;
+	}
+
+	public static <T> void assertInstanceOf(Class<T> clazz, Object obj) {
+		assertInstanceOfAndReturn(clazz, obj);
+	}
+
+
 }

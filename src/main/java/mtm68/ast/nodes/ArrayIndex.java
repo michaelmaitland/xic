@@ -6,7 +6,7 @@ import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class ArrayIndex extends Expr  {
+public class ArrayIndex extends Expr implements LHS  {
 	
 	private Expr arr;
 	private Expr index;

@@ -21,7 +21,7 @@ import mtm68.ast.nodes.binary.BinExpr;
 import mtm68.ast.nodes.binary.Binop;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.Decl;
-import mtm68.ast.nodes.stmts.FunctionCall;
+import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.While;
@@ -172,7 +172,7 @@ public class TypeChecker extends Visitor {
 		context.addReturnTypeInScope(fDefn.getFunctionDecl().getReturnTypes());
 	}
 	
-	public void checkProcCall(FunctionCall stmt) {
+	public void checkProcCall(ProcedureCall stmt) {
 		FExpr fexp = stmt.getFexp();
 		
 		String id = fexp.getId();
