@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.FunctionCollector;
@@ -14,6 +15,8 @@ import mtm68.visit.Visitor;
 public abstract class Node implements HasLocation, Cloneable {
 
 	private Location startLoc;
+
+	protected IRExpr irNode;
 
 	public abstract void prettyPrint(SExpPrinter p);
 
@@ -120,6 +123,14 @@ public abstract class Node implements HasLocation, Cloneable {
 	public int getColumn() {
 		return startLoc.getColumn();
 	}
+	
+	public IRExpr getIrNode() {
+		return irNode;
+	}
+
+	public void setIrNode(IRExpr irNode) {
+		this.irNode = irNode;
+	}
 
 	@SuppressWarnings("unchecked")
 	public <N extends Node> N copy() {
@@ -133,5 +144,17 @@ public abstract class Node implements HasLocation, Cloneable {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
+	}
+	
+	/**
+	 * Copies this Expr, sets the irNode of the copied Expr,
+	 * and returns that copied Expr.
+	 * @param node the IRNode to set the copied Expr
+	 * @return the copied Expr
+	 */
+	public <E extends Node> E copyAndSetIRNode(IRExpr node) {
+		E newE = this.copy();
+		newE.setIrNode(node);
+		return newE;
 	}
 }

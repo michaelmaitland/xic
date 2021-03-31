@@ -1,5 +1,8 @@
 package mtm68.ir;
 
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.ArrayUtils.empty;
+import static mtm68.util.NodeTestUtil.arbitraryCondition;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.intLit;
@@ -11,14 +14,17 @@ import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
+import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
+import mtm68.ast.nodes.stmts.FunctionCall;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -162,7 +168,32 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// Procedure Call
 	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	public void testFunctionCallNoArgs() {
+		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		FunctionCall newStmt = doConversion(stmt);
+		
+		assertTrue(newStmt.getIrNode() instanceof IRCall);
+	}
+	
+	@Test
+	public void testFunctionCallOneArg() {
+		FunctionCall stmt = new FunctionCall(new FExpr("f", elems(intLit(0L))));
+		FunctionCall newStmt = doConversion(stmt);
 
+		assertTrue(newStmt.getIrNode() instanceof IRCall);
+	}
+
+	@Test
+	public void testFunctionCallMultiArg() {
+		FunctionCall stmt = new FunctionCall(new FExpr("f",
+						elems(intLit(0L), arbitraryCondition())));
+		FunctionCall newStmt = doConversion(stmt);
+
+		assertTrue(newStmt.getIrNode() instanceof IRCall);
+	}
+	
 	//-------------------------------------------------------------------------------- 
 	// Return
 	//-------------------------------------------------------------------------------- 
