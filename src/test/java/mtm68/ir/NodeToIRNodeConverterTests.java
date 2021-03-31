@@ -7,6 +7,7 @@ import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.intLit;
+import static mtm68.util.NodeTestUtil.emptyBlock;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,12 +32,12 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.types.Types;
-import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -234,6 +235,14 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// If
 	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	public void testIfBranchNoElse() {
+		If ifStmt = new If(arbitraryCondition(), emptyBlock());
+		If newIfStmt = doConversion(ifStmt);
+		
+		assertInstanceOfAndReturn(IRSeq.class, newIfStmt.getIrStmt());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// While

@@ -114,6 +114,7 @@ public class If extends Statement {
 		
 		IRSeq seq = new IRSeq(ArrayUtils.elems(cjump, trueLabel, ifBranch.getIrStmt(), falseLabel));
 				
+		// TODO: what about else branch?
 		return copyAndSetIRStmt(seq);
 	}
 }
