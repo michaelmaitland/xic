@@ -16,7 +16,7 @@ import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRData;
 import edu.cornell.cs.cs4120.ir.IRExp;
-import edu.cornell.cs.cs4120.ir.IRFuncDecl;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
@@ -226,7 +226,7 @@ public class IRSimulator {
                 return ret.get(0);
             }
         } else {
-            IRFuncDecl fDecl = compUnit.getFunction(name);
+            IRFuncDefn fDecl = compUnit.getFunction(name);
             if (fDecl == null)
                 throw new InternalCompilerError("Tried to call an unknown function: '"
                         + name + "'");
@@ -445,6 +445,9 @@ public class IRSimulator {
             case LT:
                 result = l < r ? 1 : 0;
                 break;
+            case ULT:
+            	result = Long.compareUnsigned(l, r) < 0 ? 1 : 0;
+            	break;
             case GT:
                 result = l > r ? 1 : 0;
                 break;
@@ -474,8 +477,8 @@ public class IRSimulator {
                 targetName = target.name;
             else if (indexToInsn.containsKey(target.value)) {
                 IRNode node = indexToInsn.get(target.value);
-                if (node instanceof IRFuncDecl)
-                    targetName = ((IRFuncDecl) node).name();
+                if (node instanceof IRFuncDefn)
+                    targetName = ((IRFuncDefn) node).name();
                 else throw new InternalCompilerError("Call to a non-function instruction!");
             }
             else throw new InternalCompilerError("Invalid function call '"

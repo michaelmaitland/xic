@@ -23,7 +23,7 @@ terminal LPAREN, RPAREN;
 terminal MOVE, CALL_STMT, EXP, SEQ, JUMP, CJUMP, LABEL, RETURN;
 terminal CONST, TEMP, MEM, CALL, NAME, ESEQ;
 terminal ADD, SUB, MUL, HMUL, DIV, MOD, AND, OR, XOR;
-terminal LSHIFT, RSHIFT, ARSHIFT, EQ, NEQ, LT, GT, LEQ, GEQ;
+terminal LSHIFT, RSHIFT, ARSHIFT, EQ, NEQ, LT, ULT, GT, LEQ, GEQ;
 terminal FUNC, DATA, COMPUNIT;
 terminal String ATOM;
 terminal Long NUMBER;
@@ -269,6 +269,9 @@ op ::=
     :}
     | LT expr:x expr:y {:
         RESULT = parser.nf.IRBinOp(IRBinOp.OpType.LT, x,y);
+    :}
+    | ULT expr:x expr:y {:
+        RESULT = parser.nf.IRBinOp(IRBinOp.OpType.ULT, x,y);
     :}
     | GT expr:x expr:y {:
         RESULT = parser.nf.IRBinOp(IRBinOp.OpType.GT, x,y);

@@ -17,7 +17,7 @@ public class IRBinOp extends IRExpr_c {
      */
     public enum OpType {
         ADD, SUB, MUL, HMUL, DIV, MOD, AND, OR, XOR, LSHIFT, RSHIFT, ARSHIFT,
-        EQ, NEQ, LT, GT, LEQ, GEQ;
+        EQ, NEQ, LT, ULT, GT, LEQ, GEQ;
 
         @Override
         public String toString() {
@@ -52,6 +52,8 @@ public class IRBinOp extends IRExpr_c {
                 return "NEQ";
             case LT:
                 return "LT";
+            case ULT:
+            	return "ULT";
             case GT:
                 return "GT";
             case LEQ:

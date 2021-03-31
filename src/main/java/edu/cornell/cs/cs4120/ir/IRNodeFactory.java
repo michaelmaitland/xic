@@ -43,7 +43,7 @@ public interface IRNodeFactory {
 
     IRCompUnit IRCompUnit(String name);
 
-    IRCompUnit IRCompUnit(String name, Map<String, IRFuncDecl> functions);
+    IRCompUnit IRCompUnit(String name, Map<String, IRFuncDefn> functions);
 
     /**
      *
@@ -64,7 +64,7 @@ public interface IRNodeFactory {
      */
     IRExp IRExp(IRExpr expr);
 
-    IRFuncDecl IRFuncDecl(String name, IRStmt stmt);
+    IRFuncDefn IRFuncDecl(String name, IRStmt stmt);
 
     /**
      *

@@ -3,11 +3,13 @@ package mtm68.ir;
 import static mtm68.util.ArrayUtils.elems;
 import static mtm68.util.ArrayUtils.empty;
 import static mtm68.util.NodeTestUtil.arbitraryCondition;
+import static mtm68.util.NodeTestUtil.arrayWithElems;
+import static mtm68.util.NodeTestUtil.assertInstanceOf;
 import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
-import static mtm68.util.NodeTestUtil.intLit;
 import static mtm68.util.NodeTestUtil.emptyBlock;
+import static mtm68.util.NodeTestUtil.intLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,14 +18,19 @@ import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExp;
+import edu.cornell.cs.cs4120.ir.IRLabel;
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
+import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.FExpr;
@@ -46,6 +53,21 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// ArrayIndex
 	//-------------------------------------------------------------------------------- 
+
+	@Test
+	public void testArrayIndex() {
+		ArrayIndex ai = new ArrayIndex(arrayWithElems(intLit(0L)), intLit(0L));
+		ArrayIndex newAi = doConversion(ai);
+		
+		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, newAi.getIrExpr());
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, eseq.stmt());
+		assertEquals(4, seq.stmts().size());
+		assertInstanceOf(IRMove.class, seq.stmts().get(0)); 
+		assertInstanceOf(IRMove.class, seq.stmts().get(1)); 
+		assertInstanceOf(IRCJump.class, seq.stmts().get(2)); 
+		assertInstanceOf(IRLabel.class, seq.stmts().get(3)); 
+		assertInstanceOf(IRMem.class, eseq.expr());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// ArrayInit

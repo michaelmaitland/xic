@@ -6,11 +6,11 @@ import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 
 /** An IR function declaration */
-public class IRFuncDecl extends IRNode_c {
+public class IRFuncDefn extends IRNode_c {
     private String name;
     private IRStmt body;
 
-    public IRFuncDecl(String name, IRStmt body) {
+    public IRFuncDefn(String name, IRStmt body) {
         this.name = name;
         this.body = body;
     }

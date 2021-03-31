@@ -3,7 +3,7 @@ package mtm68.ast.nodes;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.ir.IRFuncDecl;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -19,7 +19,7 @@ public class FunctionDefn extends Node {
 	private FunctionDecl functionDecl;
 	private Block body;
 	
-	private  IRFuncDecl irFuncDecl;
+	private  IRFuncDefn irFuncDecl;
 
 	public FunctionDefn(FunctionDecl fDecl, Block body) {
 		this.functionDecl = fDecl;
@@ -34,11 +34,11 @@ public class FunctionDefn extends Node {
 		return body;
 	}
 
-	public IRFuncDecl getIrFuncDecl() {
+	public IRFuncDefn getIrFuncDecl() {
 		return irFuncDecl;
 	}
 
-	public void setIrFuncDecl(IRFuncDecl irFuncDecl) {
+	public void setIrFuncDecl(IRFuncDefn irFuncDecl) {
 		this.irFuncDecl = irFuncDecl;
 	}
 
@@ -87,7 +87,7 @@ public class FunctionDefn extends Node {
 		IRSeq seq = new IRSeq(argsAndBody);
 				
 		FunctionDefn copy = copy();
-		IRFuncDecl ir = new IRFuncDecl(functionDecl.getId(), seq);
+		IRFuncDefn ir = new IRFuncDefn(functionDecl.getId(), seq);
 		copy.setIrFuncDecl(ir);
 		return copy;
 	}

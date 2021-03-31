@@ -140,6 +140,7 @@ DecimalNumeral = 0 | "-"?[1-9][0-9]*
 "EQ"                { return sym("EQ", IRSym.EQ);             }
 "NEQ"               { return sym("NEQ", IRSym.NEQ);           }
 "LT"                { return sym("LT", IRSym.LT);             }
+"ULT"               { return sym("ULT", IRSym.ULT);           }
 "GT"                { return sym("GT", IRSym.GT);             }
 "LEQ"               { return sym("LEQ", IRSym.LEQ);           }
 "GEQ"               { return sym("GEQ", IRSym.GEQ);           }

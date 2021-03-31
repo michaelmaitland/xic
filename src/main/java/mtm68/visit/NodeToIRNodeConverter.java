@@ -10,9 +10,9 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	int tmpCounter;
 	
-	private static final String OUT_OF_BOUNDS_LABEL = "_out_of_bounds";
+	private static final String OUT_OF_BOUNDS_LABEL = "_xi__out_of_bounds";
 
-	private static final String MALLOC_LABEL = "_malloc";
+	private static final String MALLOC_LABEL = "_xi_alloc";
 	
 	private static final int WORD_SIZE = 8;
 	
@@ -41,6 +41,17 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	public int getWordSize() {
 		return WORD_SIZE;
+	}
+	
+	public String getFuncSymbol() {
+		/*
+		 * To encode procedure or function:
+		 * "_I" + nameOfFunction + "_" + return type encoding (p if proc) +  encodings of each argument
+		 * 
+		 * To encode function:
+		 * 
+		 */
+		return null;
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
