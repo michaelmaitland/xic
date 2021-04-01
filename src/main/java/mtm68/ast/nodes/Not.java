@@ -1,7 +1,6 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;

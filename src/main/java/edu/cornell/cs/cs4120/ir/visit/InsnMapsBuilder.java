@@ -1,12 +1,10 @@
 package edu.cornell.cs.cs4120.ir.visit;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.ir.IRNode;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 
 public class InsnMapsBuilder extends IRVisitor {
     private Map<String, Long> nameToIndex;
