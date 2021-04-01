@@ -69,7 +69,6 @@ public class IRExp extends IRStmt {
 	public IRNode lower(Lowerer v) {
 		List<IRStmt> stmts = new ArrayList<>();
 		stmts.addAll(expr.getSideEffects());
-		stmts.add(this);
 		return new IRSeq(stmts);
 	}
 }

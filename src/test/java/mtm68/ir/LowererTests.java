@@ -14,6 +14,7 @@ import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExp;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
@@ -22,6 +23,7 @@ import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
@@ -210,6 +212,7 @@ public class LowererTests {
 	    assertInstanceOfAndReturn(IRJump.class, lowered.stmts().get(0));
 		assertInstanceOfAndReturn(IRLabel.class, lowered.stmts().get(1));
 		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		
 		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(3));
 		
 		IRTemp savedArg0Temp = assertInstanceOfAndReturn(IRTemp.class, arg0.target());
@@ -234,9 +237,11 @@ public class LowererTests {
 		assertInstanceOfAndReturn(IRJump.class, lowered.stmts().get(0));
 		assertInstanceOfAndReturn(IRLabel.class, lowered.stmts().get(1));
 		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		
 		assertInstanceOfAndReturn(IRJump.class, lowered.stmts().get(3));
 		assertInstanceOfAndReturn(IRLabel.class, lowered.stmts().get(4));
 		IRMove arg1 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(5));
+		
 		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(6));
 		
 		IRTemp  savedArg0Temp = assertInstanceOfAndReturn(IRTemp.class, arg0.target());
@@ -337,13 +342,58 @@ public class LowererTests {
 	// Return
 	//-------------------------------------------------------------------------------- 
 	
+	@Test
+	void lowerReturnNoSideEffects() {
+		IRReturn ret = new IRReturn(elems(genericConst()));
+		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(ret));
+		
+		assertEquals(2, lowered.stmts().size());
+		IRMove retSave = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(0));
+		assertMoveTempName(retSave, "_RET0");
+	}
+	
+	@Test
+	void lowerReturnSideEffects() {
+		IRReturn ret = new IRReturn(elems(exprWithTwoSE(), genericConst()));
+		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(ret));
+		
+		assertEquals(5, lowered.stmts().size());
+		
+		IRMove ret0Save = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		assertMoveTempName(ret0Save, "_RET0");
+		IRMove ret1Save = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(3));
+		assertMoveTempName(ret1Save, "_RET1");
+	}
+	
 	//-------------------------------------------------------------------------------- 
 	// Seq
 	//-------------------------------------------------------------------------------- 
 	
+	@Test
+	void lowerSeq() {
+		IRSeq seq = new IRSeq(elems(genericSeq(), genericSeq()));
+		assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(seq));
+	}
+	
 	//-------------------------------------------------------------------------------- 
 	// Exp
 	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void lowerExpNoSideEffects() {
+		IRExp exp = new IRExp(genericConst());
+		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(exp));
+		
+		assertEquals(0, lowered.stmts().size());
+	}
+	
+	@Test
+	void lowerExpSideEffects() {
+		IRExp exp = new IRExp(exprWithTwoSE());
+		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(exp));
+		
+		assertEquals(2, lowered.stmts().size());
+	}
 	
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods
@@ -378,5 +428,10 @@ public class LowererTests {
 	private <T> T assertInstanceOfAndReturn(Class<T> clazz, Object obj) {
 		assertTrue(obj.getClass() + " is not an instanceof " + clazz , clazz.isAssignableFrom(obj.getClass()));
 		return (T) obj;
+	}
+	
+	private void assertMoveTempName(IRMove move, String name) {
+		IRTemp temp = assertInstanceOfAndReturn(IRTemp.class, move.target());
+		assertEquals(name, temp.name());
 	}
 }
