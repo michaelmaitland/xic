@@ -1,9 +1,14 @@
 package edu.cornell.cs.cs4120.ir;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.Expr;
+
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
 /**
  * An intermediate representation for an expression evaluated under side effects
@@ -68,4 +73,10 @@ public class IRESeq extends IRExpr_c {
         expr.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {	
+		expr.setSideEffects(v.getESeqSideEffects(stmt, expr.getSideEffects())); 
+		return expr;
+	}
 }

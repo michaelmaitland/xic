@@ -8,6 +8,7 @@ import java.util.Map;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
 /**
  * An intermediate representation for a compilation unit
@@ -119,4 +120,9 @@ public class IRCompUnit extends IRNode_c {
             func.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return this;
+	}
 }

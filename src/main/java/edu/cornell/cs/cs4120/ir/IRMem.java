@@ -4,6 +4,7 @@ import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
 /**
  * An intermediate representation for a memory location
@@ -77,4 +78,9 @@ public class IRMem extends IRExpr_c {
         expr.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return copyAndSetSideEffects(expr.getSideEffects());
+	}
 }

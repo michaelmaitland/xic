@@ -5,6 +5,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
 /**
  * An intermediate representation for a binary operation
@@ -135,5 +136,11 @@ public class IRBinOp extends IRExpr_c {
         right.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		//TODO if(commute) better rule else
+		return v.transformBinOpGeneral(type, left, right);
+	}
 
 }

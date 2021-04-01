@@ -3,6 +3,7 @@ package edu.cornell.cs.cs4120.ir;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,4 +73,9 @@ public class IRReturn extends IRStmt {
             ret.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return v.transformReturn(rets);
+	}
 }

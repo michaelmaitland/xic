@@ -8,6 +8,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
 /**
  * An intermediate representation for a call statement.
@@ -89,4 +90,9 @@ public class IRCallStmt extends IRStmt {
             arg.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return v.transformCall(target, args);
+	}
 }

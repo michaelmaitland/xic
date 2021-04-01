@@ -1,6 +1,8 @@
 package edu.cornell.cs.cs4120.ir;
 
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.util.ArrayUtils;
 
 /**
  * An intermediate representation for named memory address
@@ -33,4 +35,9 @@ public class IRName extends IRExpr_c {
         p.printAtom(name);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return copyAndSetSideEffects(ArrayUtils.empty());
+	}
 }
