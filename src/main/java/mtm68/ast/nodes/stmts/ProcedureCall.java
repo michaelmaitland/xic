@@ -67,14 +67,7 @@ public class ProcedureCall extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		String sym = cv.getFuncSymbol(fexp);
-		IRName name = new IRName(sym);
-		List<IRExpr> args = fexp.getArgs()
-								  .stream()
-								  .map(Expr::getIRExpr)
-								  .collect(Collectors.toList());
-
-		IRExp exp = new IRExp(new IRCall(name, args));
+		IRExp exp = new IRExp(fexp.getIRExpr());
 		return copyAndSetIRStmt(exp);
 	}
 }
