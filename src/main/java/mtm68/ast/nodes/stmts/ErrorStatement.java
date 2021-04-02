@@ -37,7 +37,7 @@ public class ErrorStatement extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		/* No IR info needed */
+		return this;
 	}
 }

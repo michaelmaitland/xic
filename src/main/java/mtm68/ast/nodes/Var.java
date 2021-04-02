@@ -7,7 +7,7 @@ import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class Var extends Expr implements LHS {
+public class Var extends Expr {
 	
 	private String id;
 	
@@ -46,6 +46,7 @@ public class Var extends Expr implements LHS {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		return copyAndSetIRExpr(new IRTemp(id));
+		String t = cv.newTemp();
+		return copyAndSetIRExpr(new IRTemp(t));
 	}
 }

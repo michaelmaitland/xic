@@ -103,10 +103,10 @@ public class Block extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		List<IRStmt> seq = getStmtsIncludingReturn().stream()
-								  .map(Statement::getIrStmt)
-								  .collect(Collectors.toList());
-		
-		return copyAndSetIRStmt(new IRSeq(seq));
+		IRSeq seq = new IRSeq(getStmtsIncludingReturn()
+								.stream()
+								.map(Statement::getIRStmt)
+								.collect(Collectors.toList()));
+		return copyAndSetIRStmt(seq);
 	}
 }

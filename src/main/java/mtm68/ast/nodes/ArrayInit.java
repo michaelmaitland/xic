@@ -82,7 +82,7 @@ public class ArrayInit extends Expr {
         for(int i=0; i < items.size(); i++) {
             IRBinOp offset = new IRBinOp(OpType.MUL, new IRConst(items.size()), new IRConst(cv.getWordSize()));
             IRBinOp elem = new IRBinOp(OpType.ADD, arrBase, offset); 
-            seq.add(new IRMove(new IRMem(elem), items.get(i).getIrExpr()));
+            seq.add(new IRMove(new IRMem(elem), items.get(i).getIRExpr()));
         }
         
         IRBinOp startOfArr = new IRBinOp(OpType.ADD, arrBase, new IRConst(cv.getWordSize()));

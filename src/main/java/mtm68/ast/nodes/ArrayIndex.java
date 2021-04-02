@@ -17,7 +17,7 @@ import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class ArrayIndex extends Expr implements LHS  {
+public class ArrayIndex extends Expr {
 	
 	private Expr arr;
 	private Expr index;
@@ -74,28 +74,14 @@ public class ArrayIndex extends Expr implements LHS  {
 	
 		IRTemp tempArr = new IRTemp(cv.newTemp());
 		IRTemp tempIndex = new IRTemp(cv.newTemp());
-
-		// Add Bounds checking
-		IRLabel ok = new IRLabel(cv.getFreshLabel());
-		String errLabel = cv.getOutOfBoundsLabel();
-		IRMem lenAddr = new IRMem(new IRBinOp(OpType.SUB, tempArr, new IRConst(cv.getWordSize())));
-		IRBinOp boundsCheck = new IRBinOp(OpType.ULT, tempIndex, lenAddr);
-
-		IRSeq seq = new IRSeq(new IRMove(tempArr, arr.getIrExpr()),
-							  new IRMove(tempIndex, index.getIrExpr()),
-							  new IRCJump(boundsCheck, ok.name(), errLabel),
-							  ok);
-
-		/*
-		 * index is going to be at mem address: (mem addr of arr) + (WORD_SIZE * index).
-		 * We can us the temp's here because it will be executed after
-		 * a seq that does the temp setup
-		 */
-		IRExpr e = new IRBinOp(OpType.MUL, new IRConst(cv.getWordSize()), tempIndex);
-		IRExpr e2 = new IRBinOp(OpType.ADD, tempArr, e); 
-		IRMem mem = new IRMem(e2);
-	
-		IRESeq eseq = new IRESeq(seq, mem);
+		
+		IRSeq seq = new IRSeq(
+				new IRMove(tempArr, arr.getIRExpr()),
+				new IRMove(tempIndex, index.getIRExpr()),
+				cv.boundsCheck(tempArr, tempIndex));
+		
+		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
+		IRESeq eseq = new IRESeq(seq, offsetIntoArr);
 
 		return copyAndSetIRExpr(eseq);
 	}

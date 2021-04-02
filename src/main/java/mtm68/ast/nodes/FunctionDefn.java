@@ -1,15 +1,9 @@
 package mtm68.ast.nodes;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
-import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.Block;
-import mtm68.ast.nodes.stmts.Statement;
-import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -77,17 +71,12 @@ public class FunctionDefn extends Node {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		List<IRStmt> args = functionDecl.getArgs()
-										.stream()
-										.map(Statement::getIrStmt)
-										.collect(Collectors.toList());
 
-		// Put the declaration of function args into the body of the stmt
-		List<IRStmt> argsAndBody = ArrayUtils.append(args, body.getIrStmt());
-		IRSeq seq = new IRSeq(argsAndBody);
+		String funcName = cv.getFuncSymbol(functionDecl);
+		IRSeq seq = new IRSeq(body.getIRStmt());
+		IRFuncDefn ir = new IRFuncDefn(funcName, seq);
 				
 		FunctionDefn copy = copy();
-		IRFuncDefn ir = new IRFuncDefn(functionDecl.getId(), seq);
 		copy.setIrFuncDecl(ir);
 		return copy;
 	}

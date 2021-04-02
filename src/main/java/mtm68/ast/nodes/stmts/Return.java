@@ -1,7 +1,10 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -61,7 +64,10 @@ public class Return extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		List<IRExpr> rets = retList.stream()
+								   .map(Expr::getIRExpr)
+								   .collect(Collectors.toList());
+		
+		return copyAndSetIRStmt(new IRReturn(rets));
 	}
 }

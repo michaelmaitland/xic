@@ -5,7 +5,7 @@ import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
-/** An IR function declaration */
+/** An IR function definition */
 public class IRFuncDefn extends IRNode_c {
     private String name;
     private IRStmt body;

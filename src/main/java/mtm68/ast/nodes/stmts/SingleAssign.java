@@ -1,13 +1,21 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Expr;
-import mtm68.ast.nodes.LHS;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.exception.InternalCompilerException;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -15,19 +23,19 @@ import mtm68.visit.Visitor;
 public class SingleAssign extends Assign {
 	
 	// TODO change parser to return a node
-	private LHS lhs;
+	private Node lhs;
 	private Expr rhs;
 
-	public SingleAssign(LHS lhs, Expr rhs) {
+	public SingleAssign(Node lhs, Expr rhs) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
 
-	public LHS getLhs() {
+	public Node getLhs() {
 		return lhs;
 	}
 	
-	public Expr getRhs() {
+	public Node getRhs() {
 		return rhs;
 	}
 
@@ -48,7 +56,7 @@ public class SingleAssign extends Assign {
 	
 	@Override
 	public Node visitChildren(Visitor v) {
-		LHS newLhs = lhs.accept(v);
+		Node newLhs = lhs.accept(v);
 		Expr newRhs = rhs.accept(v);
 		
 		if(newLhs != lhs || newRhs != rhs) {
@@ -75,9 +83,29 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
+		if(lhs instanceof Expr) {
+			Expr expr = (Expr)lhs;
+			IRMove move = new IRMove(expr.getIRExpr(), rhs.getIRExpr());
+			return copyAndSetIRStmt(move);
+		} else if (lhs instanceof ArrayIndex) {
+			IRSeq seq = convertArrayIndexAssign(cv, (ArrayIndex)lhs);
+			return copyAndSetIRStmt(seq);
+		} else {
+			throw new InternalCompilerException();
+		}
+	}
+	
+	public IRSeq convertArrayIndexAssign(NodeToIRNodeConverter cv, ArrayIndex ai) {
+		IRTemp tempArr = new IRTemp(cv.newTemp());
+		IRTemp tempIndex = new IRTemp(cv.newTemp());
 		
-		
-		IRMove move = new IRMove(lhs.getIrExpr(), rhs.getIrExpr());
-		return copyAndSetIRStmt(move);
+		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
+
+		return new IRSeq(
+				new IRMove(tempArr, ai.getArr().getIRExpr()),
+				new IRMove(tempIndex, ai.getIndex().getIRExpr()),
+				cv.boundsCheck(tempArr, tempIndex),
+				new IRMove(offsetIntoArr, rhs.getIRExpr())
+				);
 	}
 }

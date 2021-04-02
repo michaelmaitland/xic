@@ -69,7 +69,7 @@ public class Program extends Node implements Root {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+		/** Not part of IR rep */
+		return this;
 	}
 }

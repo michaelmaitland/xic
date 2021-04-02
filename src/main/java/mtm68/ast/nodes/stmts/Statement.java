@@ -11,11 +11,11 @@ public abstract class Statement extends Node implements HasResult {
 	
 	protected IRStmt irStmt;
 	
-	public IRStmt getIrStmt() {
+	public IRStmt getIRStmt() {
 		return irStmt;
 	}
 
-	public void setIrStmt(IRStmt stmt) {
+	public void setIRStmt(IRStmt stmt) {
 		this.irStmt = stmt;
 	}
 
@@ -26,7 +26,7 @@ public abstract class Statement extends Node implements HasResult {
 	
 	public <E extends Statement> E copyAndSetIRStmt(IRStmt stmt) {
 		E newE = this.copy();
-		newE.setIrStmt(stmt);
+		newE.setIRStmt(stmt);
 		return newE;
 	}
 }

@@ -77,19 +77,19 @@ public class While extends Statement {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-
 		String header = cv.getFreshLabel();
 		String trueLabel = cv.getFreshLabel();
 		String falseLabel = cv.getFreshLabel();
 
-		List<IRStmt> stmts = ArrayUtils.empty();
-		stmts.add(0, new IRLabel(header));
-		stmts.add(cv.getCtrlFlow(condition, trueLabel, falseLabel));
-		stmts.add(new IRLabel(trueLabel));
-		stmts.add(body.getIrStmt());
-		stmts.add(new IRJump(new IRName(header)));
-		stmts.add(new IRLabel(falseLabel));
+		IRSeq seq = new IRSeq(
+				new IRLabel(header),
+				cv.getCtrlFlow(condition, trueLabel, falseLabel),
+				new IRLabel(trueLabel),
+				body.getIRStmt(),
+				new IRJump(new IRName(header)),
+				new IRLabel(falseLabel)
+				);
 		
-		return copyAndSetIRStmt(new IRSeq(stmts));
+		return copyAndSetIRStmt(seq);
 	}
 }
