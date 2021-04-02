@@ -66,7 +66,6 @@ public class IRMove extends IRStmt {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		//TODO commute
-		return v.transformMoveGeneral(target, src);
+		return v.transformMove(target, src);
 	}
 }

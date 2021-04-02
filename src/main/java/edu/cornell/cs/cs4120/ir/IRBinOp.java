@@ -139,8 +139,7 @@ public class IRBinOp extends IRExpr_c {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		//TODO if(commute) better rule else
-		return v.transformBinOpGeneral(type, left, right);
+		return v.transformBinOp(type, left, right);
 	}
 
 }
