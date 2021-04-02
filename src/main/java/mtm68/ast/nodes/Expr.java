@@ -4,7 +4,7 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Type;
 
-public abstract class Expr extends Node implements IExpr, HasType {
+public abstract class Expr extends Node implements  HasType {
 
 	protected Type type;
 	
@@ -15,17 +15,14 @@ public abstract class Expr extends Node implements IExpr, HasType {
 		return type;
 	}
 
-	@Override
 	public void setType(Type type) {
 		this.type = type;
 	}
 	
-	@Override
 	public IRExpr getIRExpr() {
 		return irExpr;
 	}
 
-	@Override
 	public void setIRExpr(IRExpr irExpr) {
 		this.irExpr = irExpr;
 	}

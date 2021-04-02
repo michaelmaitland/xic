@@ -1,9 +1,5 @@
 package mtm68.ast.nodes.stmts;
 
-import edu.cornell.cs.cs4120.ir.IRBinOp;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.ir.IRConst;
-import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRSeq;
@@ -12,6 +8,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
@@ -83,9 +80,13 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv) {
-		if(lhs instanceof Expr) {
-			Expr expr = (Expr)lhs;
-			IRMove move = new IRMove(expr.getIRExpr(), rhs.getIRExpr());
+		if(lhs instanceof Var) {
+			Var var = (Var)lhs;
+			IRMove move = new IRMove(var.getIRExpr(), rhs.getIRExpr());
+			return copyAndSetIRStmt(move);
+		} else if (lhs instanceof SimpleDecl) {
+			SimpleDecl decl = (SimpleDecl)lhs;
+			IRMove move = new IRMove(decl.getIRStmt(), rhs.getIRExpr());
 			return copyAndSetIRStmt(move);
 		} else if (lhs instanceof ArrayIndex) {
 			IRSeq seq = convertArrayIndexAssign(cv, (ArrayIndex)lhs);

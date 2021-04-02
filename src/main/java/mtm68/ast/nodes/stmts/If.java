@@ -111,6 +111,8 @@ public class If extends Statement {
 					ifBranch.getIRStmt(),
 					new IRLabel(falseLabel)
 					);
+		
+		// elseBranch.ifPresent();
 		if(elseBranch.isPresent()) {
 			seq.stmts().add(elseBranch.get().getIRStmt());
 		}
