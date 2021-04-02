@@ -1,10 +1,11 @@
 package edu.cornell.cs.cs4120.ir;
 
-import edu.cornell.cs.cs4120.util.SExpPrinter;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
  * An intermediate representation for a conditional transfer of control
@@ -94,5 +95,22 @@ public class IRCJump extends IRStmt {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return v.prependSideEffectsToStmt(this, cond.getSideEffects());
+	}
+	
+	public IRCJump negateCondition() {
+		IRCJump newJump = copy();
+		
+		// 1 XOR cond - negate condition
+		IRBinOp newCond =  new IRBinOp(OpType.XOR, cond, new IRConst(1));
+		newJump.cond = newCond;
+		
+		return newJump;
+	}
+	
+	public IRCJump removeFalseLabel() {
+		IRCJump newJump = copy();
+		newJump.falseLabel = null;
+		
+		return newJump;
 	}
 }

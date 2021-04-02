@@ -50,7 +50,7 @@ public class CFGBuilder {
 		} 
 		
 		if(isJump(stmt)) {
-			currNode.addJumpStmt(stmt);
+			currNode.addJumpStmt(stmt, stmtIdx);
 			addOutboundConnections(stmt);
 			kind = CFGKind.JMP;
 		}
@@ -65,6 +65,10 @@ public class CFGBuilder {
 				.collect(Collectors.toList());
 	}
 	
+	public Map<Integer, CFGNode> getNodeMap() {
+		return nodeMap;
+	}
+	
 	private boolean isLabel(IRStmt stmt) {
 		return stmt instanceof IRLabel;
 	}
@@ -73,9 +77,11 @@ public class CFGBuilder {
 		return stmt instanceof IRCJump ||
 				stmt instanceof IRJump;
 	}
+
 	private void storeLabelLoc(IRStmt stmt) {
 		String label = ((IRLabel) stmt).name();
 		labelMap.put(label, stmtIdx);
+		currNode.addLabel(label);
 		resolveWaitingNodes(label);
 	}
 	
@@ -169,7 +175,9 @@ public class CFGBuilder {
 		private List<CFGEdge> in;
 		private List<CFGEdge> out;
 		
+		private int jumpStmtOff;
 		private Optional<IRStmt> jumpStmt;
+		private Optional<String> label;
 
 		public CFGNode(IRStmt stmt, int nodeIdx, int stmtIdx) {
 			this.stmt = stmt;
@@ -180,6 +188,7 @@ public class CFGBuilder {
 			out = new ArrayList<>();
 
 			jumpStmt = Optional.empty();
+			label = Optional.empty();
 		}
 		
 		public void addIncoming(CFGEdge inbound) {
@@ -210,12 +219,25 @@ public class CFGBuilder {
 			return out;
 		}
 		
-		public void addJumpStmt(IRStmt stmt) {
+		public void addJumpStmt(IRStmt stmt, int jumpStmtIdx) {
 			this.jumpStmt = Optional.of(stmt);
+			this.jumpStmtOff = jumpStmtIdx - stmtIdx;
+		}
+		
+		public void addLabel(String label) {
+			this.label = Optional.of(label);
 		}
 		
 		public Optional<IRStmt> getJumpStmt() {
 			return jumpStmt;
+		}
+		
+		public int getJumpStmtOff() {
+			return jumpStmtOff;
+		}
+		
+		public Optional<String> getLabel() {
+			return label;
 		}
 		
 		@Override
@@ -233,7 +255,9 @@ public class CFGBuilder {
 			builder.append(edgesToString(out, false));
 			
 			jumpStmt.ifPresent(stmt -> {
-				builder.append(", Jump: "); 
+				builder.append(", Jump["); 
+				builder.append(jumpStmtOff);
+				builder.append("]: ");
 				builder.append(stmt);
 			});
 			
@@ -247,6 +271,28 @@ public class CFGBuilder {
 					.map(Object::toString)
 					.collect(Collectors.joining(","));
 			return "[" + str + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + nodeIdx;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CFGNode other = (CFGNode) obj;
+			if (nodeIdx != other.nodeIdx)
+				return false;
+			return true;
 		}
 	}
 	
