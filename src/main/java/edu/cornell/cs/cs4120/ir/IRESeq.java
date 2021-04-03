@@ -7,6 +7,7 @@ import java.util.List;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 
@@ -78,5 +79,10 @@ public class IRESeq extends IRExpr_c {
 	public IRNode lower(Lowerer v) {	
 		expr.setSideEffects(v.getESeqSideEffects(stmt, expr.getSideEffects())); 
 		return expr;
+	}
+
+	@Override
+	public IRNode constantFold(IRConstantFolder v) {
+		return this;
 	}
 }

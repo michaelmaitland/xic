@@ -35,11 +35,6 @@ public class Lowerer extends IRVisitor {
 	}
 	
 	@Override
-	public IRVisitor enter(IRNode parent, IRNode n) {
-		return this;
-	}
-
-	@Override
 	public IRNode leave(IRNode parent, IRNode n, IRNode n_, IRVisitor v_) {		
 		return n_.lower(this);
 	}
