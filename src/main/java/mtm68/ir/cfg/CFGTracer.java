@@ -8,14 +8,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRCJump;
-import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRStmt;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.util.Copy;
 import mtm68.ir.cfg.CFGBuilder.CFGEdge;
 import mtm68.ir.cfg.CFGBuilder.CFGNode;
 
@@ -23,12 +19,10 @@ public class CFGTracer {
 	
 	private List<IRStmt> stmts;
 	private Set<CFGNode> unmarked;
-	private List<CFGNode> nodes;
 	private Map<Integer, CFGNode> nodeMap;
 	
 	public CFGTracer(List<CFGNode> nodes, List<IRStmt> stmts) {
 		this.stmts = stmts;
-		this.nodes = nodes; 
 		
 		// For convenience, we will sort the unmarked nodes by their index
 		// giving us a (semi-)predictable order in which the traces are constructed.

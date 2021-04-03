@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ir.cfg.CFGBuilder;
+import mtm68.ir.cfg.CFGTracer;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
@@ -89,5 +91,16 @@ public class IRSeq extends IRStmt {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return new IRSeq(v.flattenSeq(stmts));
+	}
+	
+	@Override
+	public IRNode doControlFlow(CFGBuilder builder) {
+		CFGTracer tracer = new CFGTracer(builder.getNodes(), stmts);
+		List<IRStmt> newStmts = tracer.performReordering();
+		
+		IRSeq seq = copy();
+		seq.stmts = newStmts;
+		
+		return seq;
 	}
 }
