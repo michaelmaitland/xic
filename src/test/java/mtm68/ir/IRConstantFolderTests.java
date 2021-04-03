@@ -2,7 +2,6 @@ package mtm68.ir;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.*;
 
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,57 @@ import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 
 public class IRConstantFolderTests {
 
+	@Test
+	void testMultiLevelArithFold() {
+		// (1 - 1) + 2
+		IRBinOp op = new IRBinOp(ADD, 
+						new IRBinOp (SUB,
+								val(1L),
+								val(1L)), 
+						val(2L));
+		IRConst folded = assertInstanceOfAndReturn(IRConst.class, foldAndTestFolded(op));
+		
+		assertEquals(2, folded.value());
+	}
+	
+	@Test
+	void testMultiLevelDivByZeroFold() {
+		// ((1 - 1) + 2) / (1 + (-1))
+		IRBinOp op = new IRBinOp(DIV, 
+						new IRBinOp(ADD, 
+								new IRBinOp (SUB,
+										val(1L),
+										val(1L)), 
+								val(2L)), 
+						new IRBinOp(ADD,
+								val(1L),
+								val(-1L)));
+		IRBinOp folded = assertInstanceOfAndReturn(IRBinOp.class, foldAndTestFolded(op));
+		
+		IRConst numerator = assertInstanceOfAndReturn(IRConst.class, folded.left());
+		IRConst denom = assertInstanceOfAndReturn(IRConst.class, folded.right());
+
+		assertEquals(2, numerator.value());
+		assertEquals(0, denom.value());
+	}
+	
+	@Test
+	void testMultiLevelLogicFold() {
+		// (1 XOR 0) && (0 || (1 == 3))
+		IRBinOp op = new IRBinOp(AND, 
+						new IRBinOp (XOR,
+								val(1L),
+								val(0L)), 
+						new IRBinOp (OR,
+								val(0L),
+								new IRBinOp(EQ,
+										val(3L),
+										val(3L))));
+		IRConst folded = assertInstanceOfAndReturn(IRConst.class, foldAndTestFolded(op));
+		
+		assertEquals(1, folded.value());
+	}
+	
 	@Test
 	void testAddFold() {
 		IRBinOp op = new IRBinOp(ADD, val(1L), val(2L));
