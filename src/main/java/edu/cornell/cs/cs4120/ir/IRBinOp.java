@@ -81,6 +81,10 @@ public class IRBinOp extends IRExpr_c {
     public IRExpr left() {
         return left;
     }
+    
+    public void setLeft(IRExpr left) {
+    	this.left = left;
+    }
 
     public IRExpr right() {
         return right;
@@ -140,7 +144,7 @@ public class IRBinOp extends IRExpr_c {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		return v.transformBinOp(type, left, right);
+		return v.transformBinOp(this);
 	}
 
 	@Override

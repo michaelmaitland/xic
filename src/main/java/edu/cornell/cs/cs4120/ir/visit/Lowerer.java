@@ -93,14 +93,17 @@ public class Lowerer extends IRVisitor {
 		return new IRSeq(retStmts);
 	}
 	
-	public IRBinOp transformBinOp(OpType type, IRExpr left, IRExpr right) {
-		if(canCommute(left, right)) 
-			return transformBinOpCommute(type, left, right);
+	public IRBinOp transformBinOp(IRBinOp binOp) {
+		if(canCommute(binOp.left(), binOp.right())) 
+			return transformBinOpCommute(binOp);
 		else 
-			return transformBinOpGeneral(type, left, right);
+			return transformBinOpGeneral(binOp);
 	}
 	
-	public IRBinOp transformBinOpGeneral(OpType type, IRExpr left, IRExpr right) {
+	public IRBinOp transformBinOpGeneral(IRBinOp binOp) {
+		IRExpr left = binOp.left();
+		IRExpr right = binOp.right();
+		
 		List<IRStmt> sideEffects = new ArrayList<>();
 		sideEffects.addAll(left.getSideEffects());
 		
@@ -109,29 +112,36 @@ public class Lowerer extends IRVisitor {
 		left = new IRTemp(tempName);
 		
 		sideEffects.addAll(right.getSideEffects());
-		IRBinOp newOp = new IRBinOp(type, left, right);
+		IRBinOp newOp = binOp.copy();
+		newOp.setLeft(left); 
 		newOp.setSideEffects(sideEffects);
 		return newOp;
 	}
 	
-	public IRBinOp transformBinOpCommute(OpType type, IRExpr left, IRExpr right) {
+	public IRBinOp transformBinOpCommute(IRBinOp binOp) {
+		IRExpr left = binOp.left();
+		IRExpr right = binOp.right();
+		
 		List<IRStmt> sideEffects = new ArrayList<>();
 		sideEffects.addAll(left.getSideEffects());
 		sideEffects.addAll(right.getSideEffects());
 		
-		IRBinOp newOp = new IRBinOp(type, left, right);
+		IRBinOp newOp = binOp.copy();
 		newOp.setSideEffects(sideEffects);
 		return newOp;
 	}
 	
-	public IRSeq transformMove(IRExpr target, IRExpr source) {
-		if(canCommute(target, source) || target instanceof IRTemp)
-			return transformMoveCommute(target, source);
+	public IRSeq transformMove(IRMove move) {
+		if(canCommute(move.target(), move.source()) || move.target() instanceof IRTemp)
+			return transformMoveCommute(move);
 		else
-			return transformMoveGeneral(target, source);
+			return transformMoveGeneral(move);
 	}
 	
-	public IRSeq transformMoveGeneral(IRExpr target, IRExpr source) {
+	public IRSeq transformMoveGeneral(IRMove move) {
+		IRExpr target = move.target();
+		IRExpr source = move.source();
+		
 		List<IRStmt> moveStmts = new ArrayList<>();
 		moveStmts.addAll(target.getSideEffects());
 		
@@ -141,19 +151,22 @@ public class Lowerer extends IRVisitor {
 		
 		moveStmts.addAll(source.getSideEffects());
 		
-		IRMove newMove = new IRMove(target, source);
+		IRMove newMove = move.copy();
+		newMove.setTarget(target);
 		moveStmts.add(newMove);
 		
 		return new IRSeq(moveStmts);
 	}
 	
-	public IRSeq transformMoveCommute(IRExpr target, IRExpr source) {
+	public IRSeq transformMoveCommute(IRMove move) {
+		IRExpr target = move.target();
+		IRExpr source = move.source();
+		
 		List<IRStmt> moveStmts = new ArrayList<>();
 		moveStmts.addAll(target.getSideEffects());
 		moveStmts.addAll(source.getSideEffects());
 		
-		IRMove newMove = new IRMove(target, source);
-		moveStmts.add(newMove);	
+		moveStmts.add(move);	
 		
 		return new IRSeq(moveStmts);
 	}

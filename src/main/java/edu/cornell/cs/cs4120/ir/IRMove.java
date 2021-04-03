@@ -26,6 +26,10 @@ public class IRMove extends IRStmt {
     public IRExpr target() {
         return target;
     }
+    
+    public void setTarget(IRExpr target) {
+    	this.target = target;
+    }
 
     public IRExpr source() {
         return src;
@@ -66,6 +70,6 @@ public class IRMove extends IRStmt {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		return v.transformMove(target, src);
+		return v.transformMove(this);
 	}
 }
