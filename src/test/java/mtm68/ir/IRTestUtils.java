@@ -35,8 +35,12 @@ public class IRTestUtils {
 		return new IRJump(new IRName(label));
 	}
 
+	public static IRCJump cjump(IRExpr cond, String trueLabel, String falseLabel) {
+		return new IRCJump(cond, trueLabel, falseLabel);
+	}
+
 	public static IRCJump cjump(String trueLabel, String falseLabel) {
-		return new IRCJump(constant(0L), trueLabel, falseLabel);
+		return cjump(constant(0L), trueLabel, falseLabel);
 	}
 	
 	public static IRReturn ret() {

@@ -9,6 +9,7 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 
 /**
  * An intermediate representation for a call statement.
@@ -94,5 +95,11 @@ public class IRCallStmt extends IRStmt {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return v.transformCall(target, args);
+	}
+	
+	@Override
+	public IRNode unusedLabels(UnusedLabelVisitor v) {
+		v.addLabelsInUse(((IRName)target).name());
+		return super.unusedLabels(v);
 	}
 }

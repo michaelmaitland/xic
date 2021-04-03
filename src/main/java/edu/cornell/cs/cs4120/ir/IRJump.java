@@ -4,6 +4,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 
 /**
  * An intermediate representation for a transfer of control
@@ -55,5 +56,11 @@ public class IRJump extends IRStmt {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return v.prependSideEffectsToStmt(this, target.getSideEffects());
+	}
+	
+	@Override
+	public IRNode unusedLabels(UnusedLabelVisitor v) {
+		v.addLabelsInUse(((IRName)target).name());
+		return this;
 	}
 }

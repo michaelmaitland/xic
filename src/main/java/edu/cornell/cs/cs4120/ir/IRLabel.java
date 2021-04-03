@@ -3,12 +3,15 @@ package edu.cornell.cs.cs4120.ir;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 
 /**
  * An intermediate representation for naming a memory address
  */
 public class IRLabel extends IRStmt {
     private String name;
+    
+    private boolean used;
 
     /**
      *
@@ -16,6 +19,7 @@ public class IRLabel extends IRStmt {
      */
     public IRLabel(String name) {
         this.name = name;
+        this.used = false;
     }
 
     public String name() {
@@ -40,6 +44,21 @@ public class IRLabel extends IRStmt {
         p.printAtom(name);
         p.endList();
     }
+    
+    /** Make sure this comes after a copy */
+    public void setUsed(boolean used) {
+   	 this.used = used;
+	}
+    
+    public boolean isUsed() {
+		return used;
+	}
+    
+    @Override
+   public IRNode unusedLabels(UnusedLabelVisitor v) {
+   	 v.recordLabel(this);
+   	return this;
+   }
 
 	@Override
 	public IRNode lower(Lowerer v) {

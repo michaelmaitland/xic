@@ -3,14 +3,16 @@ package edu.cornell.cs.cs4120.ir;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ir.cfg.CFGBuilder;
-import mtm68.ir.cfg.CFGTracer;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ir.cfg.CFGBuilder;
+import mtm68.ir.cfg.CFGTracer;
 
 /**
  * An intermediate representation for a sequence of statements
@@ -102,5 +104,24 @@ public class IRSeq extends IRStmt {
 		seq.stmts = newStmts;
 		
 		return seq;
+	}
+	
+	@Override
+	public IRNode unusedLabels(UnusedLabelVisitor v) {
+		v.markUnusedLabels();
+		
+		List<IRStmt> newStmts = stmts.stream()
+			.filter(stmt -> {
+				if(stmt instanceof IRLabel) {
+					return ((IRLabel)stmt).isUsed();
+				}
+				return true;
+			})
+			.collect(Collectors.toList());
+		
+		IRSeq newSeq = copy();
+		newSeq.stmts = newStmts;
+		
+		return newSeq;
 	}
 }

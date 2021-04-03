@@ -5,6 +5,7 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
@@ -97,12 +98,20 @@ public class IRCJump extends IRStmt {
 		return v.prependSideEffectsToStmt(this, cond.getSideEffects());
 	}
 	
-	public IRCJump negateCondition() {
+	@Override
+	public IRNode unusedLabels(UnusedLabelVisitor v) {
+		v.addLabelsInUse(trueLabel, falseLabel);
+		return this;
+	}
+	
+	public IRCJump negate() {
 		IRCJump newJump = copy();
 		
 		// 1 XOR cond - negate condition
 		IRBinOp newCond =  new IRBinOp(OpType.XOR, cond, new IRConst(1));
 		newJump.cond = newCond;
+		newJump.trueLabel = falseLabel;
+		newJump.falseLabel = trueLabel;
 		
 		return newJump;
 	}

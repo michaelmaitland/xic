@@ -111,7 +111,7 @@ public class CFGTracer {
 		String fallthroughLabel = next.getLabel().get();
 		
 		if(fallthroughLabel.equals(jump.trueLabel())) {
-			jump = jump.negateCondition();
+			jump = jump.negate();
 		}
 		jump = jump.removeFalseLabel();
 		basicBlock.set(node.getJumpStmtOff(), jump);
