@@ -2,6 +2,7 @@ package mtm68.ast.nodes.stmts;
 
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -79,34 +80,36 @@ public class SingleAssign extends Assign {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+		/**
+		 * The lhs can be a Var, an ArrayIndex, or a SimpleDecl.
+		 * However, a SimpleDecl gets converted to a Var so
+		 * we can do an IRMove on it, since its IR representation
+		 * is an IRExpr instead of an IRStmt.
+		 */
 		if(lhs instanceof Var) {
 			Var var = (Var)lhs;
-			IRMove move = new IRMove(var.getIRExpr(), rhs.getIRExpr());
-			return copyAndSetIRStmt(move);
-		} else if (lhs instanceof SimpleDecl) {
-			SimpleDecl decl = (SimpleDecl)lhs;
-			IRMove move = new IRMove(decl.getIRStmt(), rhs.getIRExpr());
+			IRMove move = irFactory.IRMove(var.getIRExpr(), rhs.getIRExpr());
 			return copyAndSetIRStmt(move);
 		} else if (lhs instanceof ArrayIndex) {
-			IRSeq seq = convertArrayIndexAssign(cv, (ArrayIndex)lhs);
+			IRSeq seq = convertArrayIndexAssign(cv, irFactory, (ArrayIndex)lhs);
 			return copyAndSetIRStmt(seq);
 		} else {
 			throw new InternalCompilerException();
 		}
 	}
 	
-	public IRSeq convertArrayIndexAssign(NodeToIRNodeConverter cv, ArrayIndex ai) {
-		IRTemp tempArr = new IRTemp(cv.newTemp());
-		IRTemp tempIndex = new IRTemp(cv.newTemp());
+	public IRSeq convertArrayIndexAssign(NodeToIRNodeConverter cv, IRNodeFactory irFactory, ArrayIndex ai) {
+		IRTemp tempArr = irFactory.IRTemp(cv.newTemp());
+		IRTemp tempIndex = irFactory.IRTemp(cv.newTemp());
 		
 		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
 
-		return new IRSeq(
-				new IRMove(tempArr, ai.getArr().getIRExpr()),
-				new IRMove(tempIndex, ai.getIndex().getIRExpr()),
+		return irFactory.IRSeq(
+				irFactory.IRMove(tempArr, ai.getArr().getIRExpr()),
+				irFactory.IRMove(tempIndex, ai.getIndex().getIRExpr()),
 				cv.boundsCheck(tempArr, tempIndex),
-				new IRMove(offsetIntoArr, rhs.getIRExpr())
+				irFactory.IRMove(offsetIntoArr, rhs.getIRExpr())
 				);
 	}
 }

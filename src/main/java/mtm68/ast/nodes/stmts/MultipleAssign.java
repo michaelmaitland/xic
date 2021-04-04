@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
@@ -104,7 +105,7 @@ public class MultipleAssign extends Assign {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		// TODO Auto-generated method stub
 		return null;
 	}

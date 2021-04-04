@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
@@ -54,8 +55,12 @@ public class SimpleDecl extends Decl {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		/** No Longer need this node */
-		return this;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+		/* A SimpleDecl isn't relevant to us from an IR perspective.
+		 * It would be more useful to have it as a Var because
+		 * then we can treat it's IR conversion as an IRExpr
+		 * when we need to do an IRMove in a SingleAssign
+		 */
+		return new Var(id).convertToIR(cv, irFactory);
 	}
 }

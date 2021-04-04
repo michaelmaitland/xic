@@ -44,7 +44,7 @@ public class StringLiteral extends Literal<String>{
 	public Node convertToIR(NodeToIRNodeConverter cv) {
 		String tmp = cv.newTemp();
 		int len = value.length();
-		List<IRStmt> seq = allocateArray(new IRTemp(tmp, new IRConst(len)));
+		List<IRStmt> seq = cv.allocateArray(new IRTemp(tmp, new IRConst(len)));
 		
 		for(int i=0; i <value.length(); i++) {
 			// set length

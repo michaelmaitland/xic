@@ -1,12 +1,9 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRExp;
-import edu.cornell.cs.cs4120.ir.IRExpr;
-import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
@@ -66,8 +63,8 @@ public class ProcedureCall extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		IRExp exp = new IRExp(fexp.getIRExpr());
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+		IRExp exp = irFactory.IRExp(fexp.getIRExpr());
 		return copyAndSetIRStmt(exp);
 	}
 }

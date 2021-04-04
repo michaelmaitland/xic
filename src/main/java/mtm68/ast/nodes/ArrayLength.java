@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -56,9 +57,8 @@ public class ArrayLength extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		IRMem lengthSlot = cv.getOffsetIntoArr(exp.getIRExpr(), new IRConst(-1));
-		// TODO: do i wanna return the mem addr of this or need a physical const?
-		return copyAndSetIRExpr(lengthSlot);
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+		IRMem lengthSlot = cv.getOffsetIntoArr(exp.getIRExpr(), irFactory.IRConst(-1));
+		return copyAndSetIRExpr(lengthSlot.expr());
 	}
 }

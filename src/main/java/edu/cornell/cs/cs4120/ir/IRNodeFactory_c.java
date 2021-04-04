@@ -59,7 +59,7 @@ public class IRNodeFactory_c implements IRNodeFactory {
     }
 
     @Override
-    public IRFuncDefn IRFuncDecl(String name, IRStmt stmt) {
+    public IRFuncDefn IRFuncDefn(String name, IRStmt stmt) {
         return new IRFuncDefn(name, stmt);
     }
 
