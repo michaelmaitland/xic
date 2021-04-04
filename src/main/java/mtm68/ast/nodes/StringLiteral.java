@@ -1,13 +1,14 @@
 package mtm68.ast.nodes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.ir.IRConst;
-import edu.cornell.cs.cs4120.ir.IRStmt;
-import edu.cornell.cs.cs4120.ir.IRTemp;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.util.StringUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -41,22 +42,13 @@ public class StringLiteral extends Literal<String>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		String tmp = cv.newTemp();
-		int len = value.length();
-		List<IRStmt> seq = cv.allocateArray(new IRTemp(tmp, new IRConst(len)));
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+		List<IRExpr> items = ArrayUtils.stringToCharList(value)
+							.stream()
+							.map(ch -> irFactory.IRConst(ch))
+							.collect(Collectors.toList());
 		
-		for(int i=0; i <value.length(); i++) {
-			// set length
-			if(i == 0) {
-				seq.add(new IRMove(new  IRMem(new IRTemp(t)), new IRConst(len)));
-			} else {
-				seq.add(new IRMove(new IRMem(
-						new IRBinOp(OpType.ADD, new IRTemp(t), new IRConst(8 * i)))))
-			}
-		}
-		
-		return new IRESeq(new IRSeq(seq), new IRTemp(t));
-		
+		IRESeq eseq = cv.allocateAndInitArray(items);
+		return copyAndSetIRExpr(eseq);
 	}
 }

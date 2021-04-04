@@ -10,15 +10,18 @@ import javax.lang.model.type.ArrayType;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
+import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
-import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
@@ -42,6 +45,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private int tmpCounter;
 	
+	private IRNodeFactory irFactory;
+	
 	/*
 	 * Keys are the function/procedure name as defined in the
 	 * AST nodes. Values are the encoded function/procedure 
@@ -55,10 +60,11 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private static final int WORD_SIZE = 8;
 	
-	public NodeToIRNodeConverter() {
+	public NodeToIRNodeConverter(IRNodeFactory irFactory) {
 		this.labelCounter = 0;
 		this.tmpCounter = 0;
 		this.funcAndProcEncodings = new HashMap<>();
+		this.irFactory = irFactory;
 	}
 
 	public String getFreshLabel() {
@@ -186,7 +192,7 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	@Override
 	public Node leave(Node parent, Node n) {
-		return n.convertToIR(this);
+		return n.convertToIR(this, irFactory);
 	}
 
 	public IRStmt getCtrlFlow(Expr condition, String trueLabel, String falseLabel) {
@@ -207,7 +213,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private IRStmt getCtrlFlow(BoolLiteral b, String trueLabel, String falseLabel) {
 			String labelToJump = b.getValue() ? trueLabel : falseLabel;
-			return new IRJump(new IRName(labelToJump));
+			return irFactory.IRJump(irFactory.IRName(labelToJump));
 	}
 	
 	private IRStmt getCtrlFlow(Not n, String trueLabel, String falseLabel) {
@@ -216,36 +222,36 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private IRStmt getCtrlFlow(And a, String trueLabel, String falseLabel) {
 			String l1 = getFreshLabel();
-			List<IRStmt> stmts = ArrayUtils.empty();
-			stmts.add(getCtrlFlow(a.getLeft(), l1, falseLabel));
-			stmts.add(new IRLabel(l1));
-			stmts.add(getCtrlFlow(a.getRight(), trueLabel, falseLabel));
-			return new IRSeq(stmts);
+			return irFactory.IRSeq(
+				getCtrlFlow(a.getLeft(), l1, falseLabel),
+				irFactory.IRLabel(l1),
+				getCtrlFlow(a.getRight(), trueLabel, falseLabel)
+			);
 	}
 
 	private IRStmt getCtrlFlow(Or o, String trueLabel, String falseLabel) {
 			String truePrime = getFreshLabel();
-			List<IRStmt> stmts = ArrayUtils.empty();
-			stmts.add(getCtrlFlow(o.getLeft(), truePrime, falseLabel));
-			stmts.add(new IRLabel(truePrime));
-			stmts.add(getCtrlFlow(o.getRight(), trueLabel, falseLabel));
-			return new IRSeq(stmts);
+			return irFactory.IRSeq(
+				getCtrlFlow(o.getLeft(), truePrime, falseLabel),
+				irFactory.IRLabel(truePrime),
+				getCtrlFlow(o.getRight(), trueLabel, falseLabel)
+			);
 	}
 	
 	private IRStmt getCtrlFlow(EqEq e, String trueLabel, String falseLabel) {
 			IRExpr left = e.getLeft().getIRExpr();
 			IRExpr right = e.getRight().getIRExpr();
-			return new IRCJump(new IRBinOp(OpType.EQ, left, right), trueLabel, falseLabel);
+			return irFactory.IRCJump(irFactory.IRBinOp(OpType.EQ, left, right), trueLabel, falseLabel);
 	}
 
 	public IRSeq boundsCheck(IRExpr arr, IRExpr index) {
-		IRLabel ok = new IRLabel(getFreshLabel());
+		IRLabel ok = irFactory.IRLabel(getFreshLabel());
 		String errLabel = getOutOfBoundsLabel();
 
-		IRMem lenAddr = new IRMem(new IRBinOp(OpType.SUB, arr, new IRConst(getWordSize())));
-		IRBinOp boundsCheck = new IRBinOp(OpType.ULT, index, lenAddr);
+		IRMem lenAddr = irFactory.IRMem(irFactory.IRBinOp(OpType.SUB, arr, irFactory.IRConst(getWordSize())));
+		IRBinOp boundsCheck = irFactory.IRBinOp(OpType.ULT, index, lenAddr);
 
-		return new IRSeq(new IRCJump(boundsCheck, ok.name(), errLabel),
+		return irFactory.IRSeq(irFactory.IRCJump(boundsCheck, ok.name(), errLabel),
 						 ok);
 	}
 
@@ -255,8 +261,32 @@ public class NodeToIRNodeConverter extends Visitor {
 		 * We can us the temp's here because it will be executed after
 		 * a seq that does the temp setup
 		 */
-		IRExpr e = new IRBinOp(OpType.MUL, new IRConst(getWordSize()), index);
-		IRExpr e2 = new IRBinOp(OpType.ADD, arr, e); 
-		return  new IRMem(e2);
+		IRExpr e = irFactory.IRBinOp(OpType.MUL, irFactory.IRConst(getWordSize()), index);
+		IRExpr e2 = irFactory.IRBinOp(OpType.ADD, arr, e); 
+		return  irFactory.IRMem(e2);
+	}
+
+	public IRESeq allocateAndInitArray(List<IRExpr> items) {
+	
+		IRTemp arrBase = irFactory.IRTemp(newTemp());
+        IRConst sizeOfArrAndLen = irFactory.IRConst(items.size() * getWordSize() + getWordSize());
+        IRName malloc = irFactory.IRName(getMallocLabel());
+
+        List<IRStmt> seq = ArrayUtils.empty();
+
+        // alloc array and move addr into temp and store length of array
+		seq.add(irFactory.IRMove(arrBase, new IRCall(malloc, sizeOfArrAndLen)));
+		seq.add(irFactory.IRMove(irFactory.IRMem(arrBase), irFactory.IRConst(items.size())));
+        
+        // put items in their index
+		IRBinOp offset = irFactory.IRBinOp(OpType.MUL, new IRConst(items.size()), new IRConst(getWordSize()));
+        for(int i=0; i < items.size(); i++) {
+            IRBinOp elem = irFactory.IRBinOp(OpType.ADD, arrBase, offset); 
+            seq.add(irFactory.IRMove(irFactory.IRMem(elem), items.get(i)));
+        }
+        
+        IRBinOp startOfArr = irFactory.IRBinOp(OpType.ADD, arrBase, irFactory.IRConst(getWordSize()));
+        
+        return irFactory.IRESeq(irFactory.IRSeq(seq), startOfArr);
 	}
 }

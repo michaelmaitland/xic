@@ -1,19 +1,15 @@
 package mtm68.ast.nodes;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
-import edu.cornell.cs.cs4120.ir.IRMem;
-import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
-import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
@@ -69,26 +65,13 @@ public class ArrayInit extends Expr {
 
 	@Override
     public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
-        IRTemp arrBase = irFactory.IRTemp(cv.newTemp());
-        IRConst sizeOfArrAndLen = irFactory.IRConst(items.size() * cv.getWordSize() + cv.getWordSize());
-        IRName malloc = irFactory.IRName(cv.getMallocLabel());
+		
+		List<IRExpr> elems = items.stream()
+								  .map(Expr::getIRExpr)
+								  .collect(Collectors.toList());
 
-        List<IRStmt> seq = new ArrayList<>();
-        // alloc array and move addr into temp
-        seq.add(new IRMove(arrBase, new IRCall(malloc, sizeOfArrAndLen)));
-        // store length of array
-        seq.add(new IRMove(new IRMem(arrBase), new IRConst(items.size())));
+		IRESeq eseq = cv.allocateAndInitArray(elems);
 
-        // put items in their index
-        for(int i=0; i < items.size(); i++) {
-            IRBinOp offset = new IRBinOp(OpType.MUL, new IRConst(items.size()), new IRConst(cv.getWordSize()));
-            IRBinOp elem = new IRBinOp(OpType.ADD, arrBase, offset); 
-            seq.add(new IRMove(new IRMem(elem), items.get(i).getIRExpr()));
-        }
-        
-        IRBinOp startOfArr = new IRBinOp(OpType.ADD, arrBase, new IRConst(cv.getWordSize()));
-        IRESeq eseq =  new IRESeq(new IRSeq(seq), startOfArr);
-        
         return copyAndSetIRExpr(eseq);
     }
 }
