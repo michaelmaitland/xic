@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -36,7 +37,7 @@ public class ErrorStatement extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		/* No IR info needed */
 		return this;
 	}

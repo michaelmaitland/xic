@@ -1,5 +1,6 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -41,7 +42,7 @@ public class Use extends Node {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		/** There is no conversion to be done */
 		return this;
 	}

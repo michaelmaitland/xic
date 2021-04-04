@@ -76,7 +76,7 @@ public class ExtendedDecl extends Decl {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		// TODO Auto-generated method stub
 		return null;
 	}

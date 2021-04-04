@@ -1,6 +1,7 @@
 package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.Block;
@@ -13,7 +14,7 @@ public class FunctionDefn extends Node {
 	private FunctionDecl functionDecl;
 	private Block body;
 	
-	private  IRFuncDefn irFuncDecl;
+	private  IRFuncDefn irFuncDefn;
 
 	public FunctionDefn(FunctionDecl fDecl, Block body) {
 		this.functionDecl = fDecl;
@@ -28,12 +29,12 @@ public class FunctionDefn extends Node {
 		return body;
 	}
 
-	public IRFuncDefn getIrFuncDecl() {
-		return irFuncDecl;
+	public IRFuncDefn getIrFuncDefn() {
+		return irFuncDefn;
 	}
 
-	public void setIrFuncDecl(IRFuncDefn irFuncDecl) {
-		this.irFuncDecl = irFuncDecl;
+	public void setIrFuncDefn(IRFuncDefn irFuncDefn) {
+		this.irFuncDefn= irFuncDefn;
 	}
 
 	@Override
@@ -70,14 +71,14 @@ public class FunctionDefn extends Node {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 
 		String funcName = cv.getFuncSymbol(functionDecl);
-		IRSeq seq = new IRSeq(body.getIRStmt());
-		IRFuncDefn ir = new IRFuncDefn(funcName, seq);
+		IRSeq seq = irFactory.IRSeq(body.getIRStmt());
+		IRFuncDefn defn = irFactory.IRFuncDefn(funcName, seq);
 				
 		FunctionDefn copy = copy();
-		copy.setIrFuncDecl(ir);
+		copy.setIrFuncDefn(defn);
 		return copy;
 	}
 }

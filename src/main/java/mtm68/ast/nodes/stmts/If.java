@@ -3,6 +3,7 @@ package mtm68.ast.nodes.stmts;
 import java.util.Optional;
 
 import edu.cornell.cs.cs4120.ir.IRLabel;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
@@ -100,16 +101,16 @@ public class If extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 
 		String trueLabel = cv.getFreshLabel();
 		String falseLabel = cv.getFreshLabel();
 		
-		IRSeq seq = new IRSeq(
+		IRSeq seq = irFactory.IRSeq(
 					cv.getCtrlFlow(condition, trueLabel, falseLabel),
-					new IRLabel(trueLabel),
+					irFactory.IRLabel(trueLabel),
 					ifBranch.getIRStmt(),
-					new IRLabel(falseLabel)
+					irFactory.IRLabel(falseLabel)
 					);
 		
 		// elseBranch.ifPresent();

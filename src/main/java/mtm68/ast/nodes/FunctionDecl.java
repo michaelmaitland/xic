@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import java.util.List;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
@@ -80,7 +81,7 @@ public class FunctionDecl extends Node {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		/* There is no IR conversion that needs to be done */
 		return this;
 	}

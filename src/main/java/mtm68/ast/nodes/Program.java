@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import java.util.List;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -68,7 +69,7 @@ public class Program extends Node implements Root {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		/** Not part of IR rep */
 		return this;
 	}

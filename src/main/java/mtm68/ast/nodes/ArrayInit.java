@@ -11,6 +11,7 @@ import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
@@ -67,10 +68,10 @@ public class ArrayInit extends Expr {
 	}
 
 	@Override
-    public Node convertToIR(NodeToIRNodeConverter cv) {
-        IRTemp arrBase = new IRTemp(cv.newTemp());
-        IRConst sizeOfArrAndLen = new IRConst(items.size() * cv.getWordSize() + cv.getWordSize());
-        IRName malloc = new IRName(cv.getMallocLabel());
+    public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+        IRTemp arrBase = irFactory.IRTemp(cv.newTemp());
+        IRConst sizeOfArrAndLen = irFactory.IRConst(items.size() * cv.getWordSize() + cv.getWordSize());
+        IRName malloc = irFactory.IRName(cv.getMallocLabel());
 
         List<IRStmt> seq = new ArrayList<>();
         // alloc array and move addr into temp

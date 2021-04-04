@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.FunctionCollector;
@@ -46,7 +47,7 @@ public abstract class Node implements HasLocation, Cloneable {
 
 	public abstract Node typeCheck(TypeChecker tc);
 
-	public abstract Node convertToIR(NodeToIRNodeConverter cv);
+	public abstract Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory);
 
 	/**
 	 * Accepts a visitor

@@ -1,6 +1,6 @@
 package mtm68.ast.nodes;
 
-import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
 import mtm68.util.StringUtils;
@@ -36,7 +36,7 @@ public class CharLiteral extends Literal<Character>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		return copyAndSetIRExpr(new IRConst(value));
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+		return copyAndSetIRExpr(irFactory.IRConst(value));
 	}
 }

@@ -1,14 +1,9 @@
 package mtm68.ast.nodes;
 
-import edu.cornell.cs.cs4120.ir.IRBinOp;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.ir.IRCJump;
-import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
-import edu.cornell.cs.cs4120.ir.IRExpr;
-import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -70,18 +65,19 @@ public class ArrayIndex extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 	
-		IRTemp tempArr = new IRTemp(cv.newTemp());
-		IRTemp tempIndex = new IRTemp(cv.newTemp());
 		
-		IRSeq seq = new IRSeq(
-				new IRMove(tempArr, arr.getIRExpr()),
-				new IRMove(tempIndex, index.getIRExpr()),
+		IRTemp tempArr = irFactory.IRTemp(cv.newTemp());
+		IRTemp tempIndex = irFactory.IRTemp(cv.newTemp());
+		
+		IRSeq seq = irFactory.IRSeq(
+				irFactory.IRMove(tempArr, arr.getIRExpr()),
+				irFactory.IRMove(tempIndex, index.getIRExpr()),
 				cv.boundsCheck(tempArr, tempIndex));
 		
 		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
-		IRESeq eseq = new IRESeq(seq, offsetIntoArr);
+		IRESeq eseq = irFactory.IRESeq(seq, offsetIntoArr);
 
 		return copyAndSetIRExpr(eseq);
 	}

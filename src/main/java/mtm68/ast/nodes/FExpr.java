@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -66,14 +67,14 @@ public class FExpr extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		String sym = cv.getFuncSymbol(this);
-		IRName name = new IRName(sym);
+		IRName name = irFactory.IRName(sym);
 		List<IRExpr> irArgs = args.stream()
 								.map(Expr::getIRExpr)
 								.collect(Collectors.toList());
 
-		IRCall call = new IRCall(name, irArgs);
+		IRCall call = irFactory.IRCall(name, irArgs);
 
 		return copyAndSetIRExpr(call);
 	}
