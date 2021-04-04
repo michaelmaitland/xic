@@ -33,7 +33,7 @@ public class SingleAssign extends Assign {
 		return lhs;
 	}
 	
-	public Node getRhs() {
+	public Expr getRhs() {
 		return rhs;
 	}
 

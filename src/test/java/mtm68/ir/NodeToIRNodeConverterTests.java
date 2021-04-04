@@ -8,8 +8,9 @@ import static mtm68.util.NodeTestUtil.assertInstanceOf;
 import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
 import static mtm68.util.NodeTestUtil.boolLit;
 import static mtm68.util.NodeTestUtil.charLit;
+import static mtm68.util.NodeTestUtil.emptyArray;
 import static mtm68.util.NodeTestUtil.emptyBlock;
-import static mtm68.util.NodeTestUtil.*;
+import static mtm68.util.NodeTestUtil.intLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,6 +28,7 @@ import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
@@ -350,7 +352,7 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 
 	private <N extends Node> N doConversion(N node) {
-		NodeToIRNodeConverter conv = new NodeToIRNodeConverter();
+		NodeToIRNodeConverter conv = new NodeToIRNodeConverter(new IRNodeFactory_c());
 		addLocs(node);
 		return conv.performConvertToIR(node);
 	}
