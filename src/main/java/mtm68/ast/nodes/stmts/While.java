@@ -1,6 +1,5 @@
 package mtm68.ast.nodes.stmts;
 
-import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -77,13 +76,13 @@ public class While extends Statement {
 		String falseLabel = cv.getFreshLabel();
 
 		IRSeq seq = irFactory.IRSeq(
-				irFactory.IRLabel(header),
-				cv.getCtrlFlow(condition, trueLabel, falseLabel),
-				irFactory.IRLabel(trueLabel),
-				body.getIRStmt(),
-				irFactory.IRJump(new IRName(header)),
-				irFactory.IRLabel(falseLabel)
-				);
+			irFactory.IRLabel(header),
+			cv.getCtrlFlow(condition, trueLabel, falseLabel),
+			irFactory.IRLabel(trueLabel),
+			body.getIRStmt(),
+			irFactory.IRJump(irFactory.IRName(header)),
+		    irFactory.IRLabel(falseLabel)
+		);
 		
 		return copyAndSetIRStmt(seq);
 	}

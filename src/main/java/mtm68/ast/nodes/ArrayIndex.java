@@ -2,7 +2,6 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRMem;
-import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
@@ -66,7 +65,6 @@ public class ArrayIndex extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
-	
 		
 		IRTemp tempArr = irFactory.IRTemp(cv.newTemp());
 		IRTemp tempIndex = irFactory.IRTemp(cv.newTemp());

@@ -60,7 +60,7 @@ public class Interface extends Node implements Root {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory irFactory) {
-		// TODO Auto-generated method stub
-		return null;
+		/* There is no IR Node for an interface */
+		return this;
 	}
 }

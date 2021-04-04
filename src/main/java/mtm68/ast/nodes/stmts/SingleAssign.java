@@ -106,10 +106,10 @@ public class SingleAssign extends Assign {
 		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
 
 		return irFactory.IRSeq(
-				irFactory.IRMove(tempArr, ai.getArr().getIRExpr()),
-				irFactory.IRMove(tempIndex, ai.getIndex().getIRExpr()),
-				cv.boundsCheck(tempArr, tempIndex),
-				irFactory.IRMove(offsetIntoArr, rhs.getIRExpr())
-				);
+			irFactory.IRMove(tempArr, ai.getArr().getIRExpr()),
+			irFactory.IRMove(tempIndex, ai.getIndex().getIRExpr()),
+			cv.boundsCheck(tempArr, tempIndex),
+		    irFactory.IRMove(offsetIntoArr, rhs.getIRExpr())
+		);
 	}
 }

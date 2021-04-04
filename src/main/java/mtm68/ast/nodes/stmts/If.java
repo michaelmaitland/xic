@@ -2,7 +2,6 @@ package mtm68.ast.nodes.stmts;
 
 import java.util.Optional;
 
-import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -112,11 +111,7 @@ public class If extends Statement {
 					ifBranch.getIRStmt(),
 					irFactory.IRLabel(falseLabel)
 					);
-		
-		// elseBranch.ifPresent();
-		if(elseBranch.isPresent()) {
-			seq.stmts().add(elseBranch.get().getIRStmt());
-		}
+		elseBranch.ifPresent(e -> seq.stmts().add(e.getIRStmt()));
 
 		return copyAndSetIRStmt(seq);
 	}
