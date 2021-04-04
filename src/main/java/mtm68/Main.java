@@ -61,7 +61,7 @@ public class Main {
 	@Option(name = "--irgen", usage = "saves IR representation of AST generated from source file to <filename>.ir")
 	private boolean outputIR;
 	
-	@Option(name = "--irgen", usage = "generates and interprets IR code")
+	@Option(name = "--irrun", usage = "generates and interprets IR code")
 	private boolean interpretIR;
 
 	@Option(name = "--debug", usage = "turns on debug output", hidden = true)
