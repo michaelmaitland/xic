@@ -81,12 +81,6 @@ public class SingleAssign extends Assign {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
-		/**
-		 * The lhs can be a Var, an ArrayIndex, or a SimpleDecl.
-		 * However, a SimpleDecl gets converted to a Var so
-		 * we can do an IRMove on it, since its IR representation
-		 * is an IRExpr instead of an IRStmt.
-		 */
 		if(lhs instanceof Var) {
 			Var var = (Var)lhs;
 			IRMove move = irFactory.IRMove(var.getIRExpr(), rhs.getIRExpr());
