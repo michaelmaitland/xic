@@ -46,7 +46,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private IRNodeFactory irFactory;
 	
-	/*
+	/**
 	 * Keys are the function/procedure name as defined in the
 	 * AST nodes. Values are the encoded function/procedure 
 	 * symbol.
@@ -70,18 +70,17 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.irFactory = irFactory;
 	}
 
-	public String getFreshLabel() {
-		labelCounter++;
-		return "_l" + labelCounter; 
+	public <N extends Node> N performConvertToIR(N root) {
+		try {
+			return root.accept(this);
+		} catch(FatalTypeException e) {
+		}
+		return root;
 	}
-	
-	public String newTemp() {
-		tmpCounter++;
-		return "_t" + tmpCounter;
-	}
-	
-	public String newTemp(String name) {
-		return "_t" + name;
+
+	@Override
+	public Node leave(Node parent, Node n) {
+		return n.convertToIR(this, irFactory);
 	}
 
 	public String getOutOfBoundsLabel() {
@@ -94,6 +93,33 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	public int getWordSize() {
 		return WORD_SIZE;
+	}
+	public String getFreshLabel() {
+		labelCounter++;
+		return "_l" + labelCounter; 
+	}
+	
+	/**
+	 * @return a temp that does not need to be used by a different node.
+	 */
+	public String newTemp() {
+		tmpCounter++;
+		return "_t" + tmpCounter;
+	}
+	
+	/**
+	 * Returns a temp that is built using a name. This allows different nodes to
+	 * reference the same temp.
+	 * 
+	 * @param name the identifier that the temp is assocaiated with 
+	 * @return the temp 
+	 */
+	public String newTemp(String name) {
+		return "_t" + name;
+	}
+
+	public String retVal(int retIdx) {
+		return "RET_" + retIdx;
 	}
 	
 	/**
@@ -175,7 +201,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * a function returns multiple results, it is encoded as {@code t} followed by
 	 * the number of arguments returned, followed by the encoding of the types
 	 * returned. If there are no return types, then it is encoded as {@code p}.
-	 * 
 	 */
 	private String encodeReturnTypes(List<Type> types) {
 
@@ -188,20 +213,6 @@ public class NodeToIRNodeConverter extends Visitor {
 		}
 	}
 	
-	
-	public <N extends Node> N performConvertToIR(N root) {
-		try {
-			return root.accept(this);
-		} catch(FatalTypeException e) {
-		}
-		return root;
-	}
-
-	@Override
-	public Node leave(Node parent, Node n) {
-		return n.convertToIR(this, irFactory);
-	}
-
 	public IRStmt getCtrlFlow(Expr condition, String trueLabel, String falseLabel) {
 		if(condition instanceof BoolLiteral) {
 			return  getCtrlFlow((BoolLiteral)condition, trueLabel, falseLabel);
@@ -295,9 +306,5 @@ public class NodeToIRNodeConverter extends Visitor {
         IRBinOp startOfArr = irFactory.IRBinOp(OpType.ADD, arrBase, irFactory.IRConst(getWordSize()));
         
         return irFactory.IRESeq(irFactory.IRSeq(seq), startOfArr);
-	}
-
-	public String retVal(int retIdx) {
-		return "RET_" + retIdx;
 	}
 }

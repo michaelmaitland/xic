@@ -1,5 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
@@ -57,8 +58,8 @@ public class SimpleDecl extends Decl {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		/* This does not need an IR representation */
 		// or we could init as a temp containing const 0 zero:
-		// IRMove move = irFactory.IRMove(irFactory.IRTemp(cv.newTemp(id)), irFactory.IRConst(0L));
-		// return copyAndSetIRStmt(move);
-		return this;
+		 IRMove move = irFactory.IRMove(irFactory.IRTemp(cv.newTemp(id)), irFactory.IRConst(0L));
+		 return copyAndSetIRStmt(move);
+		//return this;
 	}
 }

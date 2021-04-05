@@ -94,6 +94,10 @@ public class SingleAssign extends Assign {
 		} else if (lhs instanceof ArrayIndex) {
 			IRSeq seq = convertArrayIndexAssign(cv, irFactory, (ArrayIndex)lhs);
 			return copyAndSetIRStmt(seq);
+		} else if (lhs instanceof SimpleDecl) {
+			SimpleDecl decl = (SimpleDecl)lhs;
+			IRMove move = irFactory.IRMove(irFactory.IRTemp(cv.newTemp(decl.getId())), rhs.getIRExpr());
+			return copyAndSetIRStmt(move);
 		} else {
 			throw new InternalCompilerException();
 		}
