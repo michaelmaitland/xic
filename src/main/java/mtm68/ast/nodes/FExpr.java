@@ -75,6 +75,7 @@ public class FExpr extends Expr {
 								.collect(Collectors.toList());
 
 		IRCall call = irFactory.IRCall(name, irArgs);
+		// TODO store RET_0 in temp and return that temp
 
 		return copyAndSetIRExpr(call);
 	}

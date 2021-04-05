@@ -56,7 +56,9 @@ public class SimpleDecl extends Decl {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
 		/* This does not need an IR representation */
-		// or we could init as a zero
+		// or we could init as a temp containing const 0 zero:
+		// IRMove move = irFactory.IRMove(irFactory.IRTemp(cv.newTemp(id)), irFactory.IRConst(0L));
+		// return copyAndSetIRStmt(move);
 		return this;
 	}
 }
