@@ -15,12 +15,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCall;
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExp;
@@ -29,6 +35,7 @@ import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
@@ -43,11 +50,13 @@ import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.If;
+import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -236,6 +245,82 @@ public class NodeToIRNodeConverterTests {
 		assertTrue(move.target() instanceof IRTemp);
 	}
 
+	@Test
+	void testSingleAssignToSimpleDecl() {
+		SingleAssign assign = new SingleAssign(
+				new SimpleDecl("x", Types.INT), intLit(0L));
+		SingleAssign newAssign = doConversion(assign);
+		
+		IRMove move = assertInstanceOfAndReturn(IRMove.class, newAssign.getIRStmt());
+		assertTrue(move.target() instanceof IRTemp);
+	}
+
+	@Test
+	void testMultipleAssign() {
+		
+		Map<String, String> funcAndProcEncodings = new HashMap<>();
+		funcAndProcEncodings.put("f", "f");
+		
+		List<Optional<SimpleDecl>> decls = ArrayUtils.elems(
+				Optional.of(new SimpleDecl("x", Types.INT)),
+				Optional.of(new SimpleDecl("y", Types.INT))
+			);
+		FExpr rhs = new FExpr("f", ArrayUtils.empty()); 
+		MultipleAssign assign = new MultipleAssign(decls, rhs);
+		MultipleAssign newAssign = doConversion(funcAndProcEncodings, assign);
+	
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newAssign.getIRStmt());
+		assertEquals(3, seq.stmts().size());
+		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
+		IRMove move1 = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(1));
+		IRTemp ret1 = assertInstanceOfAndReturn(IRTemp.class, move1.source());
+		assertEquals("RET_0", ret1.name());
+		IRMove move2 = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(2));
+		IRTemp ret2 = assertInstanceOfAndReturn(IRTemp.class, move2.source());
+		assertEquals("RET_1", ret2.name());
+	}
+
+	@Test
+	void testMultipleAssignWildcard() {
+		
+		Map<String, String> funcAndProcEncodings = new HashMap<>();
+		funcAndProcEncodings.put("f", "f");
+		
+		List<Optional<SimpleDecl>> decls = ArrayUtils.elems(
+				Optional.of(new SimpleDecl("_", Types.INT))
+			);
+		FExpr rhs = new FExpr("f", ArrayUtils.empty()); 
+		MultipleAssign assign = new MultipleAssign(decls, rhs);
+		MultipleAssign newAssign = doConversion(funcAndProcEncodings, assign);
+	
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newAssign.getIRStmt());
+		assertEquals(1, seq.stmts().size());
+		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
+	}
+
+	@Test
+	void testMultipleAssignWildcardAndRealDecl() {
+		
+		Map<String, String> funcAndProcEncodings = new HashMap<>();
+		funcAndProcEncodings.put("f", "f");
+		
+		List<Optional<SimpleDecl>> decls = ArrayUtils.elems(
+				Optional.of(new SimpleDecl("_", Types.INT)),
+				Optional.of(new SimpleDecl("y", Types.INT))
+			);
+		FExpr rhs = new FExpr("f", ArrayUtils.empty()); 
+		MultipleAssign assign = new MultipleAssign(decls, rhs);
+		MultipleAssign newAssign = doConversion(funcAndProcEncodings, assign);
+	
+		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, newAssign.getIRStmt());
+		assertEquals(2, seq.stmts().size());
+		assertTrue(!seq.stmts().isEmpty());
+		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
+		IRMove move1 = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(1));
+		IRTemp ret1 = assertInstanceOfAndReturn(IRTemp.class, move1.source());
+		assertEquals("RET_1", ret1.name());
+	}
+
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 
@@ -310,7 +395,7 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	
 	@Test
-	public void testFunctionCallNoArgs() {
+	public void testProcedureCallNoArgs() {
 		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		ProcedureCall newStmt = doConversion(stmt);
 		
@@ -321,7 +406,7 @@ public class NodeToIRNodeConverterTests {
 	}
 	
 	@Test
-	public void testFunctionCallOneArg() {
+	public void testProcedureCallOneArg() {
 		ProcedureCall stmt = new ProcedureCall(new FExpr("f", elems(intLit(0L))));
 		ProcedureCall newStmt = doConversion(stmt);
 
@@ -332,7 +417,7 @@ public class NodeToIRNodeConverterTests {
 	}
 
 	@Test
-	public void testFunctionCallMultiArg() {
+	public void testProcedureCallMultiArg() {
 		ProcedureCall stmt = new ProcedureCall(new FExpr("f",
 						elems(intLit(0L), arbitraryCondition())));
 		ProcedureCall newStmt = doConversion(stmt);
@@ -346,6 +431,24 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// Return
 	//-------------------------------------------------------------------------------- 
+	@Test
+	public void testSingleReturnValue() {
+		Return ret = new Return(ArrayUtils.singleton(intLit(0L)));
+		Return newRet = doConversion(ret);
+		
+		IRReturn irRet = assertInstanceOfAndReturn(IRReturn.class, newRet.getIRStmt());
+		assertEquals(1, irRet.rets().size());
+		assertInstanceOf(IRConst.class, irRet.rets().get(0));
+	}
+	
+	@Test
+	public void testMultipleReturnValue() {
+		Return ret = new Return(ArrayUtils.elems(intLit(0L), intLit(1L)));
+		Return newRet = doConversion(ret);
+		
+		IRReturn irRet = assertInstanceOfAndReturn(IRReturn.class, newRet.getIRStmt());
+		assertEquals(2, irRet.rets().size());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods
@@ -353,6 +456,12 @@ public class NodeToIRNodeConverterTests {
 
 	private <N extends Node> N doConversion(N node) {
 		NodeToIRNodeConverter conv = new NodeToIRNodeConverter(new IRNodeFactory_c());
+		addLocs(node);
+		return conv.performConvertToIR(node);
+	}
+	
+	private <N extends Node> N doConversion(Map<String, String> funcAndProcEncodings, N node) {
+		NodeToIRNodeConverter conv = new NodeToIRNodeConverter(funcAndProcEncodings, new IRNodeFactory_c());
 		addLocs(node);
 		return conv.performConvertToIR(node);
 	}

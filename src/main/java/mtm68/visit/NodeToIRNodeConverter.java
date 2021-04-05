@@ -16,7 +16,6 @@ import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
-import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
@@ -61,9 +60,13 @@ public class NodeToIRNodeConverter extends Visitor {
 	private static final int WORD_SIZE = 8;
 	
 	public NodeToIRNodeConverter(IRNodeFactory irFactory) {
+		this(new HashMap<>(), irFactory);
+	}
+	
+	public NodeToIRNodeConverter(Map<String, String> funcAndProcEncodings, IRNodeFactory irFactory) {
 		this.labelCounter = 0;
 		this.tmpCounter = 0;
-		this.funcAndProcEncodings = new HashMap<>();
+		this.funcAndProcEncodings = funcAndProcEncodings;
 		this.irFactory = irFactory;
 	}
 
@@ -75,6 +78,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	public String newTemp() {
 		tmpCounter++;
 		return "_t" + tmpCounter;
+	}
+	
+	public String newTemp(String name) {
+		return "_t" + name;
 	}
 
 	public String getOutOfBoundsLabel() {
@@ -288,5 +295,9 @@ public class NodeToIRNodeConverter extends Visitor {
         IRBinOp startOfArr = irFactory.IRBinOp(OpType.ADD, arrBase, irFactory.IRConst(getWordSize()));
         
         return irFactory.IRESeq(irFactory.IRSeq(seq), startOfArr);
+	}
+
+	public String retVal(int retIdx) {
+		return "RET_" + retIdx;
 	}
 }
