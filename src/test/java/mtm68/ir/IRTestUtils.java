@@ -1,5 +1,7 @@
 package mtm68.ir;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
@@ -10,10 +12,17 @@ import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 
 public class IRTestUtils {
+	
+	public static void assertCanonical(IRNode node) {
+		CheckCanonicalIRVisitor v = new CheckCanonicalIRVisitor();
+		assertTrue(v.visit(node), "Node " + node + " is not in canonical form");
+	}
 
 	public static IRMove move(String temp, IRExpr expr) {
 		return new IRMove(temp(temp), expr);

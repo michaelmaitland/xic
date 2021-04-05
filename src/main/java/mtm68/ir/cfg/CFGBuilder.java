@@ -15,6 +15,7 @@ import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import mtm68.util.ArrayUtils;
 
@@ -54,6 +55,10 @@ public class CFGBuilder {
 			addOutboundConnections(stmt);
 			kind = CFGKind.JMP;
 		}
+
+		if(isReturn(stmt)) {
+			kind = CFGKind.RET;
+		}
 		
 		stmtIdx++;
 	}
@@ -76,6 +81,10 @@ public class CFGBuilder {
 	private boolean isJump(IRStmt stmt) {
 		return stmt instanceof IRCJump ||
 				stmt instanceof IRJump;
+	}
+
+	private boolean isReturn(IRStmt stmt) {
+		return stmt instanceof IRReturn;
 	}
 
 	private void storeLabelLoc(IRStmt stmt) {

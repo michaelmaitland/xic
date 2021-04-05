@@ -14,6 +14,7 @@ import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import mtm68.ir.cfg.CFGBuilder.CFGEdge;
 import mtm68.ir.cfg.CFGBuilder.CFGNode;
+import mtm68.util.Debug;
 
 public class CFGTracer {
 	
@@ -40,8 +41,9 @@ public class CFGTracer {
 			CFGNode node = unmarked.iterator().next();
 			List<CFGNode> trace = maximalTrace(node);
 			unmarked.removeAll(trace);
-			printTrace(trace);
 			
+			if(Debug.DEBUG_ON) printTrace(trace);
+
 			addStmtsFromTraceToResult(result, trace);
 		}
 		return result;
@@ -51,18 +53,18 @@ public class CFGTracer {
 	private void addStmtsFromTraceToResult(List<IRStmt> result, List<CFGNode> trace) {
 		for(int i = 0; i < trace.size(); i++) {
 			CFGNode node = trace.get(i);
-			CFGNode next = i + 1 < trace.size() ? trace.get(i + 1) : null;
+			CFGNode next = nextInTraceOrNull(trace, i);
 			
 			int startIdx = node.getStmtIdx();
 			int endIdx = getBasicBlockEndIdx(node);
 			
-			List<IRStmt> basicBlock = stmts.subList(startIdx, endIdx);
-			
+			List<IRStmt> basicBlock = new ArrayList<>(stmts.subList(startIdx, endIdx));
 			IRStmt jumpStmt = node.getJumpStmt().orElse(null);
 			
 			if(jumpStmt instanceof IRJump) {
 				removeUnnecessaryJump(basicBlock, node, next);
-			} else if (jumpStmt instanceof IRCJump) {
+			} 
+			else if (jumpStmt instanceof IRCJump) {
 				IRCJump jump = (IRCJump) jumpStmt;
 
 				removeFalseCaseFromCJump(jump, basicBlock, node, next);
@@ -73,6 +75,10 @@ public class CFGTracer {
 
 			result.addAll(basicBlock);
 		}
+	}
+	
+	private CFGNode nextInTraceOrNull(List<CFGNode> trace, int i) {
+		return i + 1 < trace.size() ? trace.get(i + 1) : null;
 	}
 
 	private void addJumpIfNoFallthrough(List<IRStmt> basicBlock, CFGNode node, CFGNode next) {

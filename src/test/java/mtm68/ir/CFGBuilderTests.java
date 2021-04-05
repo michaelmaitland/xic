@@ -3,6 +3,7 @@ package mtm68.ir;
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.*;
 import static mtm68.ir.IRTestUtils.*;
 import static mtm68.util.ArrayUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import mtm68.ir.cfg.CFGBuilder;
+import mtm68.ir.cfg.CFGBuilder.CFGNode;
 
 public class CFGBuilderTests {
 	
@@ -32,6 +34,30 @@ public class CFGBuilderTests {
 		
 		stmts.forEach(builder::visitStatement);
 		printNodes(builder);
+	}
+
+	@Test
+	void testRetNoOutgoingEdges() {
+		List<IRStmt> stmts = elems(
+				label("l0"),
+				jump("l2"),
+				label("l1"),
+				ret(),
+				label("l2")
+			);
+		
+		CFGBuilder builder = new CFGBuilder();
+		stmts.forEach(builder::visitStatement);
+		
+		List<CFGNode> nodes = builder.getNodes();
+		assertEquals(3, nodes.size());
+		
+		// Node 1 has no outgoing edges because it ends with a return stmt
+		assertNoOutgoing(nodes, 1);
+	}
+	
+	private void assertNoOutgoing(List<CFGNode> nodes, int nodeIdx) {
+		assertEquals(0, nodes.get(nodeIdx).getOut().size());
 	}
 	
 	private void printNodes(CFGBuilder builder) {
