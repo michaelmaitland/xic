@@ -12,8 +12,6 @@ import mtm68.visit.Visitor;
 
 public class SimpleDecl extends Decl {
 	
-	// x:type
-
 	private Type type;
 	
 	public SimpleDecl(String id, Type type) {
