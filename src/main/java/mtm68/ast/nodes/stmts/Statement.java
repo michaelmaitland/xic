@@ -24,6 +24,12 @@ public abstract class Statement extends Node implements HasResult {
 		return result;
 	}
 	
+	/**
+	 * Copies this Statement, sets the IRStmt of the copied Statement, and returns
+	 * that copied Statement.
+	 * @param stmt the IRStmt to set the copied Statement
+	 * @return the copied Statement
+	 */
 	public <E extends Statement> E copyAndSetIRStmt(IRStmt stmt) {
 		E newE = this.copy();
 		newE.setIRStmt(stmt);
