@@ -56,11 +56,13 @@ public class IRLabel extends IRStmt {
     
     @Override
    public IRNode unusedLabels(UnusedLabelVisitor v) {
-   	 v.recordLabel(this);
-   	 
    	 // This is so the visitor can freely call setUsed without
    	 // having to worry about copying
-   	return copy();  
+   	 IRLabel newLabel = copy();
+
+   	 v.recordLabel(newLabel);
+   	 
+   	return newLabel;  
    }
 
 	@Override
