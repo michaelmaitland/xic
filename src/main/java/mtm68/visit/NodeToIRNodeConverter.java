@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.lang.model.type.ArrayType;
-
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
@@ -31,6 +29,7 @@ import mtm68.ast.nodes.binary.And;
 import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
 import mtm68.ast.types.Type;

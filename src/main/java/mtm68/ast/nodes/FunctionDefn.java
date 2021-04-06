@@ -29,11 +29,11 @@ public class FunctionDefn extends Node {
 		return body;
 	}
 
-	public IRFuncDefn getIrFuncDefn() {
+	public IRFuncDefn getIRFuncDefn() {
 		return irFuncDefn;
 	}
 
-	public void setIrFuncDefn(IRFuncDefn irFuncDefn) {
+	public void setIRFuncDefn(IRFuncDefn irFuncDefn) {
 		this.irFuncDefn= irFuncDefn;
 	}
 
@@ -78,7 +78,7 @@ public class FunctionDefn extends Node {
 		IRFuncDefn defn = irFactory.IRFuncDefn(funcName, seq);
 				
 		FunctionDefn copy = copy();
-		copy.setIrFuncDefn(defn);
+		copy.setIRFuncDefn(defn);
 		return copy;
 	}
 }

@@ -26,11 +26,10 @@ import org.junit.jupiter.api.Test;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
-import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
-import edu.cornell.cs.cs4120.ir.IRExp;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
@@ -45,6 +44,8 @@ import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.FunctionDecl;
+import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
@@ -185,6 +186,127 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// FunctionDefn
 	//-------------------------------------------------------------------------------- 
+	
+	
+	@Test
+	public void testFunctionDefnNoArgsNoRet() {
+		FunctionDecl fDecl = new FunctionDecl("f", empty(), empty());
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_If_p", ir.name());
+	}
+	
+	@Test
+	public void testFunctionDefnNoArgsOneRet() {
+		FunctionDecl fDecl = new FunctionDecl("f", empty(), ArrayUtils.singleton(Types.INT));
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_If_i", ir.name());	
+	}
+	
+	@Test
+	public void testFunctionDefnNoArgsMultipleRet() {
+		FunctionDecl fDecl = new FunctionDecl("f", empty(), elems(Types.BOOL, Types.INT));
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_If_t2bi", ir.name());		
+	}
+	
+	@Test
+	public void testFunctionDefnMain() {
+		FunctionDecl fDecl = new FunctionDecl("main",
+				elems(new SimpleDecl("args", Types.ARRAY(Types.ARRAY(Types.INT)))),
+				empty());
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_Imain_paai", ir.name());		
+	}
+	
+	@Test
+	public void testFunctionUnparseInt() {
+		FunctionDecl fDecl = new FunctionDecl("unparseInt",
+				elems(new SimpleDecl("n", Types.INT)),
+				ArrayUtils.singleton(Types.ARRAY(Types.INT)));
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_IunparseInt_aii", ir.name());		
+	}
+	
+	@Test
+	public void testFunctionParseInt() {
+		FunctionDecl fDecl = new FunctionDecl("parseInt",
+				elems(new SimpleDecl("str", Types.ARRAY(Types.INT))),
+				elems(Types.INT, Types.BOOL));
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_IparseInt_t2ibai", ir.name());		
+	}
+	
+	@Test
+	public void testFunctionEof() {
+		FunctionDecl fDecl = new FunctionDecl("eof",
+				empty(),
+				ArrayUtils.singleton(Types.BOOL));
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_Ieof_b", ir.name());		
+	}
+	
+	@Test
+	public void testFunctionGCD() {
+		FunctionDecl fDecl = new FunctionDecl("gcd",
+				elems(new SimpleDecl("a", Types.INT), new SimpleDecl("b", Types.INT)),
+				ArrayUtils.singleton(Types.INT));
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_Igcd_iii", ir.name());		
+	}
+	
+	@Test
+	public void testFunctionMultipleUnderscores() {
+		FunctionDecl fDecl = new FunctionDecl("multiple__underScores",
+				empty(),
+				empty());
+		Block voidBlock = new Block(empty());
+		
+		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
+		FunctionDefn newDefn = doConversion(fDefn);	
+		
+		IRFuncDefn ir = assertInstanceOfAndReturn(IRFuncDefn.class, newDefn.getIRFuncDefn());
+		assertEquals("_Imultiple____underScores_p", ir.name());		
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// IntLiteral
