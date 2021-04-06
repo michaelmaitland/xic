@@ -3,7 +3,8 @@ package mtm68.ast.nodes;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.ir.IRCall;
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -74,9 +75,8 @@ public class FExpr extends Expr {
 								.map(Expr::getIRExpr)
 								.collect(Collectors.toList());
 
-		IRCall call = irFactory.IRCall(name, irArgs);
-		// TODO store RET_0 in temp and return that temp
-
-		return copyAndSetIRExpr(call);
+		IRCallStmt call = irFactory.IRCallStmt(name, irArgs);
+		IRESeq eseq = irFactory.IRESeq(call, irFactory.IRTemp(cv.retVal(0)));
+		return copyAndSetIRExpr(eseq);
 	}
 }
