@@ -247,10 +247,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	private IRStmt getCtrlFlow(Or o, String trueLabel, String falseLabel) {
-			String truePrime = getFreshLabel();
+			String l1 = getFreshLabel();
 			return irFactory.IRSeq(
-				getCtrlFlow(o.getLeft(), truePrime, falseLabel),
-				irFactory.IRLabel(truePrime),
+				getCtrlFlow(o.getLeft(), trueLabel , l1),
+				irFactory.IRLabel(l1),
 				getCtrlFlow(o.getRight(), trueLabel, falseLabel)
 			);
 	}
