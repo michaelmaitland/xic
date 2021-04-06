@@ -433,7 +433,7 @@ public class NodeToIRNodeConverterTests {
 		funcAndProcEncodings.put("f", "f");
 		
 		List<Optional<SimpleDecl>> decls = elems(
-				Optional.of(new SimpleDecl("_", Types.INT))
+				Optional.empty()
 			);
 		FExpr rhs = new FExpr("f", empty()); 
 		MultipleAssign assign = new MultipleAssign(decls, rhs);
@@ -451,7 +451,7 @@ public class NodeToIRNodeConverterTests {
 		funcAndProcEncodings.put("f", "f");
 		
 		List<Optional<SimpleDecl>> decls = elems(
-				Optional.of(new SimpleDecl("_", Types.INT)),
+				Optional.empty(),
 				Optional.of(new SimpleDecl("y", Types.INT))
 			);
 		FExpr rhs = new FExpr("f", empty()); 
