@@ -55,6 +55,20 @@ public class CFGBuilderTests {
 		// Node 1 has no outgoing edges because it ends with a return stmt
 		assertNoOutgoing(nodes, 1);
 	}
+
+	@Test
+	void testLabelAfterReturn() {
+		List<IRStmt> stmts = elems(
+				ret(),
+				label("l0")
+			);
+		
+		CFGBuilder builder = new CFGBuilder();
+		stmts.forEach(builder::visitStatement);
+		
+		List<CFGNode> nodes = builder.getNodes();
+		assertEquals(2, nodes.size());
+	}
 	
 	private void assertNoOutgoing(List<CFGNode> nodes, int nodeIdx) {
 		assertEquals(0, nodes.get(nodeIdx).getOut().size());

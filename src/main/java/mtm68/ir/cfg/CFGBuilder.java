@@ -45,8 +45,7 @@ public class CFGBuilder {
 			createCFGNode(stmt);
 			storeLabelLoc(stmt);
 		}
-
-		if(kind == CFGKind.RET) {
+		else if(kind == CFGKind.RET) {
 			createCFGNode(stmt);
 		} 
 		
@@ -55,8 +54,7 @@ public class CFGBuilder {
 			addOutboundConnections(stmt);
 			kind = CFGKind.JMP;
 		}
-
-		if(isReturn(stmt)) {
+		else if(isReturn(stmt)) {
 			kind = CFGKind.RET;
 		}
 		

@@ -23,7 +23,7 @@ public class CFGVisitor extends IRVisitor {
 		// Don't visit expressions
 		if(n instanceof IRExpr) return n;
 		
-		return super.override(parent, n);
+		return null;
 	}
 
 }

@@ -100,6 +100,6 @@ public class IRCallStmt extends IRStmt {
 	@Override
 	public IRNode unusedLabels(UnusedLabelVisitor v) {
 		v.addLabelsInUse(((IRName)target).name());
-		return super.unusedLabels(v);
+		return this;
 	}
 }
