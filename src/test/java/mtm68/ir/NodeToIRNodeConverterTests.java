@@ -16,7 +16,6 @@ import static mtm68.util.NodeTestUtil.stringLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
 import java.util.List;
@@ -138,11 +137,6 @@ public class NodeToIRNodeConverterTests {
 		ArrayLength newArrLen = doConversion(arrLen);
 		
 		assertInstanceOf(IRMem.class, newArrLen.getIRExpr());
-	}
-	
-	@Test
-	public void testArrayLengthWhenArrNotInit() {
-		fail();
 	}
 	
 	//-------------------------------------------------------------------------------- 
