@@ -2,6 +2,7 @@ package mtm68.ir;
 
 import static mtm68.util.ArrayUtils.elems;
 import static mtm68.util.ArrayUtils.empty;
+import static mtm68.util.ArrayUtils.singleton;
 import static mtm68.util.NodeTestUtil.arbitraryCondition;
 import static mtm68.util.NodeTestUtil.arrayWithElems;
 import static mtm68.util.NodeTestUtil.assertInstanceOf;
@@ -11,6 +12,7 @@ import static mtm68.util.NodeTestUtil.charLit;
 import static mtm68.util.NodeTestUtil.emptyArray;
 import static mtm68.util.NodeTestUtil.emptyBlock;
 import static mtm68.util.NodeTestUtil.intLit;
+import static mtm68.util.NodeTestUtil.stringLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +43,7 @@ import edu.cornell.cs.cs4120.ir.IRTemp;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.ArrayInit;
+import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
 import mtm68.ast.nodes.FExpr;
@@ -132,7 +135,10 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	@Test
 	public void testArrayLength() {
-		fail();
+		ArrayLength arrLen = new ArrayLength(stringLit("hey"));
+		ArrayLength newArrLen = doConversion(arrLen);
+		
+		assertInstanceOf(IRMem.class, newArrLen.getIRExpr());
 	}
 	
 	@Test
@@ -202,7 +208,7 @@ public class NodeToIRNodeConverterTests {
 	
 	@Test
 	public void testFunctionDefnNoArgsOneRet() {
-		FunctionDecl fDecl = new FunctionDecl("f", empty(), ArrayUtils.singleton(Types.INT));
+		FunctionDecl fDecl = new FunctionDecl("f", empty(), singleton(Types.INT));
 		Block voidBlock = new Block(empty());
 		
 		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
@@ -242,7 +248,7 @@ public class NodeToIRNodeConverterTests {
 	public void testFunctionUnparseInt() {
 		FunctionDecl fDecl = new FunctionDecl("unparseInt",
 				elems(new SimpleDecl("n", Types.INT)),
-				ArrayUtils.singleton(Types.ARRAY(Types.INT)));
+				singleton(Types.ARRAY(Types.INT)));
 		Block voidBlock = new Block(empty());
 		
 		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
@@ -270,7 +276,7 @@ public class NodeToIRNodeConverterTests {
 	public void testFunctionEof() {
 		FunctionDecl fDecl = new FunctionDecl("eof",
 				empty(),
-				ArrayUtils.singleton(Types.BOOL));
+				singleton(Types.BOOL));
 		Block voidBlock = new Block(empty());
 		
 		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
@@ -284,7 +290,7 @@ public class NodeToIRNodeConverterTests {
 	public void testFunctionGCD() {
 		FunctionDecl fDecl = new FunctionDecl("gcd",
 				elems(new SimpleDecl("a", Types.INT), new SimpleDecl("b", Types.INT)),
-				ArrayUtils.singleton(Types.INT));
+				singleton(Types.INT));
 		Block voidBlock = new Block(empty());
 		
 		FunctionDefn fDefn = new FunctionDefn(fDecl, voidBlock);
@@ -401,11 +407,11 @@ public class NodeToIRNodeConverterTests {
 		Map<String, String> funcAndProcEncodings = new HashMap<>();
 		funcAndProcEncodings.put("f", "f");
 		
-		List<Optional<SimpleDecl>> decls = ArrayUtils.elems(
+		List<Optional<SimpleDecl>> decls = elems(
 				Optional.of(new SimpleDecl("x", Types.INT)),
 				Optional.of(new SimpleDecl("y", Types.INT))
 			);
-		FExpr rhs = new FExpr("f", ArrayUtils.empty()); 
+		FExpr rhs = new FExpr("f", empty()); 
 		MultipleAssign assign = new MultipleAssign(decls, rhs);
 		MultipleAssign newAssign = doConversion(funcAndProcEncodings, assign);
 	
@@ -426,10 +432,10 @@ public class NodeToIRNodeConverterTests {
 		Map<String, String> funcAndProcEncodings = new HashMap<>();
 		funcAndProcEncodings.put("f", "f");
 		
-		List<Optional<SimpleDecl>> decls = ArrayUtils.elems(
+		List<Optional<SimpleDecl>> decls = elems(
 				Optional.of(new SimpleDecl("_", Types.INT))
 			);
-		FExpr rhs = new FExpr("f", ArrayUtils.empty()); 
+		FExpr rhs = new FExpr("f", empty()); 
 		MultipleAssign assign = new MultipleAssign(decls, rhs);
 		MultipleAssign newAssign = doConversion(funcAndProcEncodings, assign);
 	
@@ -444,11 +450,11 @@ public class NodeToIRNodeConverterTests {
 		Map<String, String> funcAndProcEncodings = new HashMap<>();
 		funcAndProcEncodings.put("f", "f");
 		
-		List<Optional<SimpleDecl>> decls = ArrayUtils.elems(
+		List<Optional<SimpleDecl>> decls = elems(
 				Optional.of(new SimpleDecl("_", Types.INT)),
 				Optional.of(new SimpleDecl("y", Types.INT))
 			);
-		FExpr rhs = new FExpr("f", ArrayUtils.empty()); 
+		FExpr rhs = new FExpr("f", empty()); 
 		MultipleAssign assign = new MultipleAssign(decls, rhs);
 		MultipleAssign newAssign = doConversion(funcAndProcEncodings, assign);
 	
@@ -588,7 +594,7 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	@Test
 	public void testSingleReturnValue() {
-		Return ret = new Return(ArrayUtils.singleton(intLit(0L)));
+		Return ret = new Return(singleton(intLit(0L)));
 		Return newRet = doConversion(ret);
 		
 		IRReturn irRet = assertInstanceOfAndReturn(IRReturn.class, newRet.getIRStmt());
@@ -598,7 +604,7 @@ public class NodeToIRNodeConverterTests {
 	
 	@Test
 	public void testMultipleReturnValue() {
-		Return ret = new Return(ArrayUtils.elems(intLit(0L), intLit(1L)));
+		Return ret = new Return(elems(intLit(0L), intLit(1L)));
 		Return newRet = doConversion(ret);
 		
 		IRReturn irRet = assertInstanceOfAndReturn(IRReturn.class, newRet.getIRStmt());
