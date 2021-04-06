@@ -35,7 +35,7 @@ public enum Binop {
 			case OR:
 				return OpType.OR;
 			case AND:
-				return OpType.ADD;
+				return OpType.AND;
 			case EQEQ:
 				return OpType.EQ;
 			case NEQ:

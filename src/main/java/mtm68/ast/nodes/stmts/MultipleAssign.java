@@ -127,7 +127,6 @@ public class MultipleAssign extends Assign {
 		for(int i=0; i < decls.size(); i++) {
 			String retValue = cv.retVal(i);
 			decls.get(i).ifPresent(decl -> {
-				if(decl.getId().equals("_")) return;
 				IRMove mov = irFactory.IRMove(
 						irFactory.IRTemp(cv.newTemp(decl.getId())),
 						irFactory.IRTemp(retValue)

@@ -37,8 +37,7 @@ public class Use extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO: why not return this?
-		return null;
+		return this;
 	}
 
 	@Override
