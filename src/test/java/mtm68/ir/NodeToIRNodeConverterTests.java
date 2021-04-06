@@ -61,7 +61,6 @@ import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.types.Types;
-import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 

@@ -296,8 +296,8 @@ public class NodeToIRNodeConverter extends Visitor {
 		seq.add(irFactory.IRMove(irFactory.IRMem(arrBase), irFactory.IRConst(items.size())));
         
         // put items in their index
-		IRBinOp offset = irFactory.IRBinOp(OpType.MUL, new IRConst(items.size()), new IRConst(getWordSize()));
         for(int i=0; i < items.size(); i++) {
+			IRBinOp offset = irFactory.IRBinOp(OpType.MUL, new IRConst(i), new IRConst(getWordSize()));
             IRBinOp elem = irFactory.IRBinOp(OpType.ADD, arrBase, offset); 
             seq.add(irFactory.IRMove(irFactory.IRMem(elem), items.get(i)));
         }
