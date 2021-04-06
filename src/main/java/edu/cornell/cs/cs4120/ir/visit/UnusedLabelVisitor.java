@@ -41,11 +41,11 @@ public class UnusedLabelVisitor extends IRVisitor {
 	}
 	
 	public void markUnusedLabels() {
-		Set<String> inUseLabels = labelMap.keySet();
-		inUseLabels.retainAll(labelsInUse);
+		Set<String> labelsToKeep = labelMap.keySet();
+		labelsToKeep.retainAll(labelsInUse);
 		
-		for(String inUseLabel : inUseLabels) {
-			labelMap.get(inUseLabel).setUsed(true);
+		for(String labelToKeep : labelsToKeep) {
+			labelMap.get(labelToKeep).setUsed(true);
 		}
 	}
 	
