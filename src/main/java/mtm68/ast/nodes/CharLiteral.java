@@ -36,7 +36,7 @@ public class CharLiteral extends Literal<Character>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
-		return copyAndSetIRExpr(irFactory.IRConst(value));
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		return copyAndSetIRExpr(inf.IRConst(value));
 	}
 }

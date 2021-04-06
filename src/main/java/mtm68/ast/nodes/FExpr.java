@@ -68,15 +68,15 @@ public class FExpr extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		String sym = cv.getFuncSymbol(this);
-		IRName name = irFactory.IRName(sym);
+		IRName name = inf.IRName(sym);
 		List<IRExpr> irArgs = args.stream()
 								.map(Expr::getIRExpr)
 								.collect(Collectors.toList());
 
-		IRCallStmt call = irFactory.IRCallStmt(name, irArgs);
-		IRESeq eseq = irFactory.IRESeq(call, irFactory.IRTemp(cv.retVal(0)));
+		IRCallStmt call = inf.IRCallStmt(name, irArgs);
+		IRESeq eseq = inf.IRESeq(call, inf.IRTemp(cv.retVal(0)));
 		return copyAndSetIRExpr(eseq);
 	}
 }

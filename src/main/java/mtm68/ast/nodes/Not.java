@@ -48,10 +48,10 @@ public class Not extends UnExpr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		// NOT(e) = XOR(1, e)
-		IRExpr left = irFactory.IRConst(1);
-		IRBinOp op = irFactory.IRBinOp(OpType.XOR, left, expr.getIRExpr());
+		IRExpr left = inf.IRConst(1);
+		IRBinOp op = inf.IRBinOp(OpType.XOR, left, expr.getIRExpr());
 		return copyAndSetIRExpr(op);
 	}
 }

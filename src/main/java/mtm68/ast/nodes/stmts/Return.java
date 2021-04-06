@@ -63,11 +63,11 @@ public class Return extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		List<IRExpr> rets = retList.stream()
 								   .map(Expr::getIRExpr)
 								   .collect(Collectors.toList());
 		
-		return copyAndSetIRStmt(irFactory.IRReturn(rets));
+		return copyAndSetIRStmt(inf.IRReturn(rets));
 	}
 }

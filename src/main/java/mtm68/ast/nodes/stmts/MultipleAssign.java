@@ -112,14 +112,14 @@ public class MultipleAssign extends Assign {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		
 		String sym = cv.getFuncSymbol(rhs);
-		IRName name = irFactory.IRName(sym);
+		IRName name = inf.IRName(sym);
 		List<IRExpr> irArgs = rhs.getArgs().stream()
 								.map(Expr::getIRExpr)
 								.collect(Collectors.toList());
-		IRCallStmt call = irFactory.IRCallStmt(name, irArgs);	
+		IRCallStmt call = inf.IRCallStmt(name, irArgs);	
 
 		List<IRStmt> stmts = ArrayUtils.empty();
 		stmts.add(call);
@@ -127,14 +127,14 @@ public class MultipleAssign extends Assign {
 		for(int i=0; i < decls.size(); i++) {
 			String retValue = cv.retVal(i);
 			decls.get(i).ifPresent(decl -> {
-				IRMove mov = irFactory.IRMove(
-						irFactory.IRTemp(cv.newTemp(decl.getId())),
-						irFactory.IRTemp(retValue)
+				IRMove mov = inf.IRMove(
+						inf.IRTemp(cv.newTemp(decl.getId())),
+						inf.IRTemp(retValue)
 					);
 				stmts.add(mov);
 			});
 		}
 
-		return copyAndSetIRStmt(irFactory.IRSeq(stmts));
+		return copyAndSetIRStmt(inf.IRSeq(stmts));
 	}
 }

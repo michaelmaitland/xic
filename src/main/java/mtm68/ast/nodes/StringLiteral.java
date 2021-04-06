@@ -42,10 +42,10 @@ public class StringLiteral extends Literal<String>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		List<IRExpr> items = ArrayUtils.stringToCharList(value)
 							.stream()
-							.map(ch -> irFactory.IRConst(ch))
+							.map(ch -> inf.IRConst(ch))
 							.collect(Collectors.toList());
 		
 		IRESeq eseq = cv.allocateAndInitArray(items);

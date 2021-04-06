@@ -59,7 +59,7 @@ public class ArrayInit extends Expr {
 	}
 
 	@Override
-    public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+    public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		
 		List<IRExpr> elems = items.stream()
 								  .map(Expr::getIRExpr)

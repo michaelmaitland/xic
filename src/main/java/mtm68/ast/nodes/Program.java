@@ -69,7 +69,7 @@ public class Program extends Node implements Root {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		/** Not part of IR rep */
 		return this;
 	}

@@ -102,8 +102,8 @@ public class Block extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
-		IRSeq seq = irFactory.IRSeq(getStmtsIncludingReturn()
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		IRSeq seq = inf.IRSeq(getStmtsIncludingReturn()
 								.stream()
 								.map(Statement::getIRStmt)
 								.collect(Collectors.toList()));

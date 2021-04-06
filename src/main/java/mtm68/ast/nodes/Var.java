@@ -45,8 +45,8 @@ public class Var extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		String t = cv.newTemp(id);
-		return copyAndSetIRExpr(irFactory.IRTemp(t));
+		return copyAndSetIRExpr(inf.IRTemp(t));
 	}
 }

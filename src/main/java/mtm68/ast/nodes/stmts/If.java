@@ -100,16 +100,16 @@ public class If extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 
 		String trueLabel = cv.getFreshLabel();
 		String falseLabel = cv.getFreshLabel();
 		
-		IRSeq seq = irFactory.IRSeq(
+		IRSeq seq = inf.IRSeq(
 					cv.getCtrlFlow(condition, trueLabel, falseLabel),
-					irFactory.IRLabel(trueLabel),
+					inf.IRLabel(trueLabel),
 					ifBranch.getIRStmt(),
-					irFactory.IRLabel(falseLabel)
+					inf.IRLabel(falseLabel)
 					);
 		elseBranch.ifPresent(e -> seq.stmts().add(e.getIRStmt()));
 

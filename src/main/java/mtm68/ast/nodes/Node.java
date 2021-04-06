@@ -47,7 +47,7 @@ public abstract class Node implements HasLocation, Cloneable {
 
 	public abstract Node typeCheck(TypeChecker tc);
 
-	public abstract Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory);
+	public abstract Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf);
 
 	/**
 	 * Accepts a visitor

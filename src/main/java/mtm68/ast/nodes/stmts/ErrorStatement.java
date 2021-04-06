@@ -37,7 +37,7 @@ public class ErrorStatement extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		/* No IR info needed */
 		return this;
 	}

@@ -41,7 +41,7 @@ public class Use extends Node {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		/** There is no conversion to be done */
 		return this;
 	}

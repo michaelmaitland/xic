@@ -70,18 +70,18 @@ public class While extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		String header = cv.getFreshLabel();
 		String trueLabel = cv.getFreshLabel();
 		String falseLabel = cv.getFreshLabel();
 
-		IRSeq seq = irFactory.IRSeq(
-			irFactory.IRLabel(header),
+		IRSeq seq = inf.IRSeq(
+			inf.IRLabel(header),
 			cv.getCtrlFlow(condition, trueLabel, falseLabel),
-			irFactory.IRLabel(trueLabel),
+			inf.IRLabel(trueLabel),
 			body.getIRStmt(),
-			irFactory.IRJump(irFactory.IRName(header)),
-		    irFactory.IRLabel(falseLabel)
+			inf.IRJump(inf.IRName(header)),
+		    inf.IRLabel(falseLabel)
 		);
 		
 		return copyAndSetIRStmt(seq);

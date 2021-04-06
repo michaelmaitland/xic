@@ -30,9 +30,9 @@ public class BoolLiteral extends Literal<Boolean>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		long constVal = value ? 1L : 0L;
 		
-		return copyAndSetIRExpr(irFactory.IRConst(constVal));
+		return copyAndSetIRExpr(inf.IRConst(constVal));
 	}
 }

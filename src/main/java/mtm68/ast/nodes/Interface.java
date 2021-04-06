@@ -59,7 +59,7 @@ public class Interface extends Node implements Root {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory inf) {
 		/* There is no IR Node for an interface */
 		return this;
 	}

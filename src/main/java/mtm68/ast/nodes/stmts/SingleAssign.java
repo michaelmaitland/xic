@@ -80,34 +80,34 @@ public class SingleAssign extends Assign {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		if(lhs instanceof Var) {
 			Var var = (Var)lhs;
-			IRMove move = irFactory.IRMove(var.getIRExpr(), rhs.getIRExpr());
+			IRMove move = inf.IRMove(var.getIRExpr(), rhs.getIRExpr());
 			return copyAndSetIRStmt(move);
 		} else if (lhs instanceof ArrayIndex) {
-			IRSeq seq = convertArrayIndexAssign(cv, irFactory, (ArrayIndex)lhs);
+			IRSeq seq = convertArrayIndexAssign(cv, inf, (ArrayIndex)lhs);
 			return copyAndSetIRStmt(seq);
 		} else if (lhs instanceof SimpleDecl) {
 			SimpleDecl decl = (SimpleDecl)lhs;
-			IRMove move = irFactory.IRMove(irFactory.IRTemp(cv.newTemp(decl.getId())), rhs.getIRExpr());
+			IRMove move = inf.IRMove(inf.IRTemp(cv.newTemp(decl.getId())), rhs.getIRExpr());
 			return copyAndSetIRStmt(move);
 		} else {
 			throw new InternalCompilerException();
 		}
 	}
 	
-	public IRSeq convertArrayIndexAssign(NodeToIRNodeConverter cv, IRNodeFactory irFactory, ArrayIndex ai) {
-		IRTemp tempArr = irFactory.IRTemp(cv.newTemp());
-		IRTemp tempIndex = irFactory.IRTemp(cv.newTemp());
+	public IRSeq convertArrayIndexAssign(NodeToIRNodeConverter cv, IRNodeFactory inf, ArrayIndex ai) {
+		IRTemp tempArr = inf.IRTemp(cv.newTemp());
+		IRTemp tempIndex = inf.IRTemp(cv.newTemp());
 		
 		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
 
-		return irFactory.IRSeq(
-			irFactory.IRMove(tempArr, ai.getArr().getIRExpr()),
-			irFactory.IRMove(tempIndex, ai.getIndex().getIRExpr()),
+		return inf.IRSeq(
+			inf.IRMove(tempArr, ai.getArr().getIRExpr()),
+			inf.IRMove(tempIndex, ai.getIndex().getIRExpr()),
 			cv.boundsCheck(tempArr, tempIndex),
-		    irFactory.IRMove(offsetIntoArr, rhs.getIRExpr())
+		    inf.IRMove(offsetIntoArr, rhs.getIRExpr())
 		);
 	}
 }

@@ -48,10 +48,10 @@ public class Negate extends UnExpr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		// NEG(e) = SUB(0,e)
-		IRExpr left = irFactory.IRConst(0);
-		IRBinOp op = irFactory.IRBinOp(OpType.SUB, left, expr.getIRExpr());
+		IRExpr left = inf.IRConst(0);
+		IRBinOp op = inf.IRBinOp(OpType.SUB, left, expr.getIRExpr());
 		return copyAndSetIRExpr(op);
 	}
 }

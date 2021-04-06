@@ -83,8 +83,8 @@ public class BinExpr extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
-		IRBinOp node = irFactory.IRBinOp(op.convertToOpType(), left.getIRExpr(), right.getIRExpr());
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		IRBinOp node = inf.IRBinOp(op.convertToOpType(), left.getIRExpr(), right.getIRExpr());
 		return copyAndSetIRExpr(node);
 	}
 }

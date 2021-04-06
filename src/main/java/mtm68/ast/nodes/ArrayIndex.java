@@ -64,18 +64,18 @@ public class ArrayIndex extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory irFactory) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		
-		IRTemp tempArr = irFactory.IRTemp(cv.newTemp());
-		IRTemp tempIndex = irFactory.IRTemp(cv.newTemp());
+		IRTemp tempArr = inf.IRTemp(cv.newTemp());
+		IRTemp tempIndex = inf.IRTemp(cv.newTemp());
 		
-		IRSeq seq = irFactory.IRSeq(
-				irFactory.IRMove(tempArr, arr.getIRExpr()),
-				irFactory.IRMove(tempIndex, index.getIRExpr()),
+		IRSeq seq = inf.IRSeq(
+				inf.IRMove(tempArr, arr.getIRExpr()),
+				inf.IRMove(tempIndex, index.getIRExpr()),
 				cv.boundsCheck(tempArr, tempIndex));
 		
 		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
-		IRESeq eseq = irFactory.IRESeq(seq, offsetIntoArr);
+		IRESeq eseq = inf.IRESeq(seq, offsetIntoArr);
 
 		return copyAndSetIRExpr(eseq);
 	}
