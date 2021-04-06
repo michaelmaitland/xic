@@ -188,7 +188,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		} else if(type instanceof BoolType) {
 			return "b";
 		} else if (type instanceof ArrayType) {
-			return "a";
+			return "a" + encodeType(((ArrayType) type).getType());
 		} else {
 			throw new FatalTypeException();
 		}
