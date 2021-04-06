@@ -14,6 +14,7 @@ import static mtm68.util.NodeTestUtil.intLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashMap;
 import java.util.List;
@@ -73,11 +74,19 @@ public class NodeToIRNodeConverterTests {
 		
 		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, newAi.getIRExpr());
 		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, eseq.stmt());
-		assertEquals(4, seq.stmts().size());
+		
+		/*
+		 * 3 for:  moving arr expr into temp
+		 *		   moving index expr into temp
+		 *         bounds check 
+		 */
+		assertEquals(3, seq.stmts().size());
 		assertInstanceOf(IRMove.class, seq.stmts().get(0)); 
 		assertInstanceOf(IRMove.class, seq.stmts().get(1)); 
-		assertInstanceOf(IRCJump.class, seq.stmts().get(2)); 
-		assertInstanceOf(IRLabel.class, seq.stmts().get(3)); 
+		IRSeq boundsCheck = assertInstanceOfAndReturn(IRSeq.class, seq.stmts().get(2)); 
+		assertInstanceOf(IRCJump.class, boundsCheck.stmts().get(0)); 
+		assertInstanceOf(IRLabel.class, boundsCheck.stmts().get(1)); 
+
 		assertInstanceOf(IRMem.class, eseq.expr());
 	}
 
@@ -120,6 +129,15 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// ArrayLength
 	//-------------------------------------------------------------------------------- 
+	@Test
+	public void testArrayLength() {
+		fail();
+	}
+	
+	@Test
+	public void testArrayLengthWhenArrNotInit() {
+		fail();
+	}
 	
 	//-------------------------------------------------------------------------------- 
 	// BoolLiteral
@@ -202,7 +220,7 @@ public class NodeToIRNodeConverterTests {
 		Var newVar = doConversion(var);
 
 		IRTemp t = assertInstanceOfAndReturn(IRTemp.class, newVar.getIRExpr());
-		assertEquals("x", t.name());
+		assertEquals("_tx", t.name());
 	}
 	
 
@@ -396,36 +414,51 @@ public class NodeToIRNodeConverterTests {
 	
 	@Test
 	public void testProcedureCallNoArgs() {
-		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
-		ProcedureCall newStmt = doConversion(stmt);
 		
-		IRExp exp = assertInstanceOfAndReturn(IRExp.class, newStmt.getIRStmt());
-		IRCall call = assertInstanceOfAndReturn(IRCall.class, exp.expr());
+		Map<String, String> funcAndProcEncodings = new HashMap<>();
+		funcAndProcEncodings.put("f", "f");
+		
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
+		ProcedureCall newStmt = doConversion(funcAndProcEncodings, stmt);
+		
+		IRCallStmt call = assertInstanceOfAndReturn(IRCallStmt.class, newStmt.getIRStmt());
 		IRName name = assertInstanceOfAndReturn(IRName.class, call.target());
 		assertEquals("f", name.name());
+		
+		assertEquals(0, call.args().size());
 	}
 	
 	@Test
 	public void testProcedureCallOneArg() {
+		
+		Map<String, String> funcAndProcEncodings = new HashMap<>();
+		funcAndProcEncodings.put("f", "f");
+		
 		ProcedureCall stmt = new ProcedureCall(new FExpr("f", elems(intLit(0L))));
-		ProcedureCall newStmt = doConversion(stmt);
+		ProcedureCall newStmt = doConversion(funcAndProcEncodings, stmt);
 
-		IRExp exp = assertInstanceOfAndReturn(IRExp.class, newStmt.getIRStmt());
-		IRCall call = assertInstanceOfAndReturn(IRCall.class, exp.expr());
+		IRCallStmt call = assertInstanceOfAndReturn(IRCallStmt.class, newStmt.getIRStmt());
 		IRName name = assertInstanceOfAndReturn(IRName.class, call.target());
 		assertEquals("f", name.name());
+		
+		assertEquals(1, call.args().size());
 	}
 
 	@Test
 	public void testProcedureCallMultiArg() {
+		
+		Map<String, String> funcAndProcEncodings = new HashMap<>();
+		funcAndProcEncodings.put("f", "f");
+		
 		ProcedureCall stmt = new ProcedureCall(new FExpr("f",
 						elems(intLit(0L), arbitraryCondition())));
-		ProcedureCall newStmt = doConversion(stmt);
+		ProcedureCall newStmt = doConversion(funcAndProcEncodings, stmt);
 
-		IRExp exp = assertInstanceOfAndReturn(IRExp.class, newStmt.getIRStmt());
-		IRCall call = assertInstanceOfAndReturn(IRCall.class, exp.expr());
+		IRCallStmt call = assertInstanceOfAndReturn(IRCallStmt.class, newStmt.getIRStmt());
 		IRName name = assertInstanceOfAndReturn(IRName.class, call.target());
 		assertEquals("f", name.name());
+
+		assertEquals(2, call.args().size());
 	}
 	
 	//-------------------------------------------------------------------------------- 
