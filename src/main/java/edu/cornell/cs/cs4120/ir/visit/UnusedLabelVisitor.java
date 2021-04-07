@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRCompUnit;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRNode;
@@ -45,10 +47,20 @@ public class UnusedLabelVisitor extends IRVisitor {
 		labelsInUse.addAll(filtered);
 	}
 	
+	@Override
+	protected IRVisitor enter(IRNode parent, IRNode n) {
+		if(n instanceof IRSeq) {
+			labelMap.clear();
+			labelsInUse.clear();
+		}
+
+		return this;
+	}
+	
 	public void markUnusedLabels() {
-		Set<String> labelsToKeep = labelMap.keySet();
+		Set<String> labelsToKeep = new HashSet<>(labelMap.keySet());
 		labelsToKeep.retainAll(labelsInUse);
-		
+
 		for(String labelToKeep : labelsToKeep) {
 			labelMap.get(labelToKeep).setUsed(true);
 		}
@@ -66,7 +78,9 @@ public class UnusedLabelVisitor extends IRVisitor {
 				|| n instanceof IRCJump
 				|| n instanceof IRCallStmt
 				|| n instanceof IRLabel
-				|| n instanceof IRSeq;
+				|| n instanceof IRSeq
+				|| n instanceof IRCompUnit
+				|| n instanceof IRFuncDefn;
 	}
 	
 	@Override

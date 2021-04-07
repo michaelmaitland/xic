@@ -609,13 +609,13 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 
 	private <N extends Node> N doConversion(N node) {
-		NodeToIRNodeConverter conv = new NodeToIRNodeConverter(new IRNodeFactory_c());
+		NodeToIRNodeConverter conv = new NodeToIRNodeConverter("test", new IRNodeFactory_c());
 		addLocs(node);
 		return conv.performConvertToIR(node);
 	}
 	
 	private <N extends Node> N doConversion(Map<String, String> funcAndProcEncodings, N node) {
-		NodeToIRNodeConverter conv = new NodeToIRNodeConverter(funcAndProcEncodings, new IRNodeFactory_c());
+		NodeToIRNodeConverter conv = new NodeToIRNodeConverter("test", funcAndProcEncodings, new IRNodeFactory_c());
 		addLocs(node);
 		return conv.performConvertToIR(node);
 	}

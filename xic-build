@@ -16,17 +16,17 @@ echo "generating new Parser.java and Sym.java"
 ./cup -destdir ${ROOT_DIR}/src/main/java/mtm68/parser -parser Parser ${ROOT_DIR}/src/main/java/mtm68/parser/xi.cup
 
 # ir jflex and cup
-echo "removing existing IRLexer.java"
-rm -f ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/IRLexer.java
-echo "generating new IRLexer.java"
-${ROOT_DIR}/lib/jflex-1.8.2/bin/jflex ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/ir.flex
-echo "removing existing IRSym.java"
-rm -f ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/IRSym.java
-echo "removing existing IRParser.java"
-rm -f ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/IRParser.java
-echo "generating new IRParser.java and IRSym.java"
-./cup -destdir ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse -symbols IRSym -parser IRParser ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/ir.cup
-
+# echo "removing existing IRLexer.java"
+# rm -f ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/IRLexer.java
+# echo "generating new IRLexer.java"
+# ${ROOT_DIR}/lib/jflex-1.8.2/bin/jflex ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/ir.flex
+# echo "removing existing IRSym.java"
+# rm -f ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/IRSym.java
+# echo "removing existing IRParser.java"
+# rm -f ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/IRParser.java
+# echo "generating new IRParser.java and IRSym.java"
+# ./cup -destdir ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse -symbols IRSym -parser IRParser ${ROOT_DIR}/src/main/java/edu/cornell/cs/cs4120/ir/parse/ir.cup
+# 
 # Dependencies
 mvn install:install-file \
    -Dfile=${ROOT_DIR}/lib/jflex-1.8.2/lib/jflex-full-1.8.2.jar \

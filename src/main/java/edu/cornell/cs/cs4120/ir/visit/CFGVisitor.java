@@ -3,6 +3,7 @@ package edu.cornell.cs.cs4120.ir.visit;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import mtm68.ir.cfg.CFGBuilder;
 
 public class CFGVisitor extends IRVisitor {
@@ -11,7 +12,13 @@ public class CFGVisitor extends IRVisitor {
 
 	public CFGVisitor(IRNodeFactory inf) {
 		super(inf);
-		builder = new CFGBuilder();
+	}
+	
+	@Override
+	protected IRVisitor enter(IRNode parent, IRNode n) {
+		if(n instanceof IRSeq) builder = new CFGBuilder();
+
+		return this;
 	}
 	
 	protected IRNode leave(IRNode parent, IRNode n, IRNode n_, IRVisitor v_) {

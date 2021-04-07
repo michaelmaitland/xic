@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,13 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
+import edu.cornell.cs.cs4120.ir.IRNode;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Interface;
@@ -40,6 +48,7 @@ import mtm68.parser.Parser;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
 import mtm68.visit.FunctionCollector;
+import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 
 public class Main {
@@ -122,6 +131,47 @@ public class Main {
 		    }
 		});
 		
+		Map<String, Program> programs = getValidPrograms(symTableManager);
+		
+		IRNodeFactory nodeFactory = new IRNodeFactory_c();
+		for(String programName : programs.keySet()) {
+			Program program = programs.get(programName);
+
+			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory);
+			Lowerer lowerer = new Lowerer(nodeFactory);
+			IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
+			CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
+			UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
+			
+			program = irConverter.performConvertToIR(program);
+
+			IRNode irRoot = lowerer.visit(program.getIrCompUnit());
+
+			if(shouldOptimize()) irRoot = constFolder.visit(irRoot);
+
+			irRoot = cfgVisitor.visit(irRoot);
+			irRoot = unusedLabelVisitor.visit(irRoot);
+			
+			if(outputIR) {
+				// TODO: output IR
+				CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+				irRoot.printSExp(codeWriter);
+				codeWriter.flush();
+			}
+			
+			if(interpretIR) {
+				// TODO: run the IR
+			}
+		}
+	}
+	
+	private boolean shouldOptimize() {
+		return !doNotOptimize;
+	}
+	
+	public Map<String, Program> getValidPrograms(SymbolTableManager symTableManager) throws IOException {
+		Map<String, Program> validPrograms = new HashMap<>();
+
 		for (String filename : sourceFiles) {
 			//Check valid file and file exists
 			if(!filename.endsWith(".xi") && !filename.endsWith(".ixi")) {
@@ -176,6 +226,10 @@ public class Main {
 						writeToFile(filename, 
 							typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
 					}
+					
+					if(!typeChecker.hasError()) {
+						validPrograms.put(filename, (Program)root);
+					}
 				}
 				catch(SemanticException e) {
 					SemanticError error = new SemanticError(e.getErrorNode(), e.getMessage());
@@ -189,6 +243,8 @@ public class Main {
 			}	
 			
 		}
+		
+		return validPrograms;
 	}
 	
 

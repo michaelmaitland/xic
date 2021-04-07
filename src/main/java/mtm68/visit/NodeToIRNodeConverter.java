@@ -9,6 +9,7 @@ import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCall;
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
@@ -38,6 +39,8 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
 
 public class NodeToIRNodeConverter extends Visitor {
+	
+	private String programName;
 
 	private int labelCounter;
 	
@@ -57,12 +60,13 @@ public class NodeToIRNodeConverter extends Visitor {
 	private static final String MALLOC_LABEL = "_xi_alloc";
 	
 	private static final int WORD_SIZE = 8;
-	
-	public NodeToIRNodeConverter(IRNodeFactory inf) {
-		this(new HashMap<>(), inf);
+
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
+		this(programName, new HashMap<>(), inf);
 	}
 	
-	public NodeToIRNodeConverter(Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
+	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
+		this.programName = programName;
 		this.labelCounter = 0;
 		this.tmpCounter = 0;
 		this.funcAndProcEncodings = funcAndProcEncodings;
@@ -128,7 +132,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * Returns an encoding of a function or procedure
 	 * using the encoding defined in the Xi ABI.
 	 */
-	public String getFuncSymbol(FunctionDecl functionDecl) {
+	public String saveAndGetFuncSymbol(FunctionDecl functionDecl) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("_I");
 		sb.append(encodeFuncName(functionDecl.getId()));
@@ -295,7 +299,9 @@ public class NodeToIRNodeConverter extends Visitor {
         List<IRStmt> seq = ArrayUtils.empty();
 
         // alloc array and move addr into temp and store length of array
-		seq.add(inf.IRMove(arrBase, new IRCall(malloc, sizeOfArrAndLen)));
+        IRCallStmt allocStmt = inf.IRCallStmt(malloc, ArrayUtils.singleton(sizeOfArrAndLen));
+        seq.add(allocStmt);
+		seq.add(inf.IRMove(arrBase, inf.IRTemp(retVal(0))));
 		seq.add(inf.IRMove(inf.IRMem(arrBase), inf.IRConst(items.size())));
         
         // put items in their index
@@ -308,5 +314,13 @@ public class NodeToIRNodeConverter extends Visitor {
         IRBinOp startOfArr = inf.IRBinOp(OpType.ADD, arrBase, inf.IRConst(getWordSize()));
         
         return inf.IRESeq(inf.IRSeq(seq), startOfArr);
+	}
+	
+	/**
+	 * Gets the program name
+	 * @return
+	 */
+	public String getProgramName() {
+		return programName;
 	}
 }

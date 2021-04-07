@@ -3,8 +3,8 @@ package mtm68.ir;
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.*;
 import static mtm68.ir.IRTestUtils.*;
 import static mtm68.util.ArrayUtils.*;
+import static mtm68.util.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static mtm68.ir.TestUtils.*;
 
 import java.util.List;
 

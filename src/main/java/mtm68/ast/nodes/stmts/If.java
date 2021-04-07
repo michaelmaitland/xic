@@ -1,14 +1,17 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.List;
 import java.util.Optional;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -105,13 +108,16 @@ public class If extends Statement {
 		String trueLabel = cv.getFreshLabel();
 		String falseLabel = cv.getFreshLabel();
 		
-		IRSeq seq = inf.IRSeq(
+		List<IRStmt> stmts = ArrayUtils.elems(
 					cv.getCtrlFlow(condition, trueLabel, falseLabel),
 					inf.IRLabel(trueLabel),
 					ifBranch.getIRStmt(),
 					inf.IRLabel(falseLabel)
-					);
-		elseBranch.ifPresent(e -> seq.stmts().add(e.getIRStmt()));
+				);
+		
+		elseBranch.ifPresent(e -> stmts.add(e.getIRStmt()));
+
+		IRSeq seq = inf.IRSeq(stmts);
 
 		return copyAndSetIRStmt(seq);
 	}

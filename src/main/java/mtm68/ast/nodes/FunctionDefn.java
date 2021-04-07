@@ -73,7 +73,7 @@ public class FunctionDefn extends Node {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 
-		String funcName = cv.getFuncSymbol(functionDecl);
+		String funcName = cv.saveAndGetFuncSymbol(functionDecl);
 		IRSeq seq = inf.IRSeq(body.getIRStmt());
 		IRFuncDefn defn = inf.IRFuncDefn(funcName, seq);
 				
