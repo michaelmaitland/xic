@@ -5,6 +5,7 @@ import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Expr;
@@ -13,7 +14,6 @@ import mtm68.ast.nodes.Var;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
-import mtm68.exception.InternalCompilerException;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -93,7 +93,7 @@ public class SingleAssign extends Assign {
 			IRMove move = inf.IRMove(inf.IRTemp(cv.newTemp(decl.getId())), rhs.getIRExpr());
 			return copyAndSetIRStmt(move);
 		} else {
-			throw new InternalCompilerException();
+			throw new InternalCompilerError("Failed to convert to IR for Single Assign");
 		}
 	}
 	

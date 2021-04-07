@@ -19,6 +19,7 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
@@ -33,9 +34,8 @@ import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
 import mtm68.ast.types.Type;
-import mtm68.exception.FatalTypeException;
-import mtm68.exception.InternalCompilerException;
 import mtm68.util.ArrayUtils;
+import mtm68.util.Debug;
 
 public class NodeToIRNodeConverter extends Visitor {
 
@@ -72,7 +72,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	public <N extends Node> N performConvertToIR(N root) {
 		try {
 			return root.accept(this);
-		} catch(FatalTypeException e) {
+		} catch(InternalCompilerError e) {
+			if(Debug.DEBUG_ON) {
+				e.printStackTrace();
+			}
 		}
 		return root;
 	}
@@ -147,13 +150,13 @@ public class NodeToIRNodeConverter extends Visitor {
 	/**
 	 * Returns an encoding of a procedure using the encoding defined in the Xi ABI.
 	 * 
-	 * @throws InternalCompilerException if the symbol has not yet been defined.
+	 * @throws InternalCompilerError if the symbol has not yet been defined.
 	 */
 	public String getFuncSymbol(FExpr expr) {
 		String enc = this.funcAndProcEncodings.get(expr.getId());
 		
 		if(enc == null) {
-			throw new InternalCompilerException();
+			throw new InternalCompilerError("Failed to  get function symbol: " + expr.getId());
 		}
 		
 		return enc;
@@ -190,7 +193,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		} else if (type instanceof ArrayType) {
 			return "a" + encodeType(((ArrayType) type).getType());
 		} else {
-			throw new FatalTypeException();
+			throw new InternalCompilerError("Couldn't encode type: " + type);
 		}
 	}
 	
@@ -297,7 +300,7 @@ public class NodeToIRNodeConverter extends Visitor {
         
         // put items in their index
         for(int i=0; i < items.size(); i++) {
-			IRBinOp offset = inf.IRBinOp(OpType.MUL, new IRConst(i), new IRConst(getWordSize()));
+			IRBinOp offset = inf.IRBinOp(OpType.MUL, new IRConst(i + 1), new IRConst(getWordSize()));
             IRBinOp elem = inf.IRBinOp(OpType.ADD, arrBase, offset); 
             seq.add(inf.IRMove(inf.IRMem(elem), items.get(i)));
         }
