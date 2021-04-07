@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +27,6 @@ import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.types.ContextType;
-import mtm68.ast.types.TypingContext;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
 import mtm68.exception.SemanticException;
@@ -57,6 +55,12 @@ public class Main {
 	
 	@Option(name = "--typecheck", usage = "saves result of typechecking AST generated from source file to <filename>.typed")
 	private boolean outputTypeCheck;
+	
+	@Option(name = "--irgen", usage = "saves IR representation of AST generated from source file to <filename>.ir")
+	private boolean outputIR;
+	
+	@Option(name = "--irrun", usage = "generates and interprets IR code")
+	private boolean interpretIR;
 
 	@Option(name = "--debug", usage = "turns on debug output", hidden = true)
 	private boolean debug;
@@ -69,6 +73,9 @@ public class Main {
 	
 	@Option(name = "-libpath", usage = "specify path to library interface files")
 	private Path libPath = Paths.get(System.getProperty("user.dir"));
+	
+	@Option(name = "-O", usage = "disable optimizations")
+	private boolean doNotOptimize;
 
 	@Argument
 	private List<String> sourceFiles = new ArrayList<>();

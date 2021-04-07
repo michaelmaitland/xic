@@ -1,5 +1,6 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -36,12 +37,12 @@ public class Use extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		return null;
+		return this;
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		/** There is no conversion to be done */
+		return this;
 	}
 }

@@ -1,7 +1,14 @@
 package mtm68.ast.nodes;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.util.StringUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -35,8 +42,13 @@ public class StringLiteral extends Literal<String>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		List<IRExpr> items = ArrayUtils.stringToCharList(value)
+							.stream()
+							.map(ch -> inf.IRConst(ch))
+							.collect(Collectors.toList());
+		
+		IRESeq eseq = cv.allocateAndInitArray(items);
+		return copyAndSetIRExpr(eseq);
 	}
 }

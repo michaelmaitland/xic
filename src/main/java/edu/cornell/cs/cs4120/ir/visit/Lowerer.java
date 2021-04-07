@@ -1,17 +1,16 @@
 package edu.cornell.cs.cs4120.ir.visit;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
-import edu.cornell.cs.cs4120.ir.IRESeq;
-import edu.cornell.cs.cs4120.ir.IRExp;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRReturn;
@@ -22,21 +21,18 @@ import mtm68.util.ArrayUtils;
 
 public class Lowerer extends IRVisitor {
 
+	private int numTempRegsMade = 0;
+	
 	public Lowerer(IRNodeFactory inf) {
 		super(inf);
 	}
 	
 	@Override
-	public IRVisitor enter(IRNode parent, IRNode n) {
-		return this;
-	}
-
-	@Override
 	public IRNode leave(IRNode parent, IRNode n, IRNode n_, IRVisitor v_) {		
 		return n_.lower(this);
 	}
 	
-	public IRNode prependSideEffectsToStmt(IRStmt stmt, List<IRStmt> sideEffects) {
+	public IRSeq prependSideEffectsToStmt(IRStmt stmt, List<IRStmt> sideEffects) {
 		sideEffects.add(stmt);
 		return new IRSeq(sideEffects);
 	}
@@ -90,52 +86,172 @@ public class Lowerer extends IRVisitor {
 		return new IRSeq(retStmts);
 	}
 	
-	public IRBinOp transformBinOpGeneral(OpType type, IRExpr left, IRExpr right) {
+	public IRBinOp transformBinOp(IRBinOp binOp) {
+		if(canCommute(binOp.left(), binOp.right())) 
+			return transformBinOpCommute(binOp);
+		else 
+			return transformBinOpGeneral(binOp);
+	}
+	
+	public IRBinOp transformBinOpGeneral(IRBinOp binOp) {
+		IRExpr left = binOp.left();
+		IRExpr right = binOp.right();
+		
 		List<IRStmt> sideEffects = new ArrayList<>();
 		sideEffects.addAll(left.getSideEffects());
 		
-		//TODO maybe commute case?
-		if(!right.getSideEffects().isEmpty()) { 
-			String tempName = getFreshTemp();
-			sideEffects.add(new IRMove(new IRTemp(tempName), left));
-			left = new IRTemp(tempName);
-		}
+		String tempName = getFreshTemp();
+		sideEffects.add(new IRMove(new IRTemp(tempName), left));
+		left = new IRTemp(tempName);
+		
 		sideEffects.addAll(right.getSideEffects());
-		IRBinOp newOp = new IRBinOp(type, left, right);
+		IRBinOp newOp = binOp.copy();
+		newOp.setLeft(left); 
 		newOp.setSideEffects(sideEffects);
 		return newOp;
 	}
 	
-	public IRBinOp transformBinOpCommute(OpType type, IRExpr left, IRExpr right) {
-		//TODO
-		return null;
+	public IRBinOp transformBinOpCommute(IRBinOp binOp) {
+		IRExpr left = binOp.left();
+		IRExpr right = binOp.right();
+		
+		List<IRStmt> sideEffects = new ArrayList<>();
+		sideEffects.addAll(left.getSideEffects());
+		sideEffects.addAll(right.getSideEffects());
+		
+		IRBinOp newOp = binOp.copy();
+		newOp.setSideEffects(sideEffects);
+		return newOp;
 	}
 	
-	public IRSeq transformMoveGeneral(IRExpr target, IRExpr source) {
+	public IRSeq transformMove(IRMove move) {
+		if(canCommute(move.target(), move.source()) || move.target() instanceof IRTemp)
+			return transformMoveCommute(move);
+		else
+			return transformMoveGeneral(move);
+	}
+	
+	public IRSeq transformMoveGeneral(IRMove move) {
+		IRExpr target = move.target();
+		IRExpr source = move.source();
+		
 		List<IRStmt> moveStmts = new ArrayList<>();
 		moveStmts.addAll(target.getSideEffects());
 		
-		//TODO maybe commute case?
-		if(!source.getSideEffects().isEmpty() && !(target instanceof IRTemp)) {
-			String tempName = getFreshTemp();
-			moveStmts.add(new IRMove(new IRTemp(getFreshTemp()), ((IRMem)target).expr()));
-			target = new IRMem(new IRTemp(tempName));
-		}
+		String tempName = getFreshTemp();
+		moveStmts.add(new IRMove(new IRTemp(tempName), ((IRMem)target).expr()));
+		target = new IRMem(new IRTemp(tempName));
+		
 		moveStmts.addAll(source.getSideEffects());
 		
-		IRMove newMove = new IRMove(target, source);
+		IRMove newMove = move.copy();
+		newMove.setTarget(target);
 		moveStmts.add(newMove);
 		
 		return new IRSeq(moveStmts);
 	}
 	
-	public IRSeq transformMoveCommute(IRExpr target, IRExpr source) {
-		//TODO
-		return null;
+	public IRSeq transformMoveCommute(IRMove move) {
+		IRExpr target = move.target();
+		IRExpr source = move.source();
+		
+		List<IRStmt> moveStmts = new ArrayList<>();
+		moveStmts.addAll(target.getSideEffects());
+		moveStmts.addAll(source.getSideEffects());
+		
+		moveStmts.add(move);	
+		
+		return new IRSeq(moveStmts);
 	}
 	
+	
+	// Need to make sure stmts in e2 dont write to temps in e1 expr
+	// If mem used in both, don't commute
+	private boolean canCommute(IRExpr e1, IRExpr e2) {
+		boolean e1UsesMem = usesMem(e1);
+
+		Set<String> exprTemps = new HashSet<>();
+		getExprTemps(exprTemps, e1);
+				
+		for(IRStmt stmt : e2.getSideEffects()) {
+			if(!canCommute(exprTemps, stmt) || e1UsesMem && writesToMem(stmt)) 
+				return false;
+		}
+		
+		return true;
+	}
+	
+	private boolean usesMem(IRExpr expr) {
+		if(expr instanceof IRBinOp) {
+			return usesMem(((IRBinOp) expr).left()) ||
+				usesMem(((IRBinOp) expr).right());
+		}
+		else if(expr instanceof IRCall) {
+			boolean targetMem = usesMem(((IRCall) expr).target());
+			for(IRExpr arg : ((IRCall) expr).args()) 
+				if(targetMem || usesMem(arg)) return true;
+			return false;
+		}
+		else if(expr instanceof IRMem) {
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean writesToMem(IRStmt stmt) {
+		if(stmt instanceof IRMove) {
+			IRMove move = (IRMove) stmt;
+			if(move.target() instanceof IRMem) {
+				return true;
+			}
+		}
+		else if(stmt instanceof IRSeq) {
+			for(IRStmt s : ((IRSeq) stmt).stmts()) {
+				if(writesToMem(s)) return true;
+			}
+		}
+		return false;
+	}
+		
+	private boolean canCommute(Set<String> exprTemps, IRStmt stmt) {
+		if(stmt instanceof IRMove) {
+			IRMove move = (IRMove) stmt;
+			if(move.target() instanceof IRTemp) {
+				IRTemp temp = (IRTemp) move.target();
+				if(exprTemps.contains(temp.name())) return false;
+			}
+		}
+		else if(stmt instanceof IRSeq) {
+			for(IRStmt s : ((IRSeq) stmt).stmts()) {
+				if(!canCommute(exprTemps, s)) return false;
+			}
+		}
+		//Conservatively assume function call will change a temp
+		else if(stmt instanceof IRCallStmt) {
+			return false;
+		}
+		return true;
+	}
+
+	private void getExprTemps(Set<String> temps, IRExpr expr){
+		if(expr instanceof IRBinOp) {
+			getExprTemps(temps, ((IRBinOp) expr).left());
+			getExprTemps(temps, ((IRBinOp) expr).right());
+		}
+		else if(expr instanceof IRCall) {
+			getExprTemps(temps, ((IRCall) expr).target());
+			for(IRExpr arg : ((IRCall) expr).args()) 
+				getExprTemps(temps, arg);
+		}
+		else if(expr instanceof IRTemp) {
+			temps.add(((IRTemp) expr).name());
+		}
+		else if(expr instanceof IRMem) {
+			getExprTemps(temps, ((IRMem) expr).expr());
+		}
+	}
+
 	private String getFreshTemp() {
-		//TODO
-		return "t";
+		return "_t" + (numTempRegsMade++);
 	}
 }

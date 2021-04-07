@@ -5,12 +5,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -104,8 +112,29 @@ public class MultipleAssign extends Assign {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		
+		String sym = cv.getFuncSymbol(rhs);
+		IRName name = inf.IRName(sym);
+		List<IRExpr> irArgs = rhs.getArgs().stream()
+								.map(Expr::getIRExpr)
+								.collect(Collectors.toList());
+		IRCallStmt call = inf.IRCallStmt(name, irArgs);	
+
+		List<IRStmt> stmts = ArrayUtils.empty();
+		stmts.add(call);
+		
+		for(int i=0; i < decls.size(); i++) {
+			String retValue = cv.retVal(i);
+			decls.get(i).ifPresent(decl -> {
+				IRMove mov = inf.IRMove(
+						inf.IRTemp(cv.newTemp(decl.getId())),
+						inf.IRTemp(retValue)
+					);
+				stmts.add(mov);
+			});
+		}
+
+		return copyAndSetIRStmt(inf.IRSeq(stmts));
 	}
 }

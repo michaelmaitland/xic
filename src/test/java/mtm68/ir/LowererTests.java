@@ -275,8 +275,9 @@ public class LowererTests {
 	}
 	
 	@Test
-	void lowerBinOpSideEffectsNoCommute() {
-		// ADD (ESEQ(LABEL(l); x), ESEQ(MOVE(x, y), CONST(1)))
+	void lowerBinOpSideEffectsNoCommute0() {
+		// e2 assigns to temp e1 uses
+		// ADD (ESEQ(LABEL(l); MEM[x]), ESEQ(MOVE(x, y), CONST(1)))
 		IRExpr left = new IRESeq(new IRLabel("l"), new IRMem(new IRTemp("x")));
 		IRExpr right = new IRESeq(new IRMove(new IRTemp("x") , new IRTemp("y")), new IRConst(1L));
 		IRBinOp add = new IRBinOp(IRBinOp.OpType.ADD, left, right);
@@ -296,8 +297,58 @@ public class LowererTests {
 	}
 	
 	@Test
-	void lowerBinOpSideEffectsCommute() {
-		fail("Not implemented");
+	void lowerBinOpSideEffectsNoCommute1() {
+		// e2 writes to a mem location, e1 reads from a mem location
+		// ADD (ESEQ(LABEL(l); MEM[w]), ESEQ(MOVE(MEM[z], y), 1))
+		IRExpr left = new IRESeq(new IRLabel("l"), new IRMem(new IRTemp("w")));
+		IRExpr right = new IRESeq(new IRMove(new IRMem(new IRTemp("z")) , new IRTemp("y")), new IRConst(1L));
+		IRBinOp add = new IRBinOp(IRBinOp.OpType.ADD, left, right);
+		IRBinOp lowered = assertInstanceOfAndReturn(IRBinOp.class, lowerNodeAndCheckCanonical(add));
+
+		// 1 for label, 1 for left move into temp, 1 for Move
+		assertEquals(3, lowered.getSideEffects().size());	
+		assertInstanceOfAndReturn(IRLabel.class, lowered.getSideEffects().get(0));
+		IRMove leftSave = assertInstanceOfAndReturn(IRMove.class, lowered.getSideEffects().get(1));
+		assertInstanceOfAndReturn(IRMove.class, lowered.getSideEffects().get(2));
+		
+		IRTemp savedLeftTemp = assertInstanceOfAndReturn(IRTemp.class, leftSave.target());
+		assertTrue(leftSave.source() instanceof IRMem);
+		
+		IRTemp leftTemp = assertInstanceOfAndReturn(IRTemp.class, lowered.left());
+		assertEquals(savedLeftTemp.name(), leftTemp.name());
+	}
+	
+	@Test
+	void lowerBinOpSideEffectsCommute0() {
+		// e2 doesn't write to a temp e1 uses
+		// ADD (ESEQ(LABEL(l); MEM[x]), ESEQ(MOVE(z, y), CONST(1)))
+		IRExpr left = new IRESeq(new IRLabel("l"), new IRMem(new IRTemp("x")));
+		IRExpr right = new IRESeq(new IRMove(new IRTemp("z") , new IRTemp("y")), new IRConst(1L));
+		IRBinOp add = new IRBinOp(IRBinOp.OpType.ADD, left, right);
+		IRBinOp lowered = assertInstanceOfAndReturn(IRBinOp.class, lowerNodeAndCheckCanonical(add));
+
+		// 1 for label, 0 for left move into temp, 1 for Move
+		assertEquals(2, lowered.getSideEffects().size());	
+		assertInstanceOfAndReturn(IRLabel.class, lowered.getSideEffects().get(0));
+		assertInstanceOfAndReturn(IRMove.class, lowered.getSideEffects().get(1));
+						
+		assertInstanceOfAndReturn(IRMem.class, lowered.left());
+	}
+	
+	@Test
+	void lowerBinOpSideEffectsCommute1() {
+		// e2 has no side effects
+		// ADD (ESEQ(LABEL(l); MEM[x]), CONST(1))
+		IRExpr left = new IRESeq(new IRLabel("l"), new IRMem(new IRTemp("x")));
+		IRExpr right = new IRConst(1L);
+		IRBinOp add = new IRBinOp(IRBinOp.OpType.ADD, left, right);
+		IRBinOp lowered = assertInstanceOfAndReturn(IRBinOp.class, lowerNodeAndCheckCanonical(add));
+
+		// 1 for label
+		assertEquals(1, lowered.getSideEffects().size());	
+		assertInstanceOfAndReturn(IRLabel.class, lowered.getSideEffects().get(0));
+						
+		assertInstanceOfAndReturn(IRMem.class, lowered.left());
 	}
 	
 	//-------------------------------------------------------------------------------- 
@@ -314,6 +365,7 @@ public class LowererTests {
 	
 	@Test
 	void lowerMoveSideEffectsNoCommute() {
+		// e2 writes to a temp that e1 reads from
 		IRMem target = new IRMem(new IRTemp("x"));
 		IRESeq src = new IRESeq(new IRMove(new IRTemp("x"), new IRTemp("y")), genericConst());
 		
@@ -334,8 +386,40 @@ public class LowererTests {
 	}
 	
 	@Test
-	void lowerMoveSideEffectsCommute() {
-		fail("Not implemented");
+	void lowerMoveSideEffectsCommute0() {
+		// e2 doesn't write to a temp e1 uses
+		IRMem target = new IRMem(new IRTemp("x"));
+		IRESeq src = new IRESeq(new IRMove(new IRTemp("z"), new IRTemp("y")), genericConst());
+		
+		IRMove move = new IRMove(target, src);
+		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(move));
+		
+		assertEquals(2, lowered.stmts().size());
+		
+		assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(0)); //Side effect move
+		IRMove newMove = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(1));
+
+		IRMem newMoveTarget = assertInstanceOfAndReturn(IRMem.class, newMove.target());
+		IRTemp newMoveTargetTemp = assertInstanceOfAndReturn(IRTemp.class, newMoveTarget.expr());
+		
+		assertEquals("x", newMoveTargetTemp.name());
+	}
+	
+	@Test
+	void lowerMoveSideEffectsCommute1() {
+		// target is a temp
+		IRTemp target = new IRTemp("x");
+		IRESeq src = new IRESeq(new IRMove(new IRTemp("x"), new IRTemp("y")), genericConst());
+		
+		IRMove move = new IRMove(target, src);
+		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(move));
+		
+		assertEquals(2, lowered.stmts().size());
+		
+		assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(0)); //Side effect move
+		IRMove newMove = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(1));
+
+		assertInstanceOfAndReturn(IRTemp.class, newMove.target());
 	}
 	
 	//-------------------------------------------------------------------------------- 
@@ -419,7 +503,6 @@ public class LowererTests {
 		
 		CheckCanonicalIRVisitor v = new CheckCanonicalIRVisitor();
 		v.visit(lowered);
-		
 		assertNull(v.noncanonical());
 		return lowered;
 	}

@@ -3,6 +3,7 @@ package mtm68.ast.nodes.stmts;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -76,7 +77,7 @@ public class ExtendedDecl extends Decl {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		// TODO Auto-generated method stub
 		return null;
 	}

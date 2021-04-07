@@ -11,7 +11,6 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.types.ContextType;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
-import mtm68.parser.ParseResult;
 
 public class FunctionCollector extends Visitor{
 

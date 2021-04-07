@@ -1,5 +1,7 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
@@ -21,7 +23,7 @@ public class SimpleDecl extends Decl {
 	public Type getType() {
 		return type;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "SimpleDecl [type=" + type + ", id=" + id + "]";
@@ -51,8 +53,11 @@ public class SimpleDecl extends Decl {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		/* This does not need an IR representation */
+		// or we could init as a temp containing const 0 zero:
+		 IRMove move = inf.IRMove(inf.IRTemp(cv.newTemp(id)), inf.IRConst(0L));
+		 return copyAndSetIRStmt(move);
+		//return this;
 	}
 }

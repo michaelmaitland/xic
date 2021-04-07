@@ -1,9 +1,9 @@
 package edu.cornell.cs.cs4120.ir;
 
-import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
  * An intermediate representation for a move statement
@@ -25,6 +25,10 @@ public class IRMove extends IRStmt {
 
     public IRExpr target() {
         return target;
+    }
+    
+    public void setTarget(IRExpr target) {
+    	this.target = target;
     }
 
     public IRExpr source() {
@@ -66,7 +70,6 @@ public class IRMove extends IRStmt {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		//TODO commute
-		return v.transformMoveGeneral(target, src);
+		return v.transformMove(this);
 	}
 }

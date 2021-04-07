@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
  * An intermediate representation for a function call
@@ -96,5 +97,10 @@ public class IRCall extends IRExpr_c {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return v.transformCall(target, args);
+	}
+
+	@Override
+	public IRNode constantFold(IRConstantFolder v) {
+		return this;
 	}
 }

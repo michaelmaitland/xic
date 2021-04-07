@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import java.util.List;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -58,8 +59,8 @@ public class Interface extends Node implements Root {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory inf) {
+		/* There is no IR Node for an interface */
+		return this;
 	}
 }

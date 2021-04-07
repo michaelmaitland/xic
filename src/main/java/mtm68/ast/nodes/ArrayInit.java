@@ -1,7 +1,11 @@
 package mtm68.ast.nodes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -55,8 +59,14 @@ public class ArrayInit extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		
+		List<IRExpr> elems = items.stream()
+								  .map(Expr::getIRExpr)
+								  .collect(Collectors.toList());
+
+		IRESeq eseq = cv.allocateAndInitArray(elems);
+
+        return copyAndSetIRExpr(eseq);
+    }
 }

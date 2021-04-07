@@ -1,17 +1,18 @@
 package edu.cornell.cs.cs4120.ir;
 
-import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
-/** An IR function declaration */
-public class IRFuncDecl extends IRNode_c {
+/** An IR function definition */
+public class IRFuncDefn extends IRNode_c {
     private String name;
     private IRStmt body;
 
-    public IRFuncDecl(String name, IRStmt body) {
+    public IRFuncDefn(String name, IRStmt body) {
         this.name = name;
         this.body = body;
     }
@@ -33,7 +34,7 @@ public class IRFuncDecl extends IRNode_c {
     public IRNode visitChildren(IRVisitor v) {
         IRStmt stmt = (IRStmt) v.visit(this, body);
 
-        if (stmt != body) return v.nodeFactory().IRFuncDecl(name, stmt);
+        if (stmt != body) return v.nodeFactory().IRFuncDefn(name, stmt);
 
         return this;
     }
@@ -68,6 +69,11 @@ public class IRFuncDecl extends IRNode_c {
 
 	@Override
 	public IRNode lower(Lowerer v) {
+		return this;
+	}
+
+	@Override
+	public IRNode constantFold(IRConstantFolder v) {
 		return this;
 	}
 }

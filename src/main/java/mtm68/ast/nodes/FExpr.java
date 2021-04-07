@@ -1,7 +1,13 @@
 package mtm68.ast.nodes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRName;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -62,8 +68,15 @@ public class FExpr extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		String sym = cv.getFuncSymbol(this);
+		IRName name = inf.IRName(sym);
+		List<IRExpr> irArgs = args.stream()
+								.map(Expr::getIRExpr)
+								.collect(Collectors.toList());
+
+		IRCallStmt call = inf.IRCallStmt(name, irArgs);
+		IRESeq eseq = inf.IRESeq(call, inf.IRTemp(cv.retVal(0)));
+		return copyAndSetIRExpr(eseq);
 	}
 }

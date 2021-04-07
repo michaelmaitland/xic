@@ -2,6 +2,8 @@ package mtm68.ast.nodes.stmts;
 
 import java.util.Optional;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -98,8 +100,19 @@ public class If extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+
+		String trueLabel = cv.getFreshLabel();
+		String falseLabel = cv.getFreshLabel();
+		
+		IRSeq seq = inf.IRSeq(
+					cv.getCtrlFlow(condition, trueLabel, falseLabel),
+					inf.IRLabel(trueLabel),
+					ifBranch.getIRStmt(),
+					inf.IRLabel(falseLabel)
+					);
+		elseBranch.ifPresent(e -> seq.stmts().add(e.getIRStmt()));
+
+		return copyAndSetIRStmt(seq);
 	}
 }

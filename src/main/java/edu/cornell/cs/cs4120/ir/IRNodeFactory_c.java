@@ -39,7 +39,7 @@ public class IRNodeFactory_c implements IRNodeFactory {
 
     @Override
     public IRCompUnit IRCompUnit(String name,
-            Map<String, IRFuncDecl> functions) {
+            Map<String, IRFuncDefn> functions) {
         return new IRCompUnit(name, functions);
     }
 
@@ -59,8 +59,8 @@ public class IRNodeFactory_c implements IRNodeFactory {
     }
 
     @Override
-    public IRFuncDecl IRFuncDecl(String name, IRStmt stmt) {
-        return new IRFuncDecl(name, stmt);
+    public IRFuncDefn IRFuncDefn(String name, IRStmt stmt) {
+        return new IRFuncDefn(name, stmt);
     }
 
     @Override

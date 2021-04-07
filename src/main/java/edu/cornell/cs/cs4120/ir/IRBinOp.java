@@ -1,11 +1,12 @@
 package edu.cornell.cs.cs4120.ir;
 
-import edu.cornell.cs.cs4120.util.InternalCompilerError;
-import edu.cornell.cs.cs4120.util.SExpPrinter;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
  * An intermediate representation for a binary operation
@@ -18,7 +19,7 @@ public class IRBinOp extends IRExpr_c {
      */
     public enum OpType {
         ADD, SUB, MUL, HMUL, DIV, MOD, AND, OR, XOR, LSHIFT, RSHIFT, ARSHIFT,
-        EQ, NEQ, LT, GT, LEQ, GEQ;
+        EQ, NEQ, LT, ULT, GT, LEQ, GEQ;
 
         @Override
         public String toString() {
@@ -53,6 +54,8 @@ public class IRBinOp extends IRExpr_c {
                 return "NEQ";
             case LT:
                 return "LT";
+            case ULT:
+            	return "ULT";
             case GT:
                 return "GT";
             case LEQ:
@@ -79,6 +82,10 @@ public class IRBinOp extends IRExpr_c {
 
     public IRExpr left() {
         return left;
+    }
+    
+    public void setLeft(IRExpr left) {
+    	this.left = left;
     }
 
     public IRExpr right() {
@@ -139,8 +146,12 @@ public class IRBinOp extends IRExpr_c {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		//TODO if(commute) better rule else
-		return v.transformBinOpGeneral(type, left, right);
+		return v.transformBinOp(this);
+	}
+
+	@Override
+	public IRNode constantFold(IRConstantFolder v) {
+		return v.foldBinOp(this);
 	}
 
 }

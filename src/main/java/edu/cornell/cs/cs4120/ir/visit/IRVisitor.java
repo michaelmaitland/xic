@@ -1,9 +1,9 @@
 package edu.cornell.cs.cs4120.ir.visit;
 
-import edu.cornell.cs.cs4120.util.Copy;
-import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.util.Copy;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 
 public abstract class IRVisitor implements Copy<IRVisitor> {
 
