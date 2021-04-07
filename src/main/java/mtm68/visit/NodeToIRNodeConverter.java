@@ -60,8 +60,14 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private static final int WORD_SIZE = 8;
 
+	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
+		this(programName, inf, ArrayUtils.empty());
+	}
+	
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, List<FunctionDecl> decls) {
 		this(programName, new HashMap<>(), inf);
+		saveFuncSymbols(decls);
 	}
 	
 	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
@@ -125,6 +131,10 @@ public class NodeToIRNodeConverter extends Visitor {
 		return "RET_" + retIdx;
 	}
 	
+	public void saveFuncSymbols(List<FunctionDecl> decls) {
+		for(FunctionDecl decl : decls) saveAndGetFuncSymbol(decl);
+	}
+	
 	/**
 	 * Returns an encoding of a function or procedure
 	 * using the encoding defined in the Xi ABI.
@@ -146,6 +156,22 @@ public class NodeToIRNodeConverter extends Visitor {
 		String encoded = sb.toString();
 		funcAndProcEncodings.put(functionDecl.getId(), encoded); 
 		return encoded;
+	}
+	
+	
+	/**
+	 * Returns an encoding of a procedure using the encoding defined in the Xi ABI.
+	 * 
+	 * @throws InternalCompilerError if the symbol has not yet been defined.
+	 */
+	public String getFuncSymbol(String funcName) {
+		String enc = this.funcAndProcEncodings.get(funcName);
+		
+		if(enc == null) {
+			throw new InternalCompilerError("Failed to  get function symbol: " + funcName);
+		}
+		
+		return enc;
 	}
 	
 	/**

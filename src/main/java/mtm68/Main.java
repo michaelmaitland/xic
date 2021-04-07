@@ -31,6 +31,7 @@ import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
@@ -131,13 +132,15 @@ public class Main {
 		    }
 		});
 		
-		Map<String, Program> programs = getValidPrograms(symTableManager);
+		Map<String, List<FunctionDecl>> progFuncDecls = new HashMap<>();
+		Map<String, Program> programs = getValidPrograms(symTableManager, progFuncDecls);
 		
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
 		for(String programName : programs.keySet()) {
 			Program program = programs.get(programName);
+			
 
-			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory);
+			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory, progFuncDecls.get(programName));
 			Lowerer lowerer = new Lowerer(nodeFactory);
 			IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
 			CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
@@ -169,7 +172,8 @@ public class Main {
 		return !doNotOptimize;
 	}
 	
-	public Map<String, Program> getValidPrograms(SymbolTableManager symTableManager) throws IOException {
+	public Map<String, Program> getValidPrograms(SymbolTableManager symTableManager, 
+			Map<String, List<FunctionDecl>> progFuncDecls) throws IOException {
 		Map<String, Program> validPrograms = new HashMap<>();
 
 		for (String filename : sourceFiles) {
@@ -208,18 +212,19 @@ public class Main {
 			//Typecheck
 			if(root instanceof Program) {
 				try {
-					Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
+					Map<String, FunctionDecl> libFuncTable = symTableManager.mergeSymbolTables((Program) root);
 					
-					FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
-					root.accept(funcCollector);
-					Map<String, ContextType> startingContext = funcCollector.getContext();
+					FunctionCollector funcCollector = new FunctionCollector(libFuncTable);
+					Map<String, FunctionDecl> funcTable = funcCollector.visit(root);
 					if(funcCollector.hasError()) {
 						ErrorUtils.printErrors(funcCollector.getErrors(), filename);
 						if(outputTypeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
 						continue;
 					}
 					
-					TypeChecker typeChecker = new TypeChecker(startingContext);	
+					progFuncDecls.put(filename, new ArrayList<>(funcTable.values()));
+					
+					TypeChecker typeChecker = new TypeChecker(funcTable);	
 					root = typeChecker.performTypeCheck(root);
 					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 					if(outputTypeCheck) {

@@ -14,14 +14,14 @@ import mtm68.exception.SemanticError;
 
 public class FunctionCollector extends Visitor{
 
-	private Map<String, ContextType> initSymbolTable;
-	private Map<String, FunctionDecl> functionDecls;
+	private Map<String, FunctionDecl> useFuncTable;
+	private Map<String, FunctionDecl> progFuncTable;
 	
 	private List<BaseError> errors;
 	
-	public FunctionCollector(Map<String, ContextType> initSymbolTable) {
-		this.initSymbolTable = initSymbolTable;
-		functionDecls = new HashMap<>();
+	public FunctionCollector(Map<String, FunctionDecl> initSymbolTable) {
+		this.useFuncTable = initSymbolTable;
+		progFuncTable = new HashMap<>();
 		errors = new ArrayList<>();
 	}
 
@@ -29,27 +29,31 @@ public class FunctionCollector extends Visitor{
 	public Node leave(Node parent, Node n) {
 		return n.extractFunctionDecl(this);
 	}
+	
+	public Map<String, FunctionDecl> visit(Node root){
+		root.accept(this);
+		return getCombinedFuncTable();
+	}
 
 	public void addFunctionDecl(FunctionDecl decl) {
 		String funcName = decl.getId();
-		if(functionDecls.containsKey(funcName)) {
+		if(progFuncTable.containsKey(funcName)) {
 			reportError(decl, decl.getId() + " declared multiple times in source file.");
 		}
-		functionDecls.put(decl.getId(), decl);
+		progFuncTable.put(decl.getId(), decl);
 	}
 	
-	public Map<String, ContextType> getContext(){
-		Map<String, ContextType> mergedTable = new HashMap<>();
-		mergedTable.putAll(initSymbolTable);
-		for(FunctionDecl decl : functionDecls.values()) {
+	public Map<String, FunctionDecl> getCombinedFuncTable(){
+		Map<String, FunctionDecl> mergedTable = new HashMap<>();
+		mergedTable.putAll(useFuncTable);
+		for(FunctionDecl decl : progFuncTable.values()) {
 			String funcName = decl.getId();
-			ContextType funcType = new ContextType(decl.getArgs(), decl.getReturnTypes());
 			if(mergedTable.containsKey(funcName)) {
-				if(!funcType.equals(mergedTable.get(funcName)))
+				if(!decl.equals(mergedTable.get(funcName)))
 					reportError(decl, decl.getId() + " has mismatched type decl with interface decl.");
 			}
 			else
-				mergedTable.put(funcName, funcType);
+				mergedTable.put(funcName, decl);
 		}
 		return mergedTable;
 	}

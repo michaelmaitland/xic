@@ -11,6 +11,7 @@ import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Negate;
@@ -52,8 +53,8 @@ public class TypeChecker extends Visitor {
 	private	Set<Binop> arrToArrToArr = ArrayUtils.newHashSet(Binop.ADD);
 
 
-	public TypeChecker(Map<String, ContextType> initSymTable) {
-		this(new TypingContext(initSymTable));
+	public TypeChecker(Map<String, FunctionDecl> funcTable) {
+		this(new TypingContext(funcTable));
 	}
 
 	public TypeChecker(TypingContext context) {
