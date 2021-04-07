@@ -132,7 +132,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 	
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
-		for(FunctionDecl decl : decls) saveAndGetFuncSymbol(decl);
+		for(FunctionDecl decl : decls) saveFuncSymbol(decl);
 	}
 	
 	/**
@@ -140,6 +140,13 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * using the encoding defined in the Xi ABI.
 	 */
 	public String saveAndGetFuncSymbol(FunctionDecl functionDecl) {
+		if(!funcAndProcEncodings.containsKey(functionDecl.getId()))
+			saveFuncSymbol(functionDecl);
+		
+		return funcAndProcEncodings.get(functionDecl.getId());
+	}
+	
+	public void saveFuncSymbol(FunctionDecl functionDecl) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("_I");
 		sb.append(encodeFuncName(functionDecl.getId()));
@@ -155,7 +162,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 		String encoded = sb.toString();
 		funcAndProcEncodings.put(functionDecl.getId(), encoded); 
-		return encoded;
 	}
 	
 	
