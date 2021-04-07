@@ -128,7 +128,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	public String retVal(int retIdx) {
-		return "RET_" + retIdx;
+		return "_RET" + retIdx;
 	}
 	
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
