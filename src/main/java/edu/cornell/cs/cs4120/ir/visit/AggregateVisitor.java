@@ -1,8 +1,8 @@
 package edu.cornell.cs.cs4120.ir.visit;
 
+import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.util.Copy;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
-import edu.cornell.cs.cs4120.ir.IRNode;
 
 public abstract class AggregateVisitor<T> implements Copy<AggregateVisitor<T>> {
 

@@ -1,5 +1,8 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -10,6 +13,8 @@ public class FunctionDefn extends Node {
 	
 	private FunctionDecl functionDecl;
 	private Block body;
+	
+	private  IRFuncDefn irFuncDefn;
 
 	public FunctionDefn(FunctionDecl fDecl, Block body) {
 		this.functionDecl = fDecl;
@@ -22,6 +27,14 @@ public class FunctionDefn extends Node {
 	
 	public Block getBody() {
 		return body;
+	}
+
+	public IRFuncDefn getIRFuncDefn() {
+		return irFuncDefn;
+	}
+
+	public void setIRFuncDefn(IRFuncDefn irFuncDefn) {
+		this.irFuncDefn= irFuncDefn;
 	}
 
 	@Override
@@ -58,8 +71,14 @@ public class FunctionDefn extends Node {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+
+		String funcName = cv.getFuncSymbol(functionDecl);
+		IRSeq seq = inf.IRSeq(body.getIRStmt());
+		IRFuncDefn defn = inf.IRFuncDefn(funcName, seq);
+				
+		FunctionDefn copy = copy();
+		copy.setIRFuncDefn(defn);
+		return copy;
 	}
 }

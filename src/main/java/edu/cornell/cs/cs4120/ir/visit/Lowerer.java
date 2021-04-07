@@ -6,18 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCall;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
-import edu.cornell.cs.cs4120.ir.IRConst;
-import edu.cornell.cs.cs4120.ir.IRESeq;
-import edu.cornell.cs.cs4120.ir.IRExp;
 import edu.cornell.cs.cs4120.ir.IRExpr;
-import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRReturn;

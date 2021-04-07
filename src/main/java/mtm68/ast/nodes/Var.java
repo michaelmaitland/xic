@@ -1,5 +1,6 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -44,8 +45,8 @@ public class Var extends Expr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		String t = cv.newTemp(id);
+		return copyAndSetIRExpr(inf.IRTemp(t));
 	}
 }

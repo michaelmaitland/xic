@@ -1,8 +1,16 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
@@ -72,8 +80,34 @@ public class SingleAssign extends Assign {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		if(lhs instanceof Var) {
+			Var var = (Var)lhs;
+			IRMove move = inf.IRMove(var.getIRExpr(), rhs.getIRExpr());
+			return copyAndSetIRStmt(move);
+		} else if (lhs instanceof ArrayIndex) {
+			IRSeq seq = convertArrayIndexAssign(cv, inf, (ArrayIndex)lhs);
+			return copyAndSetIRStmt(seq);
+		} else if (lhs instanceof SimpleDecl) {
+			SimpleDecl decl = (SimpleDecl)lhs;
+			IRMove move = inf.IRMove(inf.IRTemp(cv.newTemp(decl.getId())), rhs.getIRExpr());
+			return copyAndSetIRStmt(move);
+		} else {
+			throw new InternalCompilerError("Failed to convert to IR for Single Assign");
+		}
+	}
+	
+	public IRSeq convertArrayIndexAssign(NodeToIRNodeConverter cv, IRNodeFactory inf, ArrayIndex ai) {
+		IRTemp tempArr = inf.IRTemp(cv.newTemp());
+		IRTemp tempIndex = inf.IRTemp(cv.newTemp());
+		
+		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
+
+		return inf.IRSeq(
+			inf.IRMove(tempArr, ai.getArr().getIRExpr()),
+			inf.IRMove(tempIndex, ai.getIndex().getIRExpr()),
+			cv.boundsCheck(tempArr, tempIndex),
+		    inf.IRMove(offsetIntoArr, rhs.getIRExpr())
+		);
 	}
 }

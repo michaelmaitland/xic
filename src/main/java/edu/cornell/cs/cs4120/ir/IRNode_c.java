@@ -2,16 +2,14 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
 
-import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
-import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.nodes.Node;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
+import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
  * A node in an intermediate-representation abstract syntax tree.

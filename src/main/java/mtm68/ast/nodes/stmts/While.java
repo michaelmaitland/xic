@@ -1,5 +1,7 @@
 package mtm68.ast.nodes.stmts;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.Node;
@@ -68,8 +70,20 @@ public class While extends Statement {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		String header = cv.getFreshLabel();
+		String trueLabel = cv.getFreshLabel();
+		String falseLabel = cv.getFreshLabel();
+
+		IRSeq seq = inf.IRSeq(
+			inf.IRLabel(header),
+			cv.getCtrlFlow(condition, trueLabel, falseLabel),
+			inf.IRLabel(trueLabel),
+			body.getIRStmt(),
+			inf.IRJump(inf.IRName(header)),
+		    inf.IRLabel(falseLabel)
+		);
+		
+		return copyAndSetIRStmt(seq);
 	}
 }

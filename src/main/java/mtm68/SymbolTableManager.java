@@ -1,17 +1,15 @@
 package mtm68;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import java_cup.runtime.ComplexSymbolFactory;
-import mtm68.ast.types.ContextType;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Use;
+import mtm68.ast.types.ContextType;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;

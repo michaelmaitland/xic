@@ -1,12 +1,17 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class ArrayIndex extends Expr  {
+public class ArrayIndex extends Expr {
 	
 	private Expr arr;
 	private Expr index;
@@ -59,8 +64,19 @@ public class ArrayIndex extends Expr  {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		
+		IRTemp tempArr = inf.IRTemp(cv.newTemp());
+		IRTemp tempIndex = inf.IRTemp(cv.newTemp());
+		
+		IRSeq seq = inf.IRSeq(
+				inf.IRMove(tempArr, arr.getIRExpr()),
+				inf.IRMove(tempIndex, index.getIRExpr()),
+				cv.boundsCheck(tempArr, tempIndex));
+		
+		IRMem offsetIntoArr = cv.getOffsetIntoArr(tempArr, tempIndex);
+		IRESeq eseq = inf.IRESeq(seq, offsetIntoArr);
+
+		return copyAndSetIRExpr(eseq);
 	}
 }

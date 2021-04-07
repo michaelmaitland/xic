@@ -1,5 +1,6 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -29,8 +30,9 @@ public class BoolLiteral extends Literal<Boolean>{
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		long constVal = value ? 1L : 0L;
+		
+		return copyAndSetIRExpr(inf.IRConst(constVal));
 	}
 }

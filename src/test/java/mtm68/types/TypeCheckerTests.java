@@ -10,6 +10,7 @@ import static mtm68.ast.types.Types.addArrayDims;
 import static mtm68.util.ArrayUtils.elems;
 import static mtm68.util.ArrayUtils.empty;
 import static mtm68.util.ArrayUtils.singleton;
+import static mtm68.util.NodeTestUtil.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +21,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.ArrayLength;
@@ -42,7 +42,7 @@ import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Mult;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
-import mtm68.ast.nodes.stmts.FunctionCall;
+import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.Return;
@@ -56,7 +56,8 @@ import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
 import mtm68.util.ArrayUtils;
 import mtm68.visit.TypeChecker;
-import mtm68.visit.Visitor;
+
+
 
 public class TypeCheckerTests {
 
@@ -1039,7 +1040,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", empty(), empty());
 
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		stmt = doTypeCheck(context, stmt);
 		
 		assertEquals(Result.UNIT, stmt.getResult());
@@ -1050,7 +1051,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", empty(), empty());
 
-		FunctionCall stmt = new FunctionCall(new FExpr("g", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("g", empty()));
 		assertTypeCheckError(context, stmt);
 	}
 
@@ -1059,7 +1060,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", empty(), singleton(INT));
 
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		assertTypeCheckError(context, stmt);
 	}
 
@@ -1068,7 +1069,7 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncDecl("f", singleton(new SimpleDecl("x", INT)), empty());
 
-		FunctionCall stmt = new FunctionCall(new FExpr("f", empty()));
+		ProcedureCall stmt = new ProcedureCall(new FExpr("f", empty()));
 		assertTypeCheckError(context, stmt);
 	}
 
@@ -1164,51 +1165,5 @@ public class TypeCheckerTests {
 		TypingContext context = new TypingContext();
 		context.addFuncBindings(empty(), retTypes);
 		return context;
-	}
-	
-	private Expr arbitraryCondition() {
-		return new BoolLiteral(true);
-	}
-
-	private IntLiteral intLit(Long value) {
-		return new IntLiteral(value);
-	}
-	
-	private CharLiteral charLit(Character value) {
-		return new CharLiteral(value);
-	}
-
-	private BoolLiteral boolLit(boolean value) {
-		return new BoolLiteral(value);
-	}
-
-	private StringLiteral stringLit(String value) {
-		return new StringLiteral(value);
-	}
-	
-	private SimpleDecl simDecl(String id, Type type) {
-		return new SimpleDecl(id, type);
-	}
-
-	private Block emptyBlock() {
-		return new Block(ArrayUtils.empty());
-	}
-
-	private ArrayInit emptyArray() {
-		return new ArrayInit(ArrayUtils.empty());
-	}
-	
-	private ArrayInit arrayWithElems(Expr... elems){
-		return new ArrayInit(ArrayUtils.elems(elems));
-	}
-	
-	private void addLocs(Node n) {
-		n.accept(new Visitor() {
-			@Override
-			public Node leave(Node parent, Node n) {
-				n.setStartLoc(new Location(0, 0));
-				return n;
-			}
-		});
 	}
 }

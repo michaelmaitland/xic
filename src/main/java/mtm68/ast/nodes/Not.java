@@ -1,7 +1,10 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -45,8 +48,10 @@ public class Not extends UnExpr {
 	}
 
 	@Override
-	public Node convertToIR(NodeToIRNodeConverter cv) {
-		// TODO Auto-generated method stub
-		return null;
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		// NOT(e) = XOR(1, e)
+		IRExpr left = inf.IRConst(1);
+		IRBinOp op = inf.IRBinOp(OpType.XOR, left, expr.getIRExpr());
+		return copyAndSetIRExpr(op);
 	}
 }

@@ -23,14 +23,14 @@ terminal LPAREN, RPAREN;
 terminal MOVE, CALL_STMT, EXP, SEQ, JUMP, CJUMP, LABEL, RETURN;
 terminal CONST, TEMP, MEM, CALL, NAME, ESEQ;
 terminal ADD, SUB, MUL, HMUL, DIV, MOD, AND, OR, XOR;
-terminal LSHIFT, RSHIFT, ARSHIFT, EQ, NEQ, LT, GT, LEQ, GEQ;
+terminal LSHIFT, RSHIFT, ARSHIFT, EQ, NEQ, LT, ULT, GT, LEQ, GEQ;
 terminal FUNC, DATA, COMPUNIT;
 terminal String ATOM;
 terminal Long NUMBER;
 
 nonterminal IRCompUnit compunit;
-nonterminal List<IRFuncDecl> funcdecls;
-nonterminal IRFuncDecl funcdecl;
+nonterminal List<IRFuncDefn> funcdefns;
+nonterminal IRFuncdefn funcdefn;
 nonterminal List<IRStmt> stmts;
 nonterminal IRStmt stmt, bare_stmt;
 nonterminal List<IRExpr> exprs_opt, exprs;
@@ -48,14 +48,14 @@ compunit ::=
     LPAREN COMPUNIT name:n
         ctor_list:c_list
         data_list:d_list
-        funcdecls:f
+        funcdefns:f
     RPAREN {:
         RESULT = parser.nf.IRCompUnit(n);
         for (String ctor: c_list)
              RESULT.appendCtor(ctor);
         for (IRData data : d_list)
              RESULT.appendData(data);
-        for (IRFuncDecl fd : f)
+        for (IRFuncDefn fd : f)
              RESULT.appendFunc(fd);
     :}
 ;
@@ -117,20 +117,20 @@ number_list_non_empty ::=
     :}
 ;
 
-funcdecls ::=
-    funcdecl:fd {:
+funcdefns ::=
+    funcdefn:fd {:
         RESULT = new ArrayList<>();
         RESULT.add(fd);
     :}
-    | funcdecls:f funcdecl:fd {:
+    | funcdefns:f funcdefn:fd {:
         RESULT = f;
         RESULT.add(fd);
     :}
 ;
 
-funcdecl ::=
+funcdefn ::=
     LPAREN FUNC name:n stmt:s RPAREN {:
-        RESULT = parser.nf.IRFuncDecl(n, s);
+        RESULT = parser.nf.IRFuncDefn(n, s);
     :}
 ;
 
@@ -269,6 +269,9 @@ op ::=
     :}
     | LT expr:x expr:y {:
         RESULT = parser.nf.IRBinOp(IRBinOp.OpType.LT, x,y);
+    :}
+    | ULT expr:x expr:y {:
+        RESULT = parser.nf.IRBinOp(IRBinOp.OpType.ULT, x,y);
     :}
     | GT expr:x expr:y {:
         RESULT = parser.nf.IRBinOp(IRBinOp.OpType.GT, x,y);

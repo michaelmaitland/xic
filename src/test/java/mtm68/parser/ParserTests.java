@@ -2,6 +2,7 @@ package mtm68.parser;
 
 import static mtm68.lexer.TokenType.*;
 import static mtm68.util.ArrayUtils.*;
+import static mtm68.util.NodeTestUtil.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,7 +29,7 @@ import mtm68.ast.nodes.binary.Mult;
 import mtm68.ast.nodes.binary.Sub;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
-import mtm68.ast.nodes.stmts.FunctionCall;
+import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.Return;
@@ -510,7 +511,7 @@ public class ParserTests {
 
 		Program prog = parseProgFromStmt(tokens);
 		
-		FunctionCall fc = assertInstanceOfAndReturn(FunctionCall.class, firstStatement(prog));
+		ProcedureCall fc = assertInstanceOfAndReturn(ProcedureCall.class, firstStatement(prog));
 		assertTrue(fc.getFexp().getArgs().isEmpty());
 	}
 
@@ -528,7 +529,7 @@ public class ParserTests {
 
 		Program prog = parseProgFromStmt(tokens);
 		
-		FunctionCall fc = assertInstanceOfAndReturn(FunctionCall.class, firstStatement(prog));
+		ProcedureCall fc = assertInstanceOfAndReturn(ProcedureCall.class, firstStatement(prog));
 		List<Expr> args = fc.getFexp().getArgs(); 
 		assertEquals(2, args.size());
 		assertInstanceOf(BoolLiteral.class, args.get(0));
@@ -945,14 +946,4 @@ public class ParserTests {
 		return tokenFac.newToken(t, data, 0, 0);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private <T> T assertInstanceOfAndReturn(Class<T> clazz, Object obj) {
-		assertTrue(obj.getClass() + " is not an instanceof " + clazz , clazz.isAssignableFrom(obj.getClass()));
-		return (T) obj;
 	}
-
-	private <T> void assertInstanceOf(Class<T> clazz, Object obj) {
-		assertInstanceOfAndReturn(clazz, obj);
-	}
-
-}

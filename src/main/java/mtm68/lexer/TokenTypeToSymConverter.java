@@ -1,6 +1,6 @@
 package mtm68.lexer;
 
-import mtm68.parser.*;
+import mtm68.parser.sym;
 public class TokenTypeToSymConverter {
 
 	public static int convert(TokenType type) {

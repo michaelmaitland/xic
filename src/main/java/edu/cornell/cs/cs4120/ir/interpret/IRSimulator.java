@@ -4,10 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.Stack;
 
-import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCall;
@@ -16,7 +21,7 @@ import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRData;
 import edu.cornell.cs.cs4120.ir.IRExp;
-import edu.cornell.cs.cs4120.ir.IRFuncDecl;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
@@ -25,6 +30,7 @@ import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import polyglot.util.SerialVersionUID;
 
 /**
@@ -226,7 +232,7 @@ public class IRSimulator {
                 return ret.get(0);
             }
         } else {
-            IRFuncDecl fDecl = compUnit.getFunction(name);
+            IRFuncDefn fDecl = compUnit.getFunction(name);
             if (fDecl == null)
                 throw new InternalCompilerError("Tried to call an unknown function: '"
                         + name + "'");
@@ -445,6 +451,9 @@ public class IRSimulator {
             case LT:
                 result = l < r ? 1 : 0;
                 break;
+            case ULT:
+            	result = Long.compareUnsigned(l, r) < 0 ? 1 : 0;
+            	break;
             case GT:
                 result = l > r ? 1 : 0;
                 break;
@@ -474,8 +483,8 @@ public class IRSimulator {
                 targetName = target.name;
             else if (indexToInsn.containsKey(target.value)) {
                 IRNode node = indexToInsn.get(target.value);
-                if (node instanceof IRFuncDecl)
-                    targetName = ((IRFuncDecl) node).name();
+                if (node instanceof IRFuncDefn)
+                    targetName = ((IRFuncDefn) node).name();
                 else throw new InternalCompilerError("Call to a non-function instruction!");
             }
             else throw new InternalCompilerError("Invalid function call '"
