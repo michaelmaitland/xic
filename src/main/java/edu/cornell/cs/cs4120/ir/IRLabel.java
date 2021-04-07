@@ -1,6 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
@@ -39,4 +40,9 @@ public class IRLabel extends IRStmt {
         p.printAtom(name);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return this;
+	}
 }

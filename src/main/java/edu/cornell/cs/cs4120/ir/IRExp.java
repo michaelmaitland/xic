@@ -1,8 +1,12 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
@@ -59,4 +63,11 @@ public class IRExp extends IRStmt {
         expr.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		List<IRStmt> stmts = new ArrayList<>();
+		stmts.addAll(expr.getSideEffects());
+		return new IRSeq(stmts);
+	}
 }

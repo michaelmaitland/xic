@@ -4,12 +4,12 @@
 
 package edu.cornell.cs.cs4120.ir.parse;
 
+import java.math.BigInteger;
+
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import java_cup.runtime.Symbol;
-
-import java.math.BigInteger;
 
 
 // See https://github.com/jflex-de/jflex/issues/222

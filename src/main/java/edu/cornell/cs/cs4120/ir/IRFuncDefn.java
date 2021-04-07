@@ -1,8 +1,10 @@
 package edu.cornell.cs.cs4120.ir;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
+import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /** An IR function definition */
@@ -64,4 +66,14 @@ public class IRFuncDefn extends IRNode_c {
         body.printSExp(p);
         p.endList();
     }
+
+	@Override
+	public IRNode lower(Lowerer v) {
+		return this;
+	}
+
+	@Override
+	public IRNode constantFold(IRConstantFolder v) {
+		return this;
+	}
 }

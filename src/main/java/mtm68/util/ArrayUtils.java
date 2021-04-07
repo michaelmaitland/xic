@@ -1,13 +1,10 @@
 package mtm68.util;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import edu.cornell.cs.cs4120.ir.IRExpr;
 
 public class ArrayUtils {
 	

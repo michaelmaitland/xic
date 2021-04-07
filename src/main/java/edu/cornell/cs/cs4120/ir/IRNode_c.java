@@ -14,8 +14,8 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 /**
  * A node in an intermediate-representation abstract syntax tree.
  */
-public abstract class IRNode_c implements IRNode {
-
+public abstract class IRNode_c implements IRNode, Cloneable {
+	
     @Override
     public IRNode visitChildren(IRVisitor v) {
         return this;
@@ -68,4 +68,19 @@ public abstract class IRNode_c implements IRNode {
         }
         return sw.toString();
     }
+    
+	@SuppressWarnings("unchecked")
+	public <N extends IRNode_c> N copy() {
+		try {
+			return (N) clone();
+		} catch (CloneNotSupportedException e) {
+		}
+		return null;
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+	
 }
