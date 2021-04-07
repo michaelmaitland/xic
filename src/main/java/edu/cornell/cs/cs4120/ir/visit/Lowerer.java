@@ -18,10 +18,9 @@ import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.util.ArrayUtils;
+import mtm68.util.FreshTempGenerator;
 
 public class Lowerer extends IRVisitor {
-
-	private int numTempRegsMade = 0;
 	
 	public Lowerer(IRNodeFactory inf) {
 		super(inf);
@@ -252,6 +251,6 @@ public class Lowerer extends IRVisitor {
 	}
 
 	private String getFreshTemp() {
-		return "_t" + (numTempRegsMade++);
+		return "_t" + FreshTempGenerator.getFreshTemp();
 	}
 }

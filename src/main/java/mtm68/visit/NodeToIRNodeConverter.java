@@ -37,15 +37,14 @@ import mtm68.ast.types.IntType;
 import mtm68.ast.types.Type;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
+import mtm68.util.FreshTempGenerator;
 
 public class NodeToIRNodeConverter extends Visitor {
 	
 	private String programName;
 
 	private int labelCounter;
-	
-	private int tmpCounter;
-	
+		
 	private IRNodeFactory inf;
 	
 	/**
@@ -68,7 +67,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
 		this.programName = programName;
 		this.labelCounter = 0;
-		this.tmpCounter = 0;
 		this.funcAndProcEncodings = funcAndProcEncodings;
 		this.inf = inf;
 	}
@@ -109,8 +107,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * @return a temp that does not need to be used by a different node.
 	 */
 	public String newTemp() {
-		tmpCounter++;
-		return "_t" + tmpCounter;
+		return "_t" + FreshTempGenerator.getFreshTemp();
 	}
 	
 	/**
