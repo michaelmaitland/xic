@@ -100,6 +100,14 @@ public class NodeToIRNodeConverter extends Visitor {
 		return n.convertToIR(this, inf);
 	}
 
+	/**
+	 * Gets the program name
+	 * @return
+	 */
+	public String getProgramName() {
+		return programName;
+	}
+
 	public String getOutOfBoundsLabel() {
 		return OUT_OF_BOUNDS_LABEL;
 	}
@@ -356,6 +364,77 @@ public class NodeToIRNodeConverter extends Visitor {
         return inf.IRESeq(inf.IRSeq(seq), startOfArr);
 	}
 	
+	public IRESeq concatArrays(IRExpr leftArr, IRExpr rightArr) {
+		
+		IRTemp l1 = inf.IRTemp(newTemp());
+		IRTemp l2 = inf.IRTemp(newTemp());
+		IRTemp l = inf.IRTemp(newTemp());
+		IRTemp startOfArr = inf.IRTemp(newTemp());
+		IRTemp ptr = inf.IRTemp(newTemp());
+		IRTemp idx = inf.IRTemp(newTemp());
+		String header = getFreshLabel();
+		String fstCmpTrueLabel = getFreshLabel();
+		String sndCmpLabel = getFreshLabel();
+		String sndCmpTrueLabel = getFreshLabel();
+		String done = getFreshLabel();
+
+		IRSeq seq = inf.IRSeq(
+			// Alloc new array
+		 	inf.IRMove(l1, inf.IRMem(inf.IRBinOp(OpType.ADD,
+		 			leftArr, inf.IRConst(-1 * getWordSize())))),
+
+		 	inf.IRMove(l2, inf.IRMem(inf.IRBinOp(OpType.ADD,
+		 			rightArr, inf.IRConst(-1* getWordSize())))),
+
+		 	inf.IRMove(l, inf.IRBinOp(OpType.ADD, l1, l2)),
+
+		 	inf.IRCallStmt(inf.IRName(getMallocLabel()), 
+		 			ArrayUtils.singleton(
+		 					inf.IRBinOp(OpType.ADD, inf.IRBinOp(OpType.MUL, l,
+							inf.IRConst(getWordSize())), inf.IRConst(getWordSize()))
+		 			)),
+		 	
+	 	
+		 	// Setup index to point to start of new arr
+		 	inf.IRMove(startOfArr, inf.IRTemp(retVal(0))),
+		 	inf.IRMove(ptr, inf.IRTemp(retVal(0))),
+		 	inf.IRMove(idx, inf.IRConst(0)),
+		 	
+			// Move size into new arr
+		 	inf.IRMove(inf.IRMem(ptr), l),
+		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),
+
+			// Check if idx < l1
+		 	inf.IRLabel(header),
+		 	inf.IRCJump(inf.IRBinOp(OpType.LT, idx, l1), fstCmpTrueLabel, sndCmpLabel),
+		 	
+		 	// save at loc ptr the element idx in first array
+		 	inf.IRLabel(fstCmpTrueLabel),
+		 	inf.IRMove(inf.IRMem(ptr),
+		 			inf.IRMem(inf.IRBinOp(OpType.ADD, leftArr, inf.IRBinOp(OpType.MUL, idx, inf.IRConst(getWordSize()))))),
+		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),
+		 	inf.IRMove(idx, inf.IRBinOp(OpType.ADD, idx, inf.IRConst(1))),
+		 	inf.IRJump(inf.IRName(header)),
+		 	
+		 	// check if idx < l
+		 	inf.IRLabel(sndCmpLabel),
+		 	inf.IRCJump(inf.IRBinOp(OpType.LT, idx, l), sndCmpTrueLabel, done),
+		 	
+		 	// save at loc ptr the element idx - l1 in the second arr
+		 	inf.IRLabel(sndCmpTrueLabel),
+		 	inf.IRMove(ptr, inf.IRMem(inf.IRBinOp(OpType.ADD,
+		 			rightArr,
+		 			inf.IRBinOp(OpType.MUL, inf.IRBinOp(OpType.SUB, idx, l1), inf.IRConst(getWordSize()))))),
+		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),
+		 	inf.IRMove(idx, inf.IRBinOp(OpType.ADD, idx, inf.IRConst(1))),
+		 	inf.IRJump(inf.IRName(sndCmpLabel)),
+		 	
+		 	inf.IRLabel(done)
+		 );
+
+		return inf.IRESeq(seq, startOfArr);
+	}
+
 	public IRSeq allocateExtendedDeclArray(String name, List<IRExpr> indices) {
 		// 1. Create temp vars for each index 
 		List<IRTemp> idxTemps = indices.stream()
@@ -593,14 +672,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private IRTemp genTemp() {
 		return inf.IRTemp(newTemp());
-	}
-
-	/**
-	 * Gets the program name
-	 * @return
-	 */
-	public String getProgramName() {
-		return programName;
 	}
 
 	public IRSeq constructFuncDefnSeq(FunctionDecl functionDecl, Block body) {
