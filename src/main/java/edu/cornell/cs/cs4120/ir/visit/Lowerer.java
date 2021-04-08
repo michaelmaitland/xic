@@ -55,17 +55,24 @@ public class Lowerer extends IRVisitor {
 	
 	public IRSeq transformCall(IRExpr func, List<IRExpr> args) {
 		List<IRStmt> callStmts = new ArrayList<>();
-		List<IRExpr> newArgs = new ArrayList<>();
+		List<IRTemp> tempArgs = new ArrayList<>();
 		
 		for(int i = 0; i < args.size(); i++) {
 			IRExpr arg = args.get(i);
 			callStmts.addAll(arg.getSideEffects());
-			String argName = "_ARG" + i;
+			String argName = getFreshTemp();
 			callStmts.add(new IRMove(new IRTemp(argName), arg));
-			newArgs.add(new IRTemp(argName));
+			tempArgs.add(new IRTemp(argName));
 		}
-				
-		IRCallStmt newCall = new IRCallStmt(func, newArgs); 
+		
+		List<IRExpr> finalArgs = new ArrayList<>();
+		for(int i = 0; i < tempArgs.size(); i++) {
+			IRTemp tempArg = tempArgs.get(i);
+			String argName = "_ARG" + i;
+			callStmts.add(new IRMove(new IRTemp(argName), tempArg));
+			finalArgs.add(new IRTemp(argName));
+		}
+		IRCallStmt newCall = new IRCallStmt(func, finalArgs); 
 		callStmts.add(newCall);
 		return new IRSeq(callStmts);
 	}
