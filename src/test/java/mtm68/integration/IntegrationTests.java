@@ -3,6 +3,7 @@ package mtm68.integration;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
@@ -22,6 +23,8 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.interpret.IRSimulator;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
+import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
@@ -116,6 +119,7 @@ public class IntegrationTests {
 	}
 
 	private IRNode generateIRFromFile(String filename) throws FileNotFoundException, SemanticException {
+
 		Path testFilePath = Paths.get("src/test/resources/testfiles");
 		Path libPath = Paths.get("src/test/resources/testlib");
 		
@@ -166,8 +170,14 @@ public class IntegrationTests {
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
 		
+		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
+		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
+		
+		canonVisitor.visit(irRoot);		
+		assertNull(canonVisitor.noncanonical());
+		assertTrue("IRNode is not properly folded" , constFoldVisitor.visit(irRoot));
+		
 		return irRoot;
-
 	}
 	
 	
