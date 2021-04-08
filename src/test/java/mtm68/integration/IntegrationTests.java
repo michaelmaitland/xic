@@ -132,6 +132,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("bool_array.xi", "Success!\n");
 	}
 	
+	@Test
+	void testFibboncacci() {
+		generateAndAssertOutput("fib.xi", "34");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
