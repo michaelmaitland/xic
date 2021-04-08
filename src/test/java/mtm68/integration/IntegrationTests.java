@@ -77,7 +77,11 @@ public class IntegrationTests {
 	void testIfStmts() {
 		generateAndAssertOutput("if_stmts.xi", "1123");
 	}
-	
+
+	@Test
+	void testNestedIfStmts() {
+		generateAndAssertOutput("nested_if_stmts.xi", "1234");
+	}	
 	@Test
 	void testEx01(){
 		generateAndAssertOutput("ex01.xi", "Hello, World!\n");
