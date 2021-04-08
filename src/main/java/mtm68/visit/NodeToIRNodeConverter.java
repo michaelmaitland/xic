@@ -1,5 +1,6 @@
 package mtm68.visit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +13,13 @@ import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
@@ -29,10 +33,12 @@ import mtm68.ast.nodes.Not;
 import mtm68.ast.nodes.binary.And;
 import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
+import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
+import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
@@ -56,6 +62,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi__out_of_bounds";
 
 	private static final String MALLOC_LABEL = "_xi_alloc";
+
+	private static final String ALLOC_LAYER = "_I$allocLayer_piiiiii";
 	
 	private static final int WORD_SIZE = 8;
 
@@ -140,6 +148,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
 		for(FunctionDecl decl : decls) saveFuncSymbol(decl);
+	}
+
+	public String argVal(int argIdx) {
+		return "_ARG" + argIdx;
 	}
 	
 	/**
@@ -421,5 +433,259 @@ public class NodeToIRNodeConverter extends Visitor {
 		 );
 
 		return inf.IRESeq(seq, startOfArr);
+	}
+
+	public IRSeq allocateExtendedDeclArray(String name, List<IRExpr> indices) {
+		// 1. Create temp vars for each index 
+		List<IRTemp> idxTemps = indices.stream()
+			.map(e -> inf.IRTemp(newTemp()))
+			.collect(Collectors.toList());
+		
+		// 2. Move indices into vars
+		List<IRStmt> tempMoves = ArrayUtils.empty(); 
+		for(int i = 0; i < indices.size(); i++) {
+			IRExpr ei = indices.get(i);
+			IRTemp ti = idxTemps.get(i);
+			
+			tempMoves.add(inf.IRMove(ti, ei));
+		}
+		
+		// 3. e1 < 0 | e2 < 0 | ... | en < 0
+		String err = getOutOfBoundsLabel();
+		IRExpr zero = inf.IRConst(0L);
+
+		List<IRStmt> condStmts = ArrayUtils.empty();
+		for(int i = 0; i < idxTemps.size(); i++) {
+			IRExpr ei = idxTemps.get(i);
+			IRExpr lt = inf.IRBinOp(OpType.LT, ei, zero);
+			
+			IRLabel next = inf.IRLabel(getFreshLabel());
+			condStmts.add(inf.IRCJump(lt, err, next.name()));
+			condStmts.add(next);
+		}
+		
+		// 4. Calculate offsets (including total size)
+		// 1 + n0 + n0(n1 + 1) + n0*n1(n2 + 1) + ...
+		
+		IRExpr one = inf.IRConst(1L);
+		
+		List<IRTemp> offsetTemps = ArrayUtils.empty();
+		List<IRStmt> offsetStmts = ArrayUtils.empty();
+		for(int i = 0; i < idxTemps.size() + 1; i++) {
+			IRTemp offTemp = inf.IRTemp(newTemp());
+			offsetTemps.add(offTemp);
+
+			if(i == 0) {
+				offsetStmts.add(inf.IRMove(offTemp, zero));
+				continue;
+			}
+			
+			if(i == 1) {
+				// 1 + n1
+				IRExpr off = inf.IRBinOp(OpType.ADD, inf.IRConst(1L), idxTemps.get(0));
+				offsetStmts.add(inf.IRMove(offTemp, off));
+				continue;
+			}
+			
+			IRExpr prevOff = offsetTemps.get(i - 1);
+			IRExpr inner = inf.IRBinOp(OpType.ADD, idxTemps.get(i - 1), one);
+			
+			IRExpr mult = null;
+			for(int j = 0; j < i - 1; j++) {
+				IRExpr idxSize = idxTemps.get(j);
+				if(j == 0) mult = idxSize; 
+				else mult = inf.IRBinOp(OpType.MUL, mult, idxSize);
+			}
+			mult = inf.IRBinOp(OpType.MUL, mult, inner);
+			
+			IRExpr off = inf.IRBinOp(OpType.ADD, prevOff, mult);
+			offsetStmts.add(inf.IRMove(offTemp, off));
+		}
+		
+		// 5. Calculate size of each layer
+		List<IRStmt> sizeStmts = ArrayUtils.empty();
+		List<IRTemp> sizeTemps = ArrayUtils.empty();
+		
+		for(int i = 1; i < offsetTemps.size(); i++) {
+			IRTemp offTemp = offsetTemps.get(i);
+			IRTemp offPrevTemp = offsetTemps.get(i - 1);
+			IRExpr size = inf.IRBinOp(OpType.SUB, offTemp, offPrevTemp); 
+			
+			IRTemp sizeTemp = inf.IRTemp(newTemp());
+			sizeTemps.add(sizeTemp);
+			
+			sizeStmts.add(inf.IRMove(sizeTemp, size));
+		}
+		
+		// 6. Allocate array and extract base pointer from return value
+		IRTemp sizeTemp = offsetTemps.remove(offsetTemps.size() - 1);
+		IRExpr word = inf.IRConst(getWordSize());
+	   IRCallStmt allocStmt = inf.IRCallStmt(
+	   		inf.IRName(getMallocLabel()), 
+	   		ArrayUtils.singleton(mul(word, sizeTemp)));
+	   
+	   IRTemp basePtr = genTemp();
+	   IRStmt saveBasePtr = inf.IRMove(basePtr, inf.IRTemp(retVal(0)));
+	   IRStmt baseArrayLengthStmt = inf.IRMove(inf.IRMem(basePtr), idxTemps.get(0));
+
+	   // 7. Fill in values for the arrays except for the last level
+	   List<IRStmt> allocLayerStmts = ArrayUtils.empty();
+	   for(int i = 0; i < indices.size() - 1; i++) {
+	   	List<IRExpr> args = ArrayUtils.elems(
+	   			idxTemps.get(i),
+	   			idxTemps.get(i + 1),
+	   			sizeTemps.get(i),
+	   			offsetTemps.get(i),
+	   			offsetTemps.get(i + 1),
+	   			basePtr);
+
+	   	allocLayerStmts.add(new IRCallStmt(inf.IRName(ALLOC_LAYER), args));
+	   }
+	   
+	   // 8. Move basePtr + 8 into our id
+	   IRMove saveArrPtrStmt = inf.IRMove(inf.IRTemp(newTemp(name)), add(basePtr, word));
+		
+		List<IRStmt> result = ArrayUtils.empty();
+		result.addAll(tempMoves);
+		result.addAll(condStmts);
+		result.addAll(offsetStmts);
+		result.addAll(sizeStmts);
+		result.add(allocStmt);
+		result.add(saveBasePtr);
+		result.add(baseArrayLengthStmt);
+		result.addAll(allocLayerStmts);
+		result.add(saveArrPtrStmt);
+		
+		return inf.IRSeq(result);
+	}
+	
+	/**
+	 * Argument list
+	 * -------------
+	 * _ARG0: index value in current layer
+	 * _ARG1: index value in next layer
+	 * _ARG2: layer size 
+	 * _ARG3: offset of current layer 
+	 * _ARG4: offset of next layer 
+	 * _ARG5: base pointer of array 
+	 * 
+	 * @return
+	 */
+	public IRFuncDefn allocLayer() {
+		List<IRStmt> stmts = ArrayUtils.empty();
+		
+		// Temps
+		IRTemp iTemp = genTemp();
+		IRTemp bTemp = genTemp();
+		IRTemp idxTemp = genTemp();
+		IRTemp blockSizeTemp = genTemp();
+		IRTemp layerSizeTemp = genTemp();
+		IRTemp currIdxTemp = genTemp();
+		IRTemp nextIdxTemp = genTemp();
+		IRTemp currOffTemp = genTemp();
+		IRTemp nextOffTemp = genTemp();
+		IRTemp baseTemp = genTemp();
+		IRTemp ptrTemp = genTemp();
+		IRTemp ptrMemTemp = genTemp();
+		
+		// Labels
+		IRLabel headerLabel = inf.IRLabel("header");
+		IRLabel okLabel = inf.IRLabel("ok");
+		IRLabel continueLabel = inf.IRLabel("continue");
+		IRLabel afterLabel = inf.IRLabel("after");
+		IRLabel fallthroughLabel = inf.IRLabel("fallthrough");
+		IRLabel doneLabel = inf.IRLabel("done");
+
+		// Constants
+		IRConst word = inf.IRConst(getWordSize());
+		IRConst one = inf.IRConst(1L);
+		IRConst zero = inf.IRConst(0L);
+
+		// Move args into temps
+		stmts.add(inf.IRMove(currIdxTemp, inf.IRTemp(argVal(0))));
+		stmts.add(inf.IRMove(nextIdxTemp, inf.IRTemp(argVal(1))));
+		stmts.add(inf.IRMove(layerSizeTemp, inf.IRTemp(argVal(2))));
+		stmts.add(inf.IRMove(currOffTemp, inf.IRTemp(argVal(3))));
+		stmts.add(inf.IRMove(nextOffTemp, inf.IRTemp(argVal(4))));
+		stmts.add(inf.IRMove(baseTemp, inf.IRTemp(argVal(5))));
+		
+		// Setup vars
+		stmts.add(inf.IRMove(iTemp, zero));
+		stmts.add(inf.IRMove(bTemp, zero));
+		stmts.add(inf.IRMove(blockSizeTemp, add(currIdxTemp, one)));
+		
+		// Begin loop
+		stmts.add(headerLabel);
+		
+		stmts.add(inf.IRMove(idxTemp, add(iTemp, mul(bTemp, blockSizeTemp))));
+		stmts.add(inf.IRCJump(lt(idxTemp, layerSizeTemp), okLabel.name(), doneLabel.name()));
+		stmts.add(okLabel);
+		
+		stmts.add(inf.IRCJump(eq(iTemp, zero), afterLabel.name(), continueLabel.name()));
+		
+		stmts.add(continueLabel);
+		
+		IRExpr sectionOff = mul(bTemp, mul(currIdxTemp, add(nextIdxTemp, one)));
+		IRExpr blockOff = mul(sub(iTemp, one), add(nextIdxTemp, one));
+		
+		stmts.add(inf.IRMove(ptrTemp, add(sectionOff, add(blockOff, nextOffTemp))));
+		stmts.add(inf.IRMove(ptrMemTemp, add(baseTemp, mul(word, ptrTemp))));
+		stmts.add(inf.IRMove(inf.IRMem(ptrMemTemp), nextIdxTemp));
+		
+		IRExpr addr = add(baseTemp, mul(word, add(idxTemp, currOffTemp)));
+		stmts.add(inf.IRMove(inf.IRMem(addr), add(ptrMemTemp, word)));
+		
+		stmts.add(afterLabel);
+		stmts.add(inf.IRMove(iTemp, add(iTemp, one)));
+		stmts.add(inf.IRCJump(lt(iTemp, blockSizeTemp), headerLabel.name(), fallthroughLabel.name()));
+
+		stmts.add(fallthroughLabel);
+		stmts.add(inf.IRMove(iTemp, zero));
+		stmts.add(inf.IRMove(bTemp, add(bTemp, one)));
+		stmts.add(inf.IRJump(inf.IRName(headerLabel.name())));
+		
+		stmts.add(doneLabel);
+		stmts.add(inf.IRReturn());
+		
+		return inf.IRFuncDefn(ALLOC_LAYER, inf.IRSeq(stmts));
+	}
+
+	private IRBinOp eq(IRExpr left, IRExpr right) {
+		return inf.IRBinOp(OpType.EQ, left, right);
+	}
+	
+	private IRBinOp lt(IRExpr left, IRExpr right) {
+		return inf.IRBinOp(OpType.LT, left, right);
+	}
+	
+	private IRBinOp add(IRExpr left, IRExpr right) {
+		return inf.IRBinOp(OpType.ADD, left, right);
+	}
+	
+	private IRBinOp sub(IRExpr left, IRExpr right) {
+		return inf.IRBinOp(OpType.SUB, left, right);
+	}
+
+	private IRBinOp mul(IRExpr left, IRExpr right) {
+		return inf.IRBinOp(OpType.MUL, left, right);
+	}
+	
+	private IRTemp genTemp() {
+		return inf.IRTemp(newTemp());
+	}
+
+	public IRSeq constructFuncDefnSeq(FunctionDecl functionDecl, Block body) {
+		List<IRStmt> stmts = new ArrayList<>();
+		
+		List<SimpleDecl> args = functionDecl.getArgs();
+		for(int i = 0; i < args.size(); i++) {
+			String tempName = newTemp(args.get(i).getId());
+			stmts.add(inf.IRMove(new IRTemp(tempName), new IRTemp(argVal(i))));
+		}
+		
+		stmts.add(body.getIRStmt());
+		if(body.getResult() == Result.UNIT) stmts.add(new IRReturn());
+		
+		return inf.IRSeq(stmts);
 	}
 }

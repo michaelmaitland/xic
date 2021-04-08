@@ -1,18 +1,7 @@
 package mtm68.ir;
 
-import static mtm68.util.ArrayUtils.elems;
-import static mtm68.util.ArrayUtils.empty;
-import static mtm68.util.ArrayUtils.singleton;
-import static mtm68.util.NodeTestUtil.arbitraryCondition;
-import static mtm68.util.NodeTestUtil.arrayWithElems;
-import static mtm68.util.NodeTestUtil.assertInstanceOf;
-import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
-import static mtm68.util.NodeTestUtil.boolLit;
-import static mtm68.util.NodeTestUtil.charLit;
-import static mtm68.util.NodeTestUtil.emptyArray;
-import static mtm68.util.NodeTestUtil.emptyBlock;
-import static mtm68.util.NodeTestUtil.intLit;
-import static mtm68.util.NodeTestUtil.stringLit;
+import static mtm68.util.ArrayUtils.*;
+import static mtm68.util.NodeTestUtil.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,6 +34,7 @@ import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
+import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
@@ -52,13 +42,17 @@ import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
+import mtm68.ast.nodes.binary.BinExpr;
+import mtm68.ast.nodes.binary.Binop;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.ExtendedDecl;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
 import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
+import mtm68.ast.types.DeclType;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
@@ -513,6 +507,21 @@ public class NodeToIRNodeConverterTests {
 	//-------------------------------------------------------------------------------- 
 	// Decl
 	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	public void testExtendedDecl() {
+		List<Expr> indices = elems(
+					new IntLiteral(1L),
+					new BinExpr(Binop.ADD, new IntLiteral(0L), new IntLiteral(5L))
+				);
+		ExtendedDecl decl = new ExtendedDecl("x", 
+				new DeclType(Types.INT, indices, 5));
+		
+		ExtendedDecl newDecl = doConversion(decl);
+		System.out.println(newDecl.getIRStmt());
+		System.out.println();
+		System.out.println(new NodeToIRNodeConverter("", new IRNodeFactory_c()).allocLayer());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// If

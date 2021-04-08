@@ -149,6 +149,9 @@ public class Main {
 			
 			program = irConverter.performConvertToIR(program);
 
+			// Add our function before lowering
+			program.getIrCompUnit().appendFunc(irConverter.allocLayer());
+
 			IRNode irRoot = lowerer.visit(program.getIrCompUnit());
 
 			if(shouldOptimize()) irRoot = constFolder.visit(irRoot);

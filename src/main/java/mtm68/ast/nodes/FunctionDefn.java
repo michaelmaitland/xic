@@ -81,11 +81,7 @@ public class FunctionDefn extends Node {
 
 		String funcName = cv.saveAndGetFuncSymbol(functionDecl);
 		
-		List<IRStmt> stmts = new ArrayList<>();
-		stmts.add(body.getIRStmt());
-		if(body.getResult() == Result.UNIT) stmts.add(new IRReturn());
-		
-		IRSeq seq = inf.IRSeq(stmts);
+		IRSeq seq = cv.constructFuncDefnSeq(functionDecl, body);
 		IRFuncDefn defn = inf.IRFuncDefn(funcName, seq);
 				
 		FunctionDefn copy = copy();
