@@ -2,6 +2,7 @@ package mtm68.ast.types;
 
 import java.util.List;
 
+import mtm68.ast.nodes.Expr;
 import mtm68.util.ArrayUtils;
 
 public class Types {
@@ -48,5 +49,16 @@ public class Types {
 		} else {
 			return t1;
 		}
+	}
+
+	public static boolean isArrayOfType(Type actual, Type expected) {
+		if(actual instanceof EmptyArrayType) return true;
+
+		if(actual instanceof ArrayType) {
+			ArrayType arrType = (ArrayType)actual;
+			return arrType.getType() == expected;
+		}
+		
+		return false;
 	}
 }
