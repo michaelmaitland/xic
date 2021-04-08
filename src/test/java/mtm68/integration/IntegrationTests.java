@@ -86,7 +86,13 @@ public class IntegrationTests {
 	
 	@Test
 	void testArrayAdventure() {
-		generateAndAssertOutput("array_adventure.xi", "64");
+		generateAndAssertOutput("array_adventure.xi", "64\n0\n6\n");
+	}
+	
+	@Test
+	void testRandFeatures() {
+		generateAndAssertOutput("rand_features.xi", "Hello6\n4\n8\n1\n9\n-15\n");
+
 	}
 	
 	private void generateAndAssertOutput(String filename, String expected){
@@ -131,13 +137,17 @@ public class IntegrationTests {
 		
 		FunctionCollector funcCollector = new FunctionCollector(libFuncTable);
 		Map<String, FunctionDecl> funcTable = funcCollector.visit(program);
-		
+
+		ErrorUtils.printErrors(funcCollector.getErrors(), filename);
+
 		assertFalse("Found errors after collecting functions", funcCollector.hasError());
 		
 		TypeChecker typeChecker = new TypeChecker(funcTable);	
 		program = typeChecker.performTypeCheck(program);
 		
-		assertFalse("Found errors after collecting functions", typeChecker.hasError());
+		ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
+		
+		assertFalse("Found errors after typechecking", typeChecker.hasError());
 
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();

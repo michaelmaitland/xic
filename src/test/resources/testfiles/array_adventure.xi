@@ -2,8 +2,17 @@ use io
 
 main(args : int[][]){
 	x : int[4][4][4];
+	y : int[0][0][0];
+	z : int[1][2][3]
 	
-	i : int = 0;
+	println(unparseInt(getDimProd(x)));
+	println(unparseInt(getDimProd(y)));
+	println(unparseInt(getDimProd(z)));
+	
+}
+
+getDimProd(x : int[][][]) : int{
+		i : int = 0;
 	j : int = 0;
 	k : int = 0;
 	counter : int = 0;
@@ -22,5 +31,5 @@ main(args : int[][]){
 		j = 0;
 	}
 	
-	print(unparseInt(counter));
+	return counter;
 }
