@@ -137,6 +137,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("fib.xi", "34");
 	}
 	
+	@Test
+	void testNestedSideEffect() {
+		generateAndAssertOutput("nested_side_effect.xi", "1234");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
