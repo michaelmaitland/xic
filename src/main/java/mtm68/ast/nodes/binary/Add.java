@@ -25,7 +25,6 @@ public class Add extends BinExpr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 
 		if(isArrayAddition(left, right)) {
-			
 			IRExpr leftArr = left.getIRExpr();
 			IRExpr rightArr = right.getIRExpr();
 			IRESeq eseq = cv.concatArrays(leftArr, rightArr);

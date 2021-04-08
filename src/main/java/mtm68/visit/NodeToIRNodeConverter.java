@@ -384,7 +384,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		 			leftArr, inf.IRConst(-1 * getWordSize())))),
 
 		 	inf.IRMove(l2, inf.IRMem(inf.IRBinOp(OpType.ADD,
-		 			rightArr, inf.IRConst(-1* getWordSize())))),
+		 			rightArr, inf.IRConst(-1 * getWordSize())))),
 
 		 	inf.IRMove(l, inf.IRBinOp(OpType.ADD, l1, l2)),
 
@@ -394,15 +394,16 @@ public class NodeToIRNodeConverter extends Visitor {
 							inf.IRConst(getWordSize())), inf.IRConst(getWordSize()))
 		 			)),
 		 	
-	 	
 		 	// Setup index to point to start of new arr
-		 	inf.IRMove(startOfArr, inf.IRTemp(retVal(0))),
 		 	inf.IRMove(ptr, inf.IRTemp(retVal(0))),
 		 	inf.IRMove(idx, inf.IRConst(0)),
 		 	
 			// Move size into new arr
 		 	inf.IRMove(inf.IRMem(ptr), l),
 		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),
+		 	
+		 	// Save start of arr
+		 	inf.IRMove(startOfArr, ptr),
 
 			// Check if idx < l1
 		 	inf.IRLabel(header),
@@ -422,7 +423,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		 	
 		 	// save at loc ptr the element idx - l1 in the second arr
 		 	inf.IRLabel(sndCmpTrueLabel),
-		 	inf.IRMove(ptr, inf.IRMem(inf.IRBinOp(OpType.ADD,
+		 	inf.IRMove(inf.IRMem(ptr), inf.IRMem(inf.IRBinOp(OpType.ADD,
 		 			rightArr,
 		 			inf.IRBinOp(OpType.MUL, inf.IRBinOp(OpType.SUB, idx, l1), inf.IRConst(getWordSize()))))),
 		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),

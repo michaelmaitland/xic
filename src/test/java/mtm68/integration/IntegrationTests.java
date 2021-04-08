@@ -46,6 +46,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("hello_world.xi", "Hello world!");
 	}
 	
+	@Test
+	void testArrayConcat() {
+		generateAndAssertOutput("string_concat.xi", "Hello world!");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
