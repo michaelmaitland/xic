@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
+import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import mtm68.FileType;
 import mtm68.SymbolTableManager;
 import mtm68.ast.nodes.FunctionDecl;
@@ -35,6 +37,7 @@ import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
+import mtm68.util.ErrorUtils;
 import mtm68.visit.FunctionCollector;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -51,9 +54,27 @@ public class IntegrationTests {
 		generateAndAssertOutput("string_concat.xi", "Hello world!");
 	}
 	
+	void testExtendedDecl() {
+		generateAndAssertOutput("extended_decl.xi", "");
+	}
+	
+	@Test
+	void testAck() {
+		generateAndAssertOutput("ack.xi", "Ack(2,11): 25\r\n");
+	}
+	
+	@Test
+	void testIfStmts() {
+		generateAndAssertOutput("if_stmts.xi", "1123");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
+			
+//			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+//			irRoot.printSExp(codeWriter);
+//			codeWriter.flush();
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			System.setOut(new PrintStream(baos));
@@ -77,6 +98,8 @@ public class IntegrationTests {
 		Lexer lexx = new FileTypeLexer(filename, testFilePath, FileType.parseFileType(filename), tokenFactory);
 		Parser parser = new Parser(lexx, tokenFactory);
 		ParseResult parseResult = new ParseResult(parser);
+		
+		ErrorUtils.printErrors(parseResult, filename);
 		
 		assertTrue("Found errors in parse stage", parseResult.isValidAST());
 				
@@ -106,7 +129,8 @@ public class IntegrationTests {
 		UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
 		
 		program = irConverter.performConvertToIR(program);
-
+		program.getIrCompUnit().appendFunc(irConverter.allocLayer());
+		
 		IRNode irRoot = lowerer.visit(program.getIrCompUnit());
 		irRoot = constFolder.visit(irRoot);
 		irRoot = cfgVisitor.visit(irRoot);
