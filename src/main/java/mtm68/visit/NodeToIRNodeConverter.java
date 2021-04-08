@@ -138,10 +138,6 @@ public class NodeToIRNodeConverter extends Visitor {
 		return "_RET" + retIdx;
 	}
 	
-	public String argVal(int idx) {
-		return "_ARG" + idx;
-	}
-	
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
 		for(FunctionDecl decl : decls) saveFuncSymbol(decl);
 	}
@@ -360,7 +356,7 @@ public class NodeToIRNodeConverter extends Visitor {
         return inf.IRESeq(inf.IRSeq(seq), startOfArr);
 	}
 	
-	public IRSeq allocateExtendedDeclArray(List<IRExpr> indices) {
+	public IRSeq allocateExtendedDeclArray(String name, List<IRExpr> indices) {
 		// 1. Create temp vars for each index 
 		List<IRTemp> idxTemps = indices.stream()
 			.map(e -> inf.IRTemp(newTemp()))
@@ -393,6 +389,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		// 1 + n0 + n0(n1 + 1) + n0*n1(n2 + 1) + ...
 		
 		IRExpr one = inf.IRConst(1L);
+		
 		List<IRTemp> offsetTemps = ArrayUtils.empty();
 		List<IRStmt> offsetStmts = ArrayUtils.empty();
 		for(int i = 0; i < idxTemps.size() + 1; i++) {
@@ -411,7 +408,7 @@ public class NodeToIRNodeConverter extends Visitor {
 				continue;
 			}
 			
-			IRExpr prevOff = inf.IRMem(offsetTemps.get(i - 1));
+			IRExpr prevOff = offsetTemps.get(i - 1);
 			IRExpr inner = inf.IRBinOp(OpType.ADD, idxTemps.get(i - 1), one);
 			
 			IRExpr mult = null;
@@ -443,9 +440,10 @@ public class NodeToIRNodeConverter extends Visitor {
 		
 		// 6. Allocate array and extract base pointer from return value
 		IRTemp sizeTemp = offsetTemps.remove(offsetTemps.size() - 1);
+		IRExpr word = inf.IRConst(getWordSize());
 	   IRCallStmt allocStmt = inf.IRCallStmt(
 	   		inf.IRName(getMallocLabel()), 
-	   		ArrayUtils.singleton(sizeTemp));
+	   		ArrayUtils.singleton(mul(word, sizeTemp)));
 	   
 	   IRTemp basePtr = genTemp();
 	   IRStmt saveBasePtr = inf.IRMove(basePtr, inf.IRTemp(retVal(0)));
@@ -464,6 +462,9 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	   	allocLayerStmts.add(new IRCallStmt(inf.IRName(ALLOC_LAYER), args));
 	   }
+	   
+	   // 8. Move basePtr + 8 into our id
+	   IRMove saveArrPtrStmt = inf.IRMove(inf.IRTemp(newTemp(name)), add(basePtr, word));
 		
 		List<IRStmt> result = ArrayUtils.empty();
 		result.addAll(tempMoves);
@@ -474,6 +475,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		result.add(saveBasePtr);
 		result.add(baseArrayLengthStmt);
 		result.addAll(allocLayerStmts);
+		result.add(saveArrPtrStmt);
 		
 		return inf.IRSeq(result);
 	}
@@ -545,7 +547,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		stmts.add(continueLabel);
 		
 		IRExpr sectionOff = mul(bTemp, mul(currIdxTemp, add(nextIdxTemp, one)));
-		IRExpr blockOff = mul(iTemp, add(nextIdxTemp, one));
+		IRExpr blockOff = mul(sub(iTemp, one), add(nextIdxTemp, one));
 		
 		stmts.add(inf.IRMove(ptrTemp, add(sectionOff, add(blockOff, nextOffTemp))));
 		stmts.add(inf.IRMove(ptrMemTemp, add(baseTemp, mul(word, ptrTemp))));
@@ -579,6 +581,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private IRBinOp add(IRExpr left, IRExpr right) {
 		return inf.IRBinOp(OpType.ADD, left, right);
+	}
+	
+	private IRBinOp sub(IRExpr left, IRExpr right) {
+		return inf.IRBinOp(OpType.SUB, left, right);
 	}
 
 	private IRBinOp mul(IRExpr left, IRExpr right) {

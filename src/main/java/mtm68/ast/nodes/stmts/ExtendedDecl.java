@@ -84,7 +84,7 @@ public class ExtendedDecl extends Decl {
 			.map(Expr::getIRExpr)
 			.collect(Collectors.toList());
 
-		IRSeq seq = cv.allocateExtendedDeclArray(indices);
+		IRSeq seq = cv.allocateExtendedDeclArray(getId(), indices);
 		return copyAndSetIRStmt(seq);
 	}
 }
