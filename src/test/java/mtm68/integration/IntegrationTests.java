@@ -66,7 +66,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testAck() {
-		generateAndAssertOutput("ack.xi", "Ack(2,11): 25\r\n");
+		generateAndAssertOutput("ack.xi", "Ack(2,11): 25\n");
 	}
 	
 	@Test
@@ -98,9 +98,8 @@ public class IntegrationTests {
 //			codeWriter.flush();
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			System.setOut(new PrintStream(baos));
 				
-			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot);
+			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot, baos);
 			simulator.call("_Imain_paai", 0);
 
 			assertEquals(expected, baos.toString());

@@ -3,6 +3,7 @@ package edu.cornell.cs.cs4120.ir.interpret;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +59,8 @@ public class IRSimulator {
     /** heap size maximum **/
     private long heapSizeMax;
 
+    private OutputStream outStream;
+    
     private ExprStack exprStack;
     private BufferedReader inReader;
 
@@ -66,6 +69,7 @@ public class IRSimulator {
     protected static int debugLevel = 0;
 
     public static final int DEFAULT_HEAP_SIZE = 10240;
+    
 
     /**
      * Construct an IR interpreter with a default heap size
@@ -73,6 +77,11 @@ public class IRSimulator {
      */
     public IRSimulator(IRCompUnit compUnit) {
         this(compUnit, DEFAULT_HEAP_SIZE);
+    }
+    
+    public IRSimulator(IRCompUnit compUnit, OutputStream stream) {
+        this(compUnit, DEFAULT_HEAP_SIZE);
+        this.outStream = stream;
     }
 
     /**
@@ -304,15 +313,22 @@ public class IRSimulator {
             // io declarations
             case "_Iprint_pai": {
                 long ptr = args[0], size = read(ptr - ws);
-                for (long i = 0; i < size; ++i)
-                    System.out.print((char) read(ptr + i * ws));
+                for (long i = 0; i < size; ++i) {
+                	char curChar = (char) read(ptr + i * ws);
+                    System.out.print(curChar);
+                    if(outStream != null) outStream.write(curChar); 
+                }
                 break;
             }
             case "_Iprintln_pai": {
                 long ptr = args[0], size = read(ptr - ws);
-                for (long i = 0; i < size; ++i)
-                    System.out.print((char) read(ptr + i * ws));
+                for (long i = 0; i < size; ++i) {
+                	char curChar = (char) read(ptr + i * ws);
+	                System.out.print(curChar);
+	                if(outStream != null) outStream.write(curChar); 
+                }
                 System.out.println();
+                if(outStream != null) outStream.write('\n'); 
                 break;
             }
             case "_Ireadln_ai": {
