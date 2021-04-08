@@ -61,6 +61,9 @@ public class MultipleAssign extends Assign {
 	
 	@Override
 	public Node visitChildren(Visitor v) {
+		// Check RHS before LHS so we cant use vars declared on LHS on RHS
+		FExpr newRhs = rhs.accept(v);
+
 		if(decls == null) {
 			return this;
 		}
@@ -81,9 +84,7 @@ public class MultipleAssign extends Assign {
 				vl.add(Optional.of(newS));
 			}
 		}
-		
-		FExpr newRhs = rhs.accept(v);
-		
+			
 		if(newRhs != rhs || newDecls != decls) {
 			MultipleAssign multi = copy();
 			multi.decls = newDecls;
