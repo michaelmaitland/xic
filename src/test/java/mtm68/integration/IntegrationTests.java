@@ -59,6 +59,7 @@ public class IntegrationTests {
 		generateAndAssertOutput("array_concat.xi", "POOP");
 	}
 	
+	@Test
 	void testExtendedDecl() {
 		generateAndAssertOutput("extended_decl.xi", "");
 	}
@@ -71,6 +72,21 @@ public class IntegrationTests {
 	@Test
 	void testIfStmts() {
 		generateAndAssertOutput("if_stmts.xi", "1123");
+	}
+	
+	@Test
+	void testEx01(){
+		generateAndAssertOutput("ex01.xi", "Hello, World!\n");
+	}
+	
+	@Test
+	void testPrimes() {
+		generateAndAssertOutput("primes.xi", "Largest prime less than 1,000 is 997");
+	}
+	
+	@Test
+	void testArrayAdventure() {
+		generateAndAssertOutput("array_adventure.xi", "64");
 	}
 	
 	private void generateAndAssertOutput(String filename, String expected){
