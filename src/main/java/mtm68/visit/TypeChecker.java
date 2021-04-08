@@ -27,7 +27,7 @@ import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.ArrayType;
-import mtm68.ast.types.ContextType;
+import mtm68.ast.types.EmptyArrayType;
 import mtm68.ast.types.HasResult;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
@@ -248,6 +248,8 @@ public class TypeChecker extends Visitor {
 	}
 
 	public void checkArrayLength(ArrayLength arrayLength) {
+		if(arrayLength.getExp().getType() instanceof EmptyArrayType) return;
+
 		if(!(arrayLength.getExp().getType() instanceof ArrayType)) {
 			reportError(arrayLength, "Length takes an argument of type Array.");
 		}

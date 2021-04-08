@@ -141,6 +141,14 @@ public class TypeCheckerTests {
 		ArrayLength ai = new ArrayLength(intLit(0L));
 		assertTypeCheckError(ai);
 	}
+	
+	@Test
+	void arrayLengthEmptyArrayOk() {
+		ArrayLength ai = new ArrayLength(new ArrayInit(empty()));
+		ArrayLength newAi = doTypeCheck(ai);
+
+		assertEquals(INT, newAi.getType());
+	}
 
 	//-------------------------------------------------------------------------------- 
 	// BoolLiteral

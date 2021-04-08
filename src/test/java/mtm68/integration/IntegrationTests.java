@@ -50,8 +50,13 @@ public class IntegrationTests {
 	}
 	
 	@Test
-	void testArrayConcat() {
+	void testStringConcat() {
 		generateAndAssertOutput("string_concat.xi", "Hello world!");
+	}
+	
+	@Test
+	void testArrayConcat() {
+		generateAndAssertOutput("array_concat.xi", "POOP");
 	}
 	
 	void testExtendedDecl() {
