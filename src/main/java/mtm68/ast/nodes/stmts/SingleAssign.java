@@ -54,8 +54,8 @@ public class SingleAssign extends Assign {
 	
 	@Override
 	public Node visitChildren(Visitor v) {
-		Node newLhs = lhs.accept(v);
 		Expr newRhs = rhs.accept(v);
+		Node newLhs = lhs.accept(v);
 		
 		if(newLhs != lhs || newRhs != rhs) {
 			SingleAssign single = copy();

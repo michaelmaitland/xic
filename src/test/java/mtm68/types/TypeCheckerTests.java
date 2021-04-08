@@ -595,6 +595,13 @@ public class TypeCheckerTests {
 		SingleAssign assign = new SingleAssign(new SimpleDecl("y", BOOL), intLit(0L));
 		assertTypeCheckError(context, assign);
 	}
+	
+	@Test
+	void singleAssignToSelfIsError() {
+		// x:int = x 
+		SingleAssign assign = new SingleAssign(new SimpleDecl("", INT), new Var("x"));
+		assertTypeCheckError(assign);
+	}
 
 	@Test
 	void singleAssignDecEmptyArray() {
