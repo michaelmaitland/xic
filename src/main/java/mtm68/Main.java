@@ -22,9 +22,11 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 
+import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.interpret.IRSimulator;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -161,13 +163,16 @@ public class Main {
 			
 			if(outputIR) {
 				FileUtils.writeToFile(programName, irRoot);
-				CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-				irRoot.printSExp(codeWriter);
-				codeWriter.flush();
+//				CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+//				irRoot.printSExp(codeWriter);
+//				codeWriter.flush();
 			}
 			
 			if(interpretIR) {
-				// TODO: run the IR
+				System.out.println("========= IR Interpreter Output =========\n");
+				IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot);
+				simulator.call("_Imain_paai", 0);
+				System.out.println("\n=========================================");
 			}
 		}
 	}
