@@ -67,6 +67,7 @@ The key classes and packages we created or updated for this assignment are the f
     - **Tobin:** 
        - IRLowerer + tests
        - IRConstantFolder + tests
+       - Integration tests
     - **Maitland:**
         - AST to IRCode generation + tests
     - **Bass:**
@@ -81,7 +82,7 @@ In this assignment, we each found it very useful to follow test-driven developme
 
 In order to succeed with this plan, we each created a JUnit test suite for each of the AST/IRCode passes we were responsible for. For each visitor described in the architecture section, you can find a comprehensive test suite in /xic/src/test/java/mtm68/ir. Here, you can find test cases for very simple translations as well as more complicated situations.
 
-A very important part of our testing for this assignment was writing integration tests to ensure the system worked as a whole. This was crucial as we did a lot of the work in parallel (see Work Plan) and had to guarantee our pieces fit well together. This required writing Xi programs and making sure the final IRCode made sense and was correct. To do this, we used the IRCode interpreter provided to us to see that our generated IRCode was computing what it should have been.
+A very important part of our testing for this assignment was writing integration tests to ensure the system worked as a whole. This was crucial as we did a lot of the work in parallel (see Work Plan) and had to guarantee our pieces fit well together. This required writing Xi programs and making sure the final IRCode made sense and was correct. To do this, we used the IRCode interpreter provided to us to see that our generated IRCode was computing what it should have been. Using this method revealed a handful of errors in our implementation (such as failure to concat arrays or handling out of bounds errors incorrectly). 
 
 It should also be said that we utilized the xth test suite to make sure our output was compliant with the autograder's expectations.
 
