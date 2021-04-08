@@ -114,9 +114,10 @@ public class NodeToIRNodeConverterTests {
 	private void assertArrayInit(ArrayInit converted, int numElems) {
 		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, converted.getIRExpr());
 		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, eseq.stmt());
-		assertEquals(2 + numElems, seq.stmts().size()); // one to alloc, one to set length
-		assertInstanceOf(IRMove.class, seq.stmts().get(0)); 
-		IRMove moveLength = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(1)); 
+		assertEquals(3 + numElems, seq.stmts().size()); // one to alloc, one to move ret into temp, one to set length
+		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
+		assertInstanceOf(IRMove.class, seq.stmts().get(1)); 
+		IRMove moveLength = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(2)); 
 		IRConst length = assertInstanceOfAndReturn(IRConst.class, moveLength.source());
 		assertEquals(numElems, length.constant());
 		assertInstanceOf(IRBinOp.class, eseq.expr());

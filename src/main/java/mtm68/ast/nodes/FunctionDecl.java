@@ -85,4 +85,33 @@ public class FunctionDecl extends Node {
 		/* There is no IR conversion that needs to be done */
 		return this;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FunctionDecl other = (FunctionDecl) obj;
+		if (args == null) {
+			if (other.args != null)
+				return false;
+		} else if (!args.equals(other.args))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (returnTypes == null) {
+			if (other.returnTypes != null)
+				return false;
+		} else if (!returnTypes.equals(other.returnTypes))
+			return false;
+		return true;
+	}
+	
+	
 }

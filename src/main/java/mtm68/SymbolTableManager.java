@@ -19,7 +19,7 @@ import mtm68.parser.Parser;
 import mtm68.util.ErrorUtils;
 
 public class SymbolTableManager {
-	private Map<String, Map<String, ContextType>> useIdToSymTable;
+	private Map<String, Map<String, FunctionDecl>> useIdToSymTable;
 	private Path libPath;
 	
 	public SymbolTableManager(Path libPath) {
@@ -27,8 +27,8 @@ public class SymbolTableManager {
 		this.libPath = libPath;
 	}
 	
-	public Map<String, ContextType> mergeSymbolTables(Program prog) throws SemanticException{
-		Map<String, ContextType> mergedTable = new HashMap<>();
+	public Map<String, FunctionDecl> mergeSymbolTables(Program prog) throws SemanticException{
+		Map<String, FunctionDecl> mergedTable = new HashMap<>();
 		for(Use use : prog.getUseStmts()) {
 			if(!useIdToSymTable.containsKey(use.getId())) {
 				try {
@@ -38,7 +38,7 @@ public class SymbolTableManager {
 					throw new SemanticException(use, use.getId() + ".ixi not found in library " + libPath);
 				}
 			}
-			Map<String, ContextType> curMap = useIdToSymTable.get(use.getId());
+			Map<String, FunctionDecl> curMap = useIdToSymTable.get(use.getId());
 			for(String f : curMap.keySet()) {
 				if(mergedTable.containsKey(f)) {
 					if(!mergedTable.get(f).equals(curMap.get(f))) 
@@ -70,10 +70,10 @@ public class SymbolTableManager {
 	}
 	
 	public void generateSymbolTableFromAST(String useId, Interface root) {
-		Map<String, ContextType> symTable = new HashMap<>();
+		Map<String, FunctionDecl> symTable = new HashMap<>();
 		
 		for(FunctionDecl decl : root.getFunctionDecls())
-			symTable.put(decl.getId(), new ContextType(decl.getArgs(), decl.getReturnTypes()));
+			symTable.put(decl.getId(), decl);
 		
 		useIdToSymTable.put(useId, symTable);
 	}

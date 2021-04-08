@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.exception.FatalTypeException;
 
@@ -20,9 +21,19 @@ public class TypingContext {
 		contextStack.push(new HashMap<>());
 	}
 
-	public TypingContext(Map<String, ContextType> symTable) {
+	public TypingContext(Map<String, FunctionDecl> funcTable) {
 		contextStack = new ArrayDeque<>();
-		contextStack.push(symTable);
+		contextStack.push(convertFuncTableToContext(funcTable));
+	}
+	
+	private Map<String, ContextType> convertFuncTableToContext(Map<String, FunctionDecl> funcTable) {
+		Map<String, ContextType> result = new HashMap<>();
+		for(String funcName : funcTable.keySet()) {
+			FunctionDecl decl = funcTable.get(funcName);
+			ContextType cType = new ContextType(decl.getArgs(), decl.getReturnTypes());
+			result.put(funcName, cType);
+		}
+		return result;
 	}
 
 	/** Pushes new map onto context stack */

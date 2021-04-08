@@ -107,15 +107,18 @@ public class If extends Statement {
 
 		String trueLabel = cv.getFreshLabel();
 		String falseLabel = cv.getFreshLabel();
+		String afterElse = cv.getFreshLabel();
 		
 		List<IRStmt> stmts = ArrayUtils.elems(
 					cv.getCtrlFlow(condition, trueLabel, falseLabel),
 					inf.IRLabel(trueLabel),
 					ifBranch.getIRStmt(),
+					inf.IRJump(inf.IRName(afterElse)),
 					inf.IRLabel(falseLabel)
 				);
 		
 		elseBranch.ifPresent(e -> stmts.add(e.getIRStmt()));
+		stmts.add(inf.IRLabel(afterElse));
 
 		IRSeq seq = inf.IRSeq(stmts);
 

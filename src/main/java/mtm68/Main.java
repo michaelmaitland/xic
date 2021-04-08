@@ -31,6 +31,7 @@ import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
@@ -47,6 +48,7 @@ import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
+import mtm68.util.FileUtils;
 import mtm68.visit.FunctionCollector;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -112,9 +114,9 @@ public class Main {
 			cmdParser.parseArgument(args);
 		} catch (CmdLineException e) {
 			System.out.println(e.getMessage());
-			printHelpScreen(cmdParser);
 		}
 		
+		FileUtils.dPath = dPath;
 		Debug.DEBUG_ON = debug;
 
 		if (help || sourceFiles.isEmpty())
@@ -131,13 +133,15 @@ public class Main {
 		    }
 		});
 		
-		Map<String, Program> programs = getValidPrograms(symTableManager);
+		Map<String, List<FunctionDecl>> progFuncDecls = new HashMap<>();
+		Map<String, Program> programs = getValidPrograms(symTableManager, progFuncDecls);
 		
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
 		for(String programName : programs.keySet()) {
 			Program program = programs.get(programName);
+			
 
-			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory);
+			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory, progFuncDecls.get(programName));
 			Lowerer lowerer = new Lowerer(nodeFactory);
 			IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
 			CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
@@ -156,7 +160,7 @@ public class Main {
 			irRoot = unusedLabelVisitor.visit(irRoot);
 			
 			if(outputIR) {
-				// TODO: output IR
+				FileUtils.writeToFile(programName, irRoot);
 				CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
 				irRoot.printSExp(codeWriter);
 				codeWriter.flush();
@@ -172,7 +176,8 @@ public class Main {
 		return !doNotOptimize;
 	}
 	
-	public Map<String, Program> getValidPrograms(SymbolTableManager symTableManager) throws IOException {
+	public Map<String, Program> getValidPrograms(SymbolTableManager symTableManager, 
+			Map<String, List<FunctionDecl>> progFuncDecls) throws IOException {
 		Map<String, Program> validPrograms = new HashMap<>();
 
 		for (String filename : sourceFiles) {
@@ -196,13 +201,13 @@ public class Main {
 			if(outputLex){
 				SourceFileLexer lexer = new SourceFileLexer(filename, sourcePath);
 				List<Token> tokens = lexer.getTokens();	
-				writeToFile(filename, tokens);
+				FileUtils.writeToFile(filename, tokens);
 			}
 			
-			if(outputParse) writeToFile(filename, parseResult);
+			if(outputParse) FileUtils.writeToFile(filename, parseResult);
 			
 			if(!parseResult.isValidAST()) {
-				if(outputTypeCheck) writeToFile(filename, Optional.of(parseResult.getFirstError()));
+				if(outputTypeCheck) FileUtils.writeToFile(filename, Optional.of(parseResult.getFirstError()));
 				continue;
 			}
 			
@@ -211,22 +216,23 @@ public class Main {
 			//Typecheck
 			if(root instanceof Program) {
 				try {
-					Map<String, ContextType> mergedSymbolTable = symTableManager.mergeSymbolTables((Program) root);
+					Map<String, FunctionDecl> libFuncTable = symTableManager.mergeSymbolTables((Program) root);
 					
-					FunctionCollector funcCollector = new FunctionCollector(mergedSymbolTable);
-					root.accept(funcCollector);
-					Map<String, ContextType> startingContext = funcCollector.getContext();
+					FunctionCollector funcCollector = new FunctionCollector(libFuncTable);
+					Map<String, FunctionDecl> funcTable = funcCollector.visit(root);
 					if(funcCollector.hasError()) {
 						ErrorUtils.printErrors(funcCollector.getErrors(), filename);
-						if(outputTypeCheck) writeToFile(filename, Optional.of(funcCollector.getFirstError()));
+						if(outputTypeCheck) FileUtils.writeToFile(filename, Optional.of(funcCollector.getFirstError()));
 						continue;
 					}
 					
-					TypeChecker typeChecker = new TypeChecker(startingContext);	
+					progFuncDecls.put(filename, new ArrayList<>(funcTable.values()));
+					
+					TypeChecker typeChecker = new TypeChecker(funcTable);	
 					root = typeChecker.performTypeCheck(root);
 					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 					if(outputTypeCheck) {
-						writeToFile(filename, 
+						FileUtils.writeToFile(filename, 
 							typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
 					}
 					
@@ -237,7 +243,7 @@ public class Main {
 				catch(SemanticException e) {
 					SemanticError error = new SemanticError(e.getErrorNode(), e.getMessage());
 					System.out.println(error.getPrintErrorMessage(filename));
-					if(outputTypeCheck) writeToFile(filename, Optional.of(error));
+					if(outputTypeCheck) FileUtils.writeToFile(filename, Optional.of(error));
 					continue;
 				}
 			}
@@ -248,79 +254,6 @@ public class Main {
 		}
 		
 		return validPrograms;
-	}
-	
-
-	/**
-	 * Writes lexed results to [filename.lexed] 
-	 * Requires: filename is of the form filename.xi or filename.ixi
-	 * 
-	 * @param filename the name of the file lexed
-	 * @param tokens   the list of lexed tokens
-	 */
-	public void writeToFile(String filename, List<Token> tokens) {
-		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".lexed");
-		Path outpath = dPath.resolve(outfile);
-		try {
-			Files.createDirectories(outpath.getParent());
-			Files.write(outpath, tokens.stream()
-					.map(Object::toString)
-					.collect(Collectors.toList()), Charset.defaultCharset());
-		} catch (IOException e) {
-			System.out.println("Failed writing lexer results to " + dPath.resolve(outfile) + " for " + filename);
-		}
-	}
-	
-	/**
-	 * Writes parsed AST to [filename.parsed] 
-	 * Requires: filename is of the form filename.xi or filename.ixi
-	 * 
-	 * @param filename the name of the file parsed
-	 * @param ast      the root node of the ast
-	 */
-	public void writeToFile(String filename, ParseResult result) {
-		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".parsed");
-		Path outpath = dPath.resolve(outfile);
-		try {
-			Files.createDirectories(outpath.getParent());
-			if(result.isValidAST()) {
-				Node ast = result.getNode().get();
-				SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(outpath.toFile()));
-				ast.prettyPrint(printer);
-				printer.close();
-			}
-			else {
-				String error = result.getFirstError().getFileErrorMessage();
-				BufferedWriter writer = new BufferedWriter(new FileWriter(outpath.toString()));
-			    writer.write(error);
-			    writer.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Failed writing parser results to " + dPath.resolve(outfile) + " for " + filename);
-		}
-	}
-	
-	/**
-	 * Writes typecheck results to [filename.typed] 
-	 * Requires: filename is of the form filename.xi or filename.ixi
-	 * 
-	 * @param filename the name of the file parsed
-	 * @param error    the semantic error to be written
-	 */
-	public void writeToFile(String filename, Optional<BaseError> error) {
-		String outfile = filename.replaceFirst("\\.(xi|ixi)", ".typed");
-		Path outpath = dPath.resolve(outfile);
-		String msg = error.isPresent() ? error.get().getFileErrorMessage() : "Valid Xi Program";
-		BufferedWriter writer;
-		try {
-			writer = new BufferedWriter(new FileWriter(outpath.toString()));
-		    writer.write(msg);
-		    writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Failed writing type check results to " + dPath.resolve(outfile) + " for " + filename);
-		}
 	}
 
 	/**

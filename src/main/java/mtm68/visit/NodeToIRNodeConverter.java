@@ -1,5 +1,6 @@
 package mtm68.visit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,10 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
@@ -30,22 +33,23 @@ import mtm68.ast.nodes.Not;
 import mtm68.ast.nodes.binary.And;
 import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
+import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
+import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
+import mtm68.util.FreshTempGenerator;
 
 public class NodeToIRNodeConverter extends Visitor {
 	
 	private String programName;
 
 	private int labelCounter;
-	
-	private int tmpCounter;
-	
+		
 	private IRNodeFactory inf;
 	
 	/**
@@ -63,14 +67,19 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private static final int WORD_SIZE = 8;
 
+	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
+		this(programName, inf, ArrayUtils.empty());
+	}
+	
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, List<FunctionDecl> decls) {
 		this(programName, new HashMap<>(), inf);
+		saveFuncSymbols(decls);
 	}
 	
 	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
 		this.programName = programName;
 		this.labelCounter = 0;
-		this.tmpCounter = 0;
 		this.funcAndProcEncodings = funcAndProcEncodings;
 		this.inf = inf;
 	}
@@ -111,8 +120,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * @return a temp that does not need to be used by a different node.
 	 */
 	public String newTemp() {
-		tmpCounter++;
-		return "_t" + tmpCounter;
+		return "_t" + FreshTempGenerator.getFreshTemp();
 	}
 	
 	/**
@@ -127,7 +135,15 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	public String retVal(int retIdx) {
-		return "RET_" + retIdx;
+		return "_RET" + retIdx;
+	}
+	
+	public String argVal(int idx) {
+		return "_ARG" + idx;
+	}
+	
+	public void saveFuncSymbols(List<FunctionDecl> decls) {
+		for(FunctionDecl decl : decls) saveFuncSymbol(decl);
 	}
 
 	public String argVal(int argIdx) {
@@ -139,6 +155,13 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * using the encoding defined in the Xi ABI.
 	 */
 	public String saveAndGetFuncSymbol(FunctionDecl functionDecl) {
+		if(!funcAndProcEncodings.containsKey(functionDecl.getId()))
+			saveFuncSymbol(functionDecl);
+		
+		return funcAndProcEncodings.get(functionDecl.getId());
+	}
+	
+	public void saveFuncSymbol(FunctionDecl functionDecl) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("_I");
 		sb.append(encodeFuncName(functionDecl.getId()));
@@ -154,7 +177,22 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 		String encoded = sb.toString();
 		funcAndProcEncodings.put(functionDecl.getId(), encoded); 
-		return encoded;
+	}
+	
+	
+	/**
+	 * Returns an encoding of a procedure using the encoding defined in the Xi ABI.
+	 * 
+	 * @throws InternalCompilerError if the symbol has not yet been defined.
+	 */
+	public String getFuncSymbol(String funcName) {
+		String enc = this.funcAndProcEncodings.get(funcName);
+		
+		if(enc == null) {
+			throw new InternalCompilerError("Failed to  get function symbol: " + funcName);
+		}
+		
+		return enc;
 	}
 	
 	/**
@@ -557,5 +595,20 @@ public class NodeToIRNodeConverter extends Visitor {
 	 */
 	public String getProgramName() {
 		return programName;
+	}
+
+	public IRSeq constructFuncDefnSeq(FunctionDecl functionDecl, Block body) {
+		List<IRStmt> stmts = new ArrayList<>();
+		
+		List<SimpleDecl> args = functionDecl.getArgs();
+		for(int i = 0; i < args.size(); i++) {
+			String tempName = newTemp(args.get(i).getId());
+			stmts.add(inf.IRMove(new IRTemp(tempName), new IRTemp(argVal(i))));
+		}
+		
+		stmts.add(body.getIRStmt());
+		if(body.getResult() == Result.UNIT) stmts.add(new IRReturn());
+		
+		return inf.IRSeq(stmts);
 	}
 }

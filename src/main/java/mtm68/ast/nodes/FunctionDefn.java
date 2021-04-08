@@ -1,10 +1,16 @@
 package mtm68.ast.nodes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
+import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.types.Result;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -74,7 +80,8 @@ public class FunctionDefn extends Node {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 
 		String funcName = cv.saveAndGetFuncSymbol(functionDecl);
-		IRSeq seq = inf.IRSeq(body.getIRStmt());
+		
+		IRSeq seq = cv.constructFuncDefnSeq(functionDecl, body);
 		IRFuncDefn defn = inf.IRFuncDefn(funcName, seq);
 				
 		FunctionDefn copy = copy();

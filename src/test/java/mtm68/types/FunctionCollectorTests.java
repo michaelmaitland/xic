@@ -54,14 +54,14 @@ public class FunctionCollectorTests {
 	
 	@Test
 	void testInterfaceMismatch() {
-		Map<String, ContextType> initSymTable = new HashMap<>();
-		initSymTable.put("f", new ContextType(elems(new SimpleDecl("x", Types.INT)), elems(Types.INT)));
+		Map<String, FunctionDecl> initFuncTable = new HashMap<>();
+		initFuncTable.put("f", new FunctionDecl("f", elems(new SimpleDecl("x", Types.INT)), elems(Types.INT)));
 		
 		//Matching decls
 		Program prog = new Program(empty(),
 				elems(func("f")));
 		
-		TypingContext context = functionCollect(prog, initSymTable);
+		TypingContext context = functionCollect(prog, initFuncTable);
 		
 		assertTrue(context.isDefined("f"));
 		assertTrue(context.isFunctionDecl("f"));
@@ -70,7 +70,7 @@ public class FunctionCollectorTests {
 		prog = new Program(empty(),
 				elems(func("f", elems(new SimpleDecl("y", Types.BOOL)))));
 		
-		assertFunctionCollectError(prog, initSymTable);
+		assertFunctionCollectError(prog, initFuncTable);
 	}
 	
 	private FunctionDefn func(String name, List<SimpleDecl> args) {
@@ -87,22 +87,20 @@ public class FunctionCollectorTests {
 		return functionCollect(root, new HashMap<>());
 	}
 	
-	private TypingContext functionCollect(Node root, Map<String, ContextType> initSymTable) {
-		FunctionCollector fc = new FunctionCollector(initSymTable);
+	private TypingContext functionCollect(Node root, Map<String, FunctionDecl> initFuncTable) {
+		FunctionCollector fc = new FunctionCollector(initFuncTable);
 		addLocs(root);
-		root.accept(fc);
-		return new TypingContext(fc.getContext());
+		return new TypingContext(fc.visit(root));
 	}
 	
 	private void assertFunctionCollectError(Node root) {
 		assertFunctionCollectError(root, new HashMap<>());
 	}
 	
-	private void assertFunctionCollectError(Node root, Map<String, ContextType> initSymTable) {
-		FunctionCollector fc = new FunctionCollector(initSymTable);
+	private void assertFunctionCollectError(Node root, Map<String, FunctionDecl> initFuncTable) {
+		FunctionCollector fc = new FunctionCollector(initFuncTable);
 		addLocs(root);
-		root.accept(fc);
-		fc.getContext();
+		fc.visit(root);
 		assertTrue(fc.hasError(), "Expected collect error but got none");
 	}
 	
