@@ -17,7 +17,16 @@ An interesting aspect of this assignment was the ability to divide the overall o
 
 ## Specification
 
-The following are choices we made regarding specification...
+The following are choices we made regarding specification:
+
+### AST to IR Conversion ###
+
+* `Expr`s have a field `IRExpr` and `Statements` have a field called `IRStmt`.
+* `FunctionDefn`, which is neither an `Expr` nor a `Statment` have a field called `IRFuncDefn`
+  * We renamed `IRFuncDecl` to `IRFuncDefn` since `FuncDecl`s do not have a body and the original `IRFuncDecl` contained a body
+* `FunctionDecl`, `Interface`, `Use`, and `ErrorStatement` AST nodes are not represented as part of the IR tree
+* `SimpleDecl` initializes the declared variable to 0 if no assignment is made
+
 
 ***[INSERT]***
 
@@ -35,15 +44,21 @@ The key classes and packages we created or updated for this assignment are the f
 - edu.cornell.cs.cs410.ir.visit.ConstantFolder
     - This is the IRVisitor who's purpose is to fold constants in IRCode. The only place where this is possible at the IR level is in the IRBinOp. This visitor, at each IRBinOp, checks to see if both the left and right expressions are IRConsts and, if they are, computes the binop and returns the result in a new IRConst. The only exceptions are when there is a division or modulo by zero in which case the IRBinop is not folded and returned as is.
     
-***[INSERT SCOTT AND MIKES CLASSES]***
+- mtm68.visit.NodeToIRNodeConverter
+    - This is an AST visitor who's purpose is to decorate the AST nodes with their IR transformation. It is also responsible for getting fresh labels, fresh temps, named temps, getting encoded function names.
+
+***[INSERT SCOTTS CLASSES]***
  				  
     
 ### Code Design ###
  - For this assignment, we essentially were able to use the Visitor pattern to accomplish each subtask we needed to complete. We used our (AST) Visitor to create IRCode. We then used the IRVisitor to lower the IR, constant fold, and handle the basic block reordering. By breaking up the assignment in this way, the work become highly parallelizable as well as relatively straightforward. Each of the translations and transformations themselves were not too complicated. The most interesting case deals with the construction and use of the CFG to reorder basic blocks. This... ***[SCOTT INSERT]***
  
+ - The conversion from AST to IR transformations are done in the AST node classes and use the `NodeToIRConverter` when the transformation requires information related to state or wants to do an operation that is reused by other AST nodes. This makes it easy to understand the high level translations while allowing for code reuse.
+
  - One tradeoff we made had to do with the commutability checks at the IR level for IRBinOp and IRMove lowering. We decided, for the sake of simplicity, to consider all IRMem accesses to be alias and did not decide to do further analysis described in lecture. We figure this will likely not have too big of an impact on performance which is why we avoided the hassle.
  
  - The most interesting data structures were used in the CFG construction. ***[SCOTT INSERT]*** 
+
 
 ### Programming ###
 - The greatest challenge during this assignment was keeping each other informed about the individual passes we were working on. It was crucial to make sure we were all on the same page about the assumptions that could be made at each stage of code processing. We each decided to approach our passes in a bottom-up manner. This involved writing transformations for the simpler nodes and expressions and building our way up from there. This allowed us to ensure all of the "base cases" were correct as we built up in complexity.
@@ -74,7 +89,7 @@ It should also be said that we utilized the xth test suite to make sure our outp
 
 For this assignment, we found the work to be highly parallelizable. As this assignment requires creating a few passes over the AST and IRCode, we were able to divide the passes up and work independently on them under the assumptions made at each pass. (For example, after lowering, it can be assumed there are no ESEQs in the IRCode). Maitland handled the generation of IRCode from the AST. Tobin lowered the IRCode and implemented constant folding at the IR level. Bass handled the CFG analysis and reordering of the basic blocks. 
 
-In order for our independent work to be successful, we did communicate frequently to ensure that we were all operating on the correct assumptions and that our passes would fit correctly when put together. 
+In order for our independent work to be successful, we did communicate frequently to ensure that we were all operating on the correct assumptions and that our passes would fit correctly when put together. When it came time to put the pieces together, things came together with just some minor refactoring.
 
 ## Known Problems
 
