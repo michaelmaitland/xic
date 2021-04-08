@@ -22,6 +22,7 @@ import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.interpret.IRSimulator;
+import edu.cornell.cs.cs4120.ir.interpret.IRSimulator.Trap;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
@@ -95,7 +96,36 @@ public class IntegrationTests {
 	@Test
 	void testRandFeatures() {
 		generateAndAssertOutput("rand_features.xi", "Hello6\n4\n8\n1\n9\n-15\n");
-
+	}
+	
+	@Test
+	void testMultiReturn() {
+		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\n");
+	}
+	
+	@Test
+	void testEmptyArray() {
+		generateAndAssertOutput("empty_array_explore.xi", "Just this\nJust this\n\n");
+	}
+	
+	@Test
+	void testExtdDeclConcat() {
+		generateAndAssertOutput("extended_decl_concat.xi", "Hello how are you ?! ");
+	}
+	
+	@Test
+	void testArrNegDim() {
+		generateAndAssertError("array_negdim_err.xi", "Out of bounds!");
+	}
+	
+	@Test
+	void testArrOutOfBounds() {
+		generateAndAssertError("arr_out_of_bounds.xi", "Out of bounds!");
+	}
+	
+	@Test
+	void testBoolArray() {
+		generateAndAssertOutput("bool_array.xi", "Success!\n");
 	}
 	
 	private void generateAndAssertOutput(String filename, String expected){
@@ -115,6 +145,25 @@ public class IntegrationTests {
 		} catch (FileNotFoundException | SemanticException e) {
 			e.printStackTrace();
 			fail();
+		}
+	}
+	
+	private void generateAndAssertError(String filename, String expected){
+		try {
+			IRNode irRoot = generateIRFromFile(filename);
+			
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			
+			
+			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot, baos);
+			simulator.call("_Imain_paai", 0);
+				
+			fail("No error thrown");
+		} catch (FileNotFoundException | SemanticException e) {
+			e.printStackTrace();
+			fail();
+		} catch (Trap e) {
+			assertEquals(expected, e.getMessage());
 		}
 	}
 

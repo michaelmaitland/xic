@@ -12,7 +12,7 @@ main(args : int[][]){
 }
 
 getDimProd(x : int[][][]) : int{
-		i : int = 0;
+	i : int = 0;
 	j : int = 0;
 	k : int = 0;
 	counter : int = 0;

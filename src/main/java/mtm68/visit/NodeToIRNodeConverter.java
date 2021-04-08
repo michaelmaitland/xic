@@ -59,7 +59,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	 */
 	private Map<String, String> funcAndProcEncodings;
 	
-	private static final String OUT_OF_BOUNDS_LABEL = "_xi__out_of_bounds";
+	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
 
 	private static final String MALLOC_LABEL = "_xi_alloc";
 
@@ -318,13 +318,16 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	public IRSeq boundsCheck(IRExpr arr, IRExpr index) {
 		IRLabel ok = inf.IRLabel(getFreshLabel());
-		String errLabel = getOutOfBoundsLabel();
+		IRLabel err = inf.IRLabel(getFreshLabel());
 
 		IRMem lenAddr = inf.IRMem(inf.IRBinOp(OpType.SUB, arr, inf.IRConst(getWordSize())));
 		IRBinOp boundsCheck = inf.IRBinOp(OpType.ULT, index, lenAddr);
 
-		return inf.IRSeq(inf.IRCJump(boundsCheck, ok.name(), errLabel),
-						 ok);
+		return inf.IRSeq(
+				inf.IRCJump(boundsCheck, ok.name(), err.name()),
+				err,
+				inf.IRCallStmt(inf.IRName(getOutOfBoundsLabel()), ArrayUtils.empty()),
+				ok);
 	}
 
 	public IRMem getOffsetIntoArr(IRExpr arr, IRExpr index) {
@@ -372,19 +375,24 @@ public class NodeToIRNodeConverter extends Visitor {
 		IRTemp startOfArr = inf.IRTemp(newTemp());
 		IRTemp ptr = inf.IRTemp(newTemp());
 		IRTemp idx = inf.IRTemp(newTemp());
+		IRTemp a1 = inf.IRTemp(newTemp());
+		IRTemp a2 = inf.IRTemp(newTemp());
 		String header = getFreshLabel();
 		String fstCmpTrueLabel = getFreshLabel();
 		String sndCmpLabel = getFreshLabel();
 		String sndCmpTrueLabel = getFreshLabel();
 		String done = getFreshLabel();
-
-		IRSeq seq = inf.IRSeq(
+		
+		List<IRStmt> stmts = ArrayUtils.elems(
+			inf.IRMove(a1, leftArr),
+			inf.IRMove(a2, rightArr),
+				
 			// Alloc new array
 		 	inf.IRMove(l1, inf.IRMem(inf.IRBinOp(OpType.ADD,
-		 			leftArr, inf.IRConst(-1 * getWordSize())))),
+		 			a1, inf.IRConst(-1 * getWordSize())))),
 
 		 	inf.IRMove(l2, inf.IRMem(inf.IRBinOp(OpType.ADD,
-		 			rightArr, inf.IRConst(-1 * getWordSize())))),
+		 			a2, inf.IRConst(-1 * getWordSize())))),
 
 		 	inf.IRMove(l, inf.IRBinOp(OpType.ADD, l1, l2)),
 
@@ -412,7 +420,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		 	// save at loc ptr the element idx in first array
 		 	inf.IRLabel(fstCmpTrueLabel),
 		 	inf.IRMove(inf.IRMem(ptr),
-		 			inf.IRMem(inf.IRBinOp(OpType.ADD, leftArr, inf.IRBinOp(OpType.MUL, idx, inf.IRConst(getWordSize()))))),
+		 			inf.IRMem(inf.IRBinOp(OpType.ADD, a1, inf.IRBinOp(OpType.MUL, idx, inf.IRConst(getWordSize()))))),
 		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),
 		 	inf.IRMove(idx, inf.IRBinOp(OpType.ADD, idx, inf.IRConst(1))),
 		 	inf.IRJump(inf.IRName(header)),
@@ -424,7 +432,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		 	// save at loc ptr the element idx - l1 in the second arr
 		 	inf.IRLabel(sndCmpTrueLabel),
 		 	inf.IRMove(inf.IRMem(ptr), inf.IRMem(inf.IRBinOp(OpType.ADD,
-		 			rightArr,
+		 			a2,
 		 			inf.IRBinOp(OpType.MUL, inf.IRBinOp(OpType.SUB, idx, l1), inf.IRConst(getWordSize()))))),
 		 	inf.IRMove(ptr, inf.IRBinOp(OpType.ADD, ptr, inf.IRConst(getWordSize()))),
 		 	inf.IRMove(idx, inf.IRBinOp(OpType.ADD, idx, inf.IRConst(1))),
@@ -433,7 +441,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		 	inf.IRLabel(done)
 		 );
 
-		return inf.IRESeq(seq, startOfArr);
+		return inf.IRESeq(inf.IRSeq(stmts), startOfArr);
 	}
 
 	public IRSeq allocateExtendedDeclArray(String name, List<IRExpr> indices) {
@@ -452,7 +460,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		}
 		
 		// 3. e1 < 0 | e2 < 0 | ... | en < 0
-		String err = getOutOfBoundsLabel();
+		String err = getFreshLabel();
 		IRExpr zero = inf.IRConst(0L);
 
 		List<IRStmt> condStmts = ArrayUtils.empty();
@@ -462,6 +470,12 @@ public class NodeToIRNodeConverter extends Visitor {
 			
 			IRLabel next = inf.IRLabel(getFreshLabel());
 			condStmts.add(inf.IRCJump(lt, err, next.name()));
+			
+			// After last CJump, add call to error function
+			if(i == idxTemps.size() - 1) {
+				condStmts.add(inf.IRLabel(err));
+				condStmts.add(inf.IRCallStmt(inf.IRName(getOutOfBoundsLabel()), ArrayUtils.empty()));
+			}
 			condStmts.add(next);
 		}
 		

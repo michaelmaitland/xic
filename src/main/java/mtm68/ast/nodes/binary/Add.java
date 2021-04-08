@@ -41,8 +41,7 @@ public class Add extends BinExpr {
 	}
 	
 	private boolean isArrayAddition(Expr left, Expr right) {
-		return Types.isArrayOfType(left.getType(), Types.INT) 
-				&& Types.isArrayOfType(right.getType(), Types.INT);
+		return Types.isArray(left.getType()) && Types.isArray(right.getType());
 	}
 	
 	private boolean isIntAddition(Expr left, Expr right) {

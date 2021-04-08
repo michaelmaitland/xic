@@ -80,11 +80,19 @@ public class Lowerer extends IRVisitor {
 	public IRSeq transformReturn(List<IRExpr> rets) {
 		List<IRStmt> retStmts = new ArrayList<>();
 		
+		List<IRTemp> tempRets = new ArrayList<>();
 		for(int i = 0; i < rets.size(); i++) {
 			IRExpr ret = rets.get(i);
 			retStmts.addAll(ret.getSideEffects());
-			String argName = "_RET" + i;
+			String argName = getFreshTemp();
 			retStmts.add(new IRMove(new IRTemp(argName), ret));
+			tempRets.add(new IRTemp(argName));
+		}
+		
+		for(int i = 0; i < tempRets.size(); i++) {
+			IRTemp ret = tempRets.get(i);
+			String retName = "_RET" + i;
+			retStmts.add(new IRMove(new IRTemp(retName), ret));
 		}
 				
 		IRReturn newRet = new IRReturn(ArrayUtils.empty());
