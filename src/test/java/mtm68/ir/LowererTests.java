@@ -175,22 +175,18 @@ public class LowererTests {
 		IRCall call = new IRCall(new IRName("f"), elems(new IRConst(1L), new IRConst(2L)));
 		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(call));
 		
-		assertEquals(3, lowered.stmts().size());
+		assertEquals(5, lowered.stmts().size());
 		
-		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(0));
-		IRMove arg1 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(1));
-		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(2));
+		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		IRMove arg1 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(3));
+		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(4));
 		
 		IRTemp savedArg0Temp = assertInstanceOfAndReturn(IRTemp.class, arg0.target());
 		assertEquals("_ARG0", savedArg0Temp.name());
-		IRConst arg0Const = assertInstanceOfAndReturn(IRConst.class, arg0.source());
-		assertEquals(1L, arg0Const.constant());
 		
 		
 		IRTemp savedArg1Temp = assertInstanceOfAndReturn(IRTemp.class, arg1.target());
 		assertEquals("_ARG1", savedArg1Temp.name());
-		IRConst arg1Const = assertInstanceOfAndReturn(IRConst.class, arg1.source());
-		assertEquals(2L, arg1Const.constant());
 		
 		assertEquals(2, loweredCall.args().size());
 		IRTemp arg0Temp = assertInstanceOfAndReturn(IRTemp.class, loweredCall.args().get(0));
@@ -207,18 +203,16 @@ public class LowererTests {
 		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(call));
 		
 		// 1 for call, 1 for arg prep, 2 for side effects
-		assertEquals(4, lowered.stmts().size());
+		assertEquals(5, lowered.stmts().size());
 		
 	    assertInstanceOfAndReturn(IRJump.class, lowered.stmts().get(0));
 		assertInstanceOfAndReturn(IRLabel.class, lowered.stmts().get(1));
-		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(3));
 		
-		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(3));
+		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(4));
 		
 		IRTemp savedArg0Temp = assertInstanceOfAndReturn(IRTemp.class, arg0.target());
 		assertEquals("_ARG0", savedArg0Temp.name());
-		IRConst arg0Const = assertInstanceOfAndReturn(IRConst.class, arg0.source());
-		assertEquals(1L, arg0Const.constant());
 		
 		assertEquals(1, loweredCall.args().size());
 		IRTemp arg0Temp = assertInstanceOfAndReturn(IRTemp.class, loweredCall.args().get(0));
@@ -232,27 +226,23 @@ public class LowererTests {
 		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(call));
 		
 		// 1 for call, 2 for arg prep, 4 for side effects
-		assertEquals(7, lowered.stmts().size());
+		assertEquals(9, lowered.stmts().size());
 		
 		assertInstanceOfAndReturn(IRJump.class, lowered.stmts().get(0));
 		assertInstanceOfAndReturn(IRLabel.class, lowered.stmts().get(1));
-		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		IRMove arg0 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(6));
 		
 		assertInstanceOfAndReturn(IRJump.class, lowered.stmts().get(3));
 		assertInstanceOfAndReturn(IRLabel.class, lowered.stmts().get(4));
-		IRMove arg1 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(5));
+		IRMove arg1 = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(7));
 		
-		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(6));
+		IRCallStmt loweredCall = assertInstanceOfAndReturn(IRCallStmt.class, lowered.stmts().get(8));
 		
 		IRTemp  savedArg0Temp = assertInstanceOfAndReturn(IRTemp.class, arg0.target());
 		assertEquals("_ARG0", savedArg0Temp.name());
-		IRConst arg0Const = assertInstanceOfAndReturn(IRConst.class, arg0.source());
-		assertEquals(1L, arg0Const.constant());
 		
 		IRTemp savedArg1Temp = assertInstanceOfAndReturn(IRTemp.class, arg1.target());
 		assertEquals("_ARG1", savedArg1Temp.name());
-		IRConst arg1Const = assertInstanceOfAndReturn(IRConst.class, arg1.source());
-		assertEquals(1L, arg1Const.constant());
 		
 		assertEquals(2, loweredCall.args().size());
 		IRTemp arg0Temp = assertInstanceOfAndReturn(IRTemp.class, loweredCall.args().get(0));
@@ -431,9 +421,15 @@ public class LowererTests {
 		IRReturn ret = new IRReturn(elems(genericConst()));
 		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(ret));
 		
-		assertEquals(2, lowered.stmts().size());
-		IRMove retSave = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(0));
+		assertEquals(3, lowered.stmts().size());
+		IRMove retTemp = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(0));
+		IRTemp temp = (IRTemp) retTemp.target();
+		IRMove retSave = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(1));
+		IRTemp finalSrcTemp = (IRTemp) retSave.source();
+		
+		assertEquals(temp.name(), finalSrcTemp.name());
 		assertMoveTempName(retSave, "_RET0");
+		
 	}
 	
 	@Test
@@ -441,11 +437,11 @@ public class LowererTests {
 		IRReturn ret = new IRReturn(elems(exprWithTwoSE(), genericConst()));
 		IRSeq lowered = assertInstanceOfAndReturn(IRSeq.class, lowerNodeAndCheckCanonical(ret));
 		
-		assertEquals(5, lowered.stmts().size());
+		assertEquals(7, lowered.stmts().size());
 		
-		IRMove ret0Save = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(2));
+		IRMove ret0Save = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(4));
 		assertMoveTempName(ret0Save, "_RET0");
-		IRMove ret1Save = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(3));
+		IRMove ret1Save = assertInstanceOfAndReturn(IRMove.class, lowered.stmts().get(5));
 		assertMoveTempName(ret1Save, "_RET1");
 	}
 	

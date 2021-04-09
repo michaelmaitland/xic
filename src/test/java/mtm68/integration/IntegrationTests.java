@@ -128,6 +128,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("bool_array.xi", "Success!\n");
 	}
 	
+	@Test
+	void testDivByZero() {
+		generateAndAssertError("div_by_zero.xi", "Division by zero!");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
