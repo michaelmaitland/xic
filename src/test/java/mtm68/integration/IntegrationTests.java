@@ -129,10 +129,15 @@ public class IntegrationTests {
 	}
 	
 	@Test
+	void testDivByZero() {
+		generateAndAssertError("div_by_zero.xi", "Division by zero!");	
+	}
+	
+	@Test
 	void testFibboncacci() {
 		generateAndAssertOutput("fib.xi", "34");
 	}
-
+	
 	@Test
 	void testIterativeFibboncacci() {
 		generateAndAssertOutput("iterative_fib.xi", "34");
