@@ -408,10 +408,10 @@ public class NodeToIRNodeConverterTests {
 		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
 		IRMove move1 = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(1));
 		IRTemp ret1 = assertInstanceOfAndReturn(IRTemp.class, move1.source());
-		assertEquals("RET_0", ret1.name());
+		assertEquals("_RET0", ret1.name());
 		IRMove move2 = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(2));
 		IRTemp ret2 = assertInstanceOfAndReturn(IRTemp.class, move2.source());
-		assertEquals("RET_1", ret2.name());
+		assertEquals("_RET1", ret2.name());
 	}
 
 	@Test
@@ -452,7 +452,7 @@ public class NodeToIRNodeConverterTests {
 		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
 		IRMove move1 = assertInstanceOfAndReturn(IRMove.class, seq.stmts().get(1));
 		IRTemp ret1 = assertInstanceOfAndReturn(IRTemp.class, move1.source());
-		assertEquals("RET_1", ret1.name());
+		assertEquals("_RET1", ret1.name());
 	}
 
 	//-------------------------------------------------------------------------------- 
