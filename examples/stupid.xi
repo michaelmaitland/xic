@@ -6,9 +6,13 @@ doSomething (b: bool): int, int {
 	}
 }
 
+f () : int {
+	return 10
+}
+
 main (args: int[]) {
 	y:int[] = "hello"
-    x:int = 5
+    x:int = 5 + f()
     z:int = x + y[0]
     
     a:int, b:int = doSomething(false)

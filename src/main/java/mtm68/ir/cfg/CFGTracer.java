@@ -16,12 +16,26 @@ import mtm68.ir.cfg.CFGBuilder.CFGEdge;
 import mtm68.ir.cfg.CFGBuilder.CFGNode;
 import mtm68.util.Debug;
 
+/**
+ * Helper class that's responsible for re-ordering the IR code
+ * according to the control flow graph. Ensures CJumps have no
+ * false branch and removes unnecessary jumps.
+ * 
+ * @author Scott
+ */
 public class CFGTracer {
 	
 	private List<IRStmt> stmts;
 	private Set<CFGNode> unmarked;
 	private Map<Integer, CFGNode> nodeMap;
 	
+	/**
+	 * Constructs a tracer using the nodes obtained from a CFG and the list
+	 * of IR statements that the CFG was built upon.
+	 * 
+	 * @param nodes
+	 * @param stmts
+	 */
 	public CFGTracer(List<CFGNode> nodes, List<IRStmt> stmts) {
 		this.stmts = stmts;
 		
@@ -34,6 +48,10 @@ public class CFGTracer {
 				.collect(Collectors.toMap(CFGNode::getNodeIdx, n -> n));
 	}
 
+	/** 
+	 * Returns the newly ordered statements following the tracing.
+	 * @return
+	 */
 	public List<IRStmt> performReordering() {
 		List<IRStmt> result = new ArrayList<>();
 

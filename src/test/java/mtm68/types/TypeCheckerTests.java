@@ -595,6 +595,13 @@ public class TypeCheckerTests {
 		SingleAssign assign = new SingleAssign(new SimpleDecl("y", BOOL), intLit(0L));
 		assertTypeCheckError(context, assign);
 	}
+	
+	@Test
+	void singleAssignToSelfIsError() {
+		// x:int = x 
+		SingleAssign assign = new SingleAssign(new SimpleDecl("", INT), new Var("x"));
+		assertTypeCheckError(assign);
+	}
 
 	@Test
 	void singleAssignDecEmptyArray() {
@@ -828,6 +835,22 @@ public class TypeCheckerTests {
 		assertTypeCheckError(context, assign);
 	}
 
+	@Test
+	void multiAssignThatUsesDeclOnRHSInvalid() {
+		TypingContext context = new TypingContext();
+		context.addFuncDecl("f", elems(simDecl("a", INT), simDecl("b", INT)), elems(INT, BOOL));
+		
+		// x:int, y:bool = f(x,y) 
+		MultipleAssign assign = new MultipleAssign(
+				elems(
+						of(new SimpleDecl("x", INT)),
+						of(new SimpleDecl("y", INT))
+					), 
+				new FExpr("f", elems(new Var("x"), new Var("y"))));
+
+		assertTypeCheckError(context, assign);
+	}
+	
 	//-------------------------------------------------------------------------------- 
 	// Block
 	//-------------------------------------------------------------------------------- 

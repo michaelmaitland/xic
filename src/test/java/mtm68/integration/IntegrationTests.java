@@ -2,14 +2,12 @@ package mtm68.integration;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,11 +27,9 @@ import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
-import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import mtm68.FileType;
 import mtm68.SymbolTableManager;
 import mtm68.ast.nodes.FunctionDecl;
-import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
@@ -77,7 +73,11 @@ public class IntegrationTests {
 	void testIfStmts() {
 		generateAndAssertOutput("if_stmts.xi", "1123");
 	}
-	
+
+	@Test
+	void testNestedIfStmts() {
+		generateAndAssertOutput("nested_if_stmts.xi", "1234");
+	}	
 	@Test
 	void testEx01(){
 		generateAndAssertOutput("ex01.xi", "Hello, World!\n");
@@ -130,7 +130,21 @@ public class IntegrationTests {
 	
 	@Test
 	void testDivByZero() {
-		generateAndAssertError("div_by_zero.xi", "Division by zero!");
+		generateAndAssertError("div_by_zero.xi", "Division by zero!");	
+	}
+	
+	@Test
+	void testFibboncacci() {
+		generateAndAssertOutput("fib.xi", "34");
+	}
+	
+	@Test
+	void testIterativeFibboncacci() {
+		generateAndAssertOutput("iterative_fib.xi", "34");
+	}	
+	@Test
+	void testNestedSideEffect() {
+		generateAndAssertOutput("nested_side_effect.xi", "1234");
 	}
 	
 	private void generateAndAssertOutput(String filename, String expected){

@@ -54,8 +54,9 @@ public class SingleAssign extends Assign {
 	
 	@Override
 	public Node visitChildren(Visitor v) {
-		Node newLhs = lhs.accept(v);
+		// Check RHS before LHS so we cant use vars declared on LHS on RHS
 		Expr newRhs = rhs.accept(v);
+		Node newLhs = lhs.accept(v);
 		
 		if(newLhs != lhs || newRhs != rhs) {
 			SingleAssign single = copy();
