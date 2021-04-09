@@ -136,7 +136,11 @@ public class IntegrationTests {
 	void testFibboncacci() {
 		generateAndAssertOutput("fib.xi", "34");
 	}
-	
+
+	@Test
+	void testIterativeFibboncacci() {
+		generateAndAssertOutput("iterative_fib.xi", "34");
+	}	
 	@Test
 	void testNestedSideEffect() {
 		generateAndAssertOutput("nested_side_effect.xi", "1234");
