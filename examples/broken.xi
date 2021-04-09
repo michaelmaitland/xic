@@ -1,0 +1,3 @@
+f() {
+	if true return
+}

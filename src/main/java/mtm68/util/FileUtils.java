@@ -79,10 +79,10 @@ public class FileUtils {
 		 * @param filename the name of the file parsed
 		 * @param error    the semantic error to be written
 		 */
-		public static void writeToFile(String filename, Optional<BaseError> error) {
+		public static void writeTypeCheckToFile(String filename) {
 			String outfile = filename.replaceFirst("\\.(xi|ixi)", ".typed");
 			Path outpath = dPath.resolve(outfile);
-			String msg = error.isPresent() ? error.get().getFileErrorMessage() : "Valid Xi Program";
+			String msg = "Valid Xi Program";
 			BufferedWriter writer;
 			try {
 				writer = new BufferedWriter(new FileWriter(outpath.toString()));

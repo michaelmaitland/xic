@@ -3,8 +3,6 @@ package mtm68;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,7 +11,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.kohsuke.args4j.Argument;
@@ -31,13 +28,10 @@ import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
-import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
-import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
-import mtm68.ast.types.ContextType;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
 import mtm68.exception.SemanticException;
@@ -209,11 +203,11 @@ public class Main {
 				FileUtils.writeToFile(filename, tokens);
 			}
 			
-			if(outputParse) FileUtils.writeToFile(filename, parseResult);
-			
 			if(!parseResult.isValidAST()) {
-				if(outputTypeCheck) FileUtils.writeToFile(filename, Optional.of(parseResult.getFirstError()));
+				writeErrorToFile(filename, parseResult.getFirstError());
 				continue;
+			} else if (outputParse) {
+				FileUtils.writeToFile(filename, parseResult);
 			}
 			
 			Node root = parseResult.getNode().get();
@@ -227,7 +221,7 @@ public class Main {
 					Map<String, FunctionDecl> funcTable = funcCollector.visit(root);
 					if(funcCollector.hasError()) {
 						ErrorUtils.printErrors(funcCollector.getErrors(), filename);
-						if(outputTypeCheck) FileUtils.writeToFile(filename, Optional.of(funcCollector.getFirstError()));
+						writeErrorToFile(filename, funcCollector.getFirstError());
 						continue;
 					}
 					
@@ -237,18 +231,19 @@ public class Main {
 					root = typeChecker.performTypeCheck(root);
 					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 					if(outputTypeCheck) {
-						FileUtils.writeToFile(filename, 
-							typeChecker.hasError() ? Optional.of(typeChecker.getFirstError()) : Optional.empty());
 					}
 					
 					if(!typeChecker.hasError()) {
+						FileUtils.writeTypeCheckToFile(filename);
 						validPrograms.put(filename, (Program)root);
+					} else {
+						writeErrorToFile(filename, typeChecker.getFirstError());
 					}
 				}
 				catch(SemanticException e) {
 					SemanticError error = new SemanticError(e.getErrorNode(), e.getMessage());
 					System.out.println(error.getPrintErrorMessage(filename));
-					if(outputTypeCheck) FileUtils.writeToFile(filename, Optional.of(error));
+					writeErrorToFile(filename, error);
 					continue;
 				}
 			}
@@ -259,6 +254,32 @@ public class Main {
 		}
 		
 		return validPrograms;
+	}
+
+	public void writeErrorToFile(String filename, BaseError error) {
+		List<String> outfiles = new ArrayList<>();
+		if(outputLex) outfiles.add(".lexed");
+		if(outputParse) outfiles.add(".parsed");
+		if(outputTypeCheck) outfiles.add(".typed");
+		if(outputIR) outfiles.add(".ir");
+		
+		outfiles = outfiles.stream()
+			.map(ext -> filename.replaceFirst("\\.(xi|ixi)", ext))
+			.collect(Collectors.toList());
+
+		for(String outfile : outfiles) {
+			Path outpath = dPath.resolve(outfile);
+			String msg = error.getFileErrorMessage();
+			BufferedWriter writer;
+			try {
+				writer = new BufferedWriter(new FileWriter(outpath.toString()));
+				writer.write(msg);
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("Failed writing error to " + dPath.resolve(outfile) + " for " + filename);
+			} 
+		}
 	}
 
 	/**
