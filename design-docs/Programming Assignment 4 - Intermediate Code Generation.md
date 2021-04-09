@@ -47,17 +47,26 @@ The key classes and packages we created or updated for this assignment are the f
 - mtm68.visit.NodeToIRNodeConverter
     - This is an AST visitor who's purpose is to decorate the AST nodes with their IR transformation. It is also responsible for getting fresh labels, fresh temps, named temps, getting encoded function names.
 
-***[INSERT SCOTTS CLASSES]***
- 				  
+- edu.cornell.cs.cs410.ir.visit.CFGVisitor
+    - This is an IR level visitor whose job is to construct CFGs and perform the re-ordering of statements in `IRSeq`s to ultimately result in canonical form code. The `CFGVisitor` uses the `CFGBuilder` and `CFGTracer` to assist in the process of building graph and re-ordering the statements.
+
+- edu.cornell.cs.cs410.ir.visit.UnusedLabelVisitor
+    - This is an IR level visitor that removes unused labels by keeping track of which labels have references to them.
+
+- mtm68.ir.cfg.CFGBuilder
+    - This is a helper class that builds a control flow graph as a result of visiting all the statements in an `IRSeq`. It builds the graph out of `CFGNode`s and `CFGEdge`s. 
+
+- mtm68.ir.cfg.CFGTracer
+    - This is another helper class that takes a CFG and the list of statements that were used to construct the graph and outputs a new ordering over the statements that leave the code in canonical form. This new ordering removes unnecessary jumps and makes sure all false branches of conditional jumps are fallthroughs.  
     
 ### Code Design ###
- - For this assignment, we essentially were able to use the Visitor pattern to accomplish each subtask we needed to complete. We used our (AST) Visitor to create IRCode. We then used the IRVisitor to lower the IR, constant fold, and handle the basic block reordering. By breaking up the assignment in this way, the work become highly parallelizable as well as relatively straightforward. Each of the translations and transformations themselves were not too complicated. The most interesting case deals with the construction and use of the CFG to reorder basic blocks. This... ***[SCOTT INSERT]***
+ - For this assignment, we essentially were able to use the Visitor pattern to accomplish each subtask we needed to complete. We used our (AST) Visitor to create IRCode. We then used the IRVisitor to lower the IR, constant fold, and handle the basic block reordering. By breaking up the assignment in this way, the work become highly parallelizable as well as relatively straightforward. Each of the translations and transformations themselves were not too complicated. The most interesting case deals with the construction and use of the CFG to reorder basic blocks. This is done by the `CFGVisitor` which relies on two helper classes, `CFGBuilder` and `CFGTracer` to do the re-ordering. After the code is lowered, statements contained within an `IRSeq` call the `CFGBuilder` upon visiting, building the CFG as the visitor traverses. Upon leaving the `IRSeq`, all the nodes are collected from the builder and passed to the `CFGTracer` which then performs the re-ordering, handing back a new set of `IRStmt`s that the `IRSeq` can then use to update. Finally, the `UnusedLabelVisitor` cleans up unused labels. 
  
  - The conversion from AST to IR transformations are done in the AST node classes and use the `NodeToIRConverter` when the transformation requires information related to state or wants to do an operation that is reused by other AST nodes. This makes it easy to understand the high level translations while allowing for code reuse.
 
  - One tradeoff we made had to do with the commutability checks at the IR level for IRBinOp and IRMove lowering. We decided, for the sake of simplicity, to consider all IRMem accesses to be alias and did not decide to do further analysis described in lecture. We figure this will likely not have too big of an impact on performance which is why we avoided the hassle.
  
- - The most interesting data structures were used in the CFG construction. ***[SCOTT INSERT]*** 
+ - The most interesting data structures were used in the CFG construction. In the `CFGBuilder`, the CFG is built using `CFGNode`s. A `CFGNode` reprsents a graph node with a list of incoming `CFGEdge`s and a list of outgoing edges. The graph is double-linked, allowing for easy lookups of incoming and outbound connections. This makes repairing jump nodes in the `CFGTracer` easy.
 
 
 ### Programming ###
@@ -71,8 +80,10 @@ The key classes and packages we created or updated for this assignment are the f
     - **Maitland:**
         - AST to IRCode generation + tests
     - **Bass:**
+        - CFGVisitor + tests
         - CFGBuilder + tests
         - Basic Block Reordering + tests
+        - UnusedLabelVisitor + tests
         
  - We used our previous code for lexing, parsing, and typechecking. Fortunately, we have been on top of correcting our errors after each assignment so there were very few changes that needed to be made to this code.
  
