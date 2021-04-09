@@ -230,9 +230,7 @@ public class Main {
 					TypeChecker typeChecker = new TypeChecker(funcTable);	
 					root = typeChecker.performTypeCheck(root);
 					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
-					if(outputTypeCheck) {
-					}
-					
+
 					if(!typeChecker.hasError()) {
 						FileUtils.writeTypeCheckToFile(filename);
 						validPrograms.put(filename, (Program)root);
