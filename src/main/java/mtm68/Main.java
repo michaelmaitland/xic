@@ -203,12 +203,14 @@ public class Main {
 				FileUtils.writeToFile(filename, tokens);
 			}
 			
+			if(outputParse) {
+				FileUtils.writeToFile(filename, parseResult);
+			}
+			
 			if(!parseResult.isValidAST()) {
 				writeErrorToFile(filename, parseResult.getFirstError());
 				continue;
-			} else if (outputParse) {
-				FileUtils.writeToFile(filename, parseResult);
-			}
+			} 
 			
 			Node root = parseResult.getNode().get();
 			
@@ -256,8 +258,6 @@ public class Main {
 
 	public void writeErrorToFile(String filename, BaseError error) {
 		List<String> outfiles = new ArrayList<>();
-		if(outputLex) outfiles.add(".lexed");
-		if(outputParse) outfiles.add(".parsed");
 		if(outputTypeCheck) outfiles.add(".typed");
 		if(outputIR) outfiles.add(".ir");
 		
