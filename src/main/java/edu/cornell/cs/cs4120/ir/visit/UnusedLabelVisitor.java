@@ -19,6 +19,11 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 
+/**
+ * Visitor class responsible for removing unused labels.
+ * 
+ * @author Scott
+ */
 public class UnusedLabelVisitor extends IRVisitor {
 
 	private Map<String, IRLabel> labelMap;
@@ -35,10 +40,18 @@ public class UnusedLabelVisitor extends IRVisitor {
 		labelsInUse = new HashSet<>();
 	}
 	
+	/**
+	 * Record the existence of <code>label</code>
+	 * @param label
+	 */
 	public void recordLabel(IRLabel label) {
 		labelMap.put(label.name(), label);
 	}
 	
+	/** 
+	 * Mark <code>labels</code> to be in use.
+	 * @param labels
+	 */
 	public void addLabelsInUse(String...labels) {
 		List<String> filtered = Arrays.stream(labels)
 				.filter(l -> l != null)
@@ -57,6 +70,10 @@ public class UnusedLabelVisitor extends IRVisitor {
 		return this;
 	}
 	
+	/**
+	 * Sets the <code>used</code> property on each IR label according
+	 * to whether or not it's been detected to be in use.
+	 */
 	public void markUnusedLabels() {
 		Set<String> labelsToKeep = new HashSet<>(labelMap.keySet());
 		labelsToKeep.retainAll(labelsInUse);

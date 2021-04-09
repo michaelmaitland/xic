@@ -19,6 +19,12 @@ import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import mtm68.util.ArrayUtils;
 
+/**
+ * Responsible for building the control flow graph following the IR
+ * code being lowered. 
+ * 
+ * @author Scott
+ */
 public class CFGBuilder {
 	
 	private int nodeIdx;
@@ -40,6 +46,10 @@ public class CFGBuilder {
 		kind = CFGKind.RET;  
 	}
 	
+	/**
+	 * Call from the visitor to include the statement in the CFG
+	 * @param stmt
+	 */
 	public void visitStatement(IRStmt stmt) {
 		if(isLabel(stmt)) {
 			createCFGNode(stmt);
@@ -61,6 +71,10 @@ public class CFGBuilder {
 		stmtIdx++;
 	}
 	
+	/**
+	 * Returns a list the CFG nodes
+	 * @return
+	 */
 	public List<CFGNode> getNodes() {
 		SortedSet<Integer> keys = new TreeSet<>(nodeMap.keySet());
 		return keys.stream()

@@ -1,0 +1,23 @@
+setup:
+    t_i <- 0
+    t_b <- 0
+    t_bsize <- t_n_curr + 1
+header:
+    t_idx <- t_i + t_b * t_bsize
+    cjump (t_idx < t_layer_size, "ok", "done")
+ok:
+    cjump (t_i == 0, "after", "continue") // if t_idx == 0 then we're at a length slot which we assume is already set
+continue:
+    t_ptr <- t_b * t_n_curr * (t_n_next + 1) + t_i * (t_n_next + 1) + t_off_next
+    t_ptr_mem <- t_base + 8 * t_ptr
+    [t_ptr_mem] <- t_n_next // Set array length
+    [t_base + 8 * (t_idx + t_off_curr)] <- t_ptr_mem + 8 
+after:
+    t_i <- t_i + 1
+    cjump (t_i < t_bsize, "header", "fallthrough")
+fallthrough:
+    t_i <- 0
+    t_b <- t_b + 1
+    jump "header"
+done:
+    ret

@@ -1,0 +1,23 @@
+setup:
+    iTemp <- zero
+    bTemp <- zero
+    blockSizeTemp <- currIdxTemp + one
+header:
+    idxTemp <- iTemp + bTemp * blockSizeTemp 
+    cjump (idxTemp < layerSizeTemp, "ok", "done")
+ok:
+    cjump (iTemp == zero, "after", "continue") // if idxTemp == zero then we're at a length slot which we assume is already set
+continue:
+    ptrTemp <- bTemp * currIdxTemp * (nextIdxTemp + one) + iTemp * (nextIdxTemp + one) + nextOffTemp
+    ptrMemTemp <- baseTemp + word * ptrTemp
+    [ptrMemTemp] <- nextIdxTemp // Set array length
+    [baseTemp + word * (idxTemp + currOffTemp)] <- ptrMemTemp + word 
+after:
+    iTemp <- iTemp + one
+    cjump (iTemp < blockSizeTemp, "header", "fallthrough")
+fallthrough:
+    iTemp <- zero
+    bTemp <- bTemp + one
+    jump "header"
+done:
+    ret

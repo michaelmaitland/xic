@@ -6,6 +6,12 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import mtm68.ir.cfg.CFGBuilder;
 
+/**
+ * Visitor class that transforms the lowered code into canonical form
+ * using a control flow graph.
+ * 
+ * @author Scott
+ */
 public class CFGVisitor extends IRVisitor {
 	
 	private CFGBuilder builder;
