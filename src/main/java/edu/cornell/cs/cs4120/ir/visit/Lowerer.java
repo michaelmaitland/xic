@@ -266,6 +266,6 @@ public class Lowerer extends IRVisitor {
 	}
 
 	private String getFreshTemp() {
-		return "_t" + FreshTempGenerator.getFreshTemp();
+		return FreshTempGenerator.getFreshTemp();
 	}
 }

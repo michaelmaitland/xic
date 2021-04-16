@@ -2,15 +2,18 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.Assem;
 import mtm68.ir.cfg.CFGBuilder;
 
 /**
@@ -18,6 +21,8 @@ import mtm68.ir.cfg.CFGBuilder;
  */
 public abstract class IRNode_c implements IRNode, Cloneable {
 
+	protected Assem assem;
+	
 	@Override
 	public IRNode visitChildren(IRVisitor v) {
 		return this;
@@ -52,6 +57,11 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 	@Override
 	public boolean isConstFolded(CheckConstFoldedIRVisitor v) {
 		return true;
+	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		return this;
 	}
 
 	@Override
@@ -91,5 +101,15 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
+	
+	public <N extends IRNode_c> N copyAndSetAssem(Assem assem) {
+		N newN = this.copy();
+		newN.assem = assem;
+		return newN;
+	}
 
+	@Override
+	public Assem getAssem() {
+		return assem;
+	}
 }

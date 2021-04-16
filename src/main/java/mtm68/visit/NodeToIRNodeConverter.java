@@ -128,7 +128,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * @return a temp that does not need to be used by a different node.
 	 */
 	public String newTemp() {
-		return "_t" + FreshTempGenerator.getFreshTemp();
+		return FreshTempGenerator.getFreshTemp();
 	}
 	
 	/**

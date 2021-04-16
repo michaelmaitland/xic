@@ -4,13 +4,21 @@ import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 
-public class OperAssem {
-
-	Src src;
-	Dest dest;
+public class OperAssem extends TwoOpAssem{
+	protected Dest dest;
+	protected Src src;
 	
-	public OperAssem(Src src, Dest dest) {
-		assert (!(src instanceof Reg || dest instanceof Reg));
+	public OperAssem(Dest dest, Src src) {
+		this.dest = dest;
+		this.src = src;
+	}
+
+	public Dest getDest() {
+		return dest;
 	}
 	
+	public Src getSrc() {
+		return src;
+	}
+
 }

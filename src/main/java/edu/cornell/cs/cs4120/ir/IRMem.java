@@ -4,8 +4,13 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.MoveAssem;
+import mtm68.assem.SeqAssem;
+import mtm68.assem.operand.Mem;
+import mtm68.assem.operand.Reg;
 
 /**
  * An intermediate representation for a memory location
@@ -88,5 +93,16 @@ public class IRMem extends IRExpr_c {
 	@Override
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
+	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		IRMem mem = copy();
+		Reg resultReg = t.getFreshAbstractReg();
+		mem.setResultReg(resultReg);
+		MoveAssem moveAssem = new MoveAssem(resultReg, new Mem(expr.getResultReg()));
+		
+		mem.assem = new SeqAssem(expr.getAssem(), moveAssem);
+		return mem;
 	}
 }

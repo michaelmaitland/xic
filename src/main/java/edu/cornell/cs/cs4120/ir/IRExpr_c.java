@@ -3,6 +3,7 @@ package edu.cornell.cs.cs4120.ir;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import mtm68.assem.operand.Reg;
 
 /**
  * An intermediate representation for expressions
@@ -10,8 +11,9 @@ import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 public abstract class IRExpr_c extends IRNode_c implements IRExpr {
 	
 	protected List<IRStmt> sideEffects;
-	
-    @Override
+	protected Reg resultReg;
+
+	@Override
     public CheckCanonicalIRVisitor checkCanonicalEnter(
             CheckCanonicalIRVisitor v) {
         return v.enterExpr();
@@ -40,6 +42,14 @@ public abstract class IRExpr_c extends IRNode_c implements IRExpr {
 	@Override
 	public List<IRStmt> getSideEffects() {
 		return sideEffects;
+	}
+	
+	public void setResultReg(Reg reg) {
+		this.resultReg = reg;
+	}
+	
+    public Reg getResultReg() {
+		return resultReg;
 	}
     
 	public <E extends IRExpr_c> E copyAndSetSideEffects(List<IRStmt> sideEffects) {
