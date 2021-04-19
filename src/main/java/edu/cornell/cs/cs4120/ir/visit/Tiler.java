@@ -26,6 +26,7 @@ import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.RealReg.RealRegId;
 import mtm68.assem.operand.Reg;
+import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 import mtm68.util.FreshTempGenerator;
@@ -49,15 +50,15 @@ public class Tiler extends IRVisitor {
 
 			// Add in instructions to reset ret space
 			List<Assem> moveAssems = moveStmts.stream()
-				.map(IRNode::getAssem)
+				.map(this::convertRetMov)
 				.collect(Collectors.toList());
 
 			callStmt.appendAssems(moveAssems);
 			
-			int stackOffset = getExtraArgCount(callStmt) + getExtraRetCount(callStmt) + 1;
+			int stackOffset = getFunctionStackSize();
 			
 			callStmt.appendAssems(elems(
-					new AddAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * stackOffset))
+					new AddAssem(RealReg.RSP, new Imm(stackOffset))
 					));
 			
 			// So we don't double count the move stmts
@@ -68,6 +69,32 @@ public class Tiler extends IRVisitor {
 			moveStmts.clear();
 		}
 		return this;
+	}
+	
+	private Assem convertRetMov(IRMove move) {
+		
+		String srcTemp = ((IRTemp)move.source()).name();
+		Integer retVal = Integer.parseInt(srcTemp.replace(Constants.RET_PREFIX, ""));
+		
+		Src src = null;
+		switch(retVal) {
+		case 0: 
+			src = RealReg.RAX;
+			break;
+		case 1: 
+			src = RealReg.RDX;
+			break;
+		default: 
+			int retSpaceOff = Constants.WORD_SIZE * (retVal - 1);
+			src = new Mem(RealReg.RSP, null, 0, getFunctionStackSize() - retSpaceOff);
+			break;
+		}
+		
+		return new MoveAssem(move.target().getResultReg(), src);
+	}
+	
+	private int getFunctionStackSize( ) {
+		return Constants.WORD_SIZE * (getExtraArgCount(callStmt) + getExtraRetCount(callStmt) + 1);
 	}
 
 	private boolean isCallStmt(IRNode n) {

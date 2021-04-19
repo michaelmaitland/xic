@@ -8,6 +8,8 @@ import mtm68.util.ArrayUtils;
 public class RealReg extends Reg{
 	
 	public static final RealReg RSP = new RealReg(RealRegId.RSP);
+	public static final RealReg RAX = new RealReg(RealRegId.RAX);
+	public static final RealReg RDX = new RealReg(RealRegId.RDX);
 
 	public RealReg(RealRegId regId) {
 		this.id = regId.toString();

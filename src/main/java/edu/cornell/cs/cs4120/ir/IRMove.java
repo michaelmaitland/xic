@@ -12,6 +12,10 @@ import mtm68.assem.Assem;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.operand.Mem;
+import mtm68.assem.operand.RealReg;
+import mtm68.assem.operand.Reg;
+import mtm68.assem.operand.Src;
+import mtm68.util.Constants;
 
 /**
  * An intermediate representation for a move statement
@@ -101,4 +105,5 @@ public class IRMove extends IRStmt {
 		
 		return copyAndSetAssem(new SeqAssem(assems));
 	}
+	
 }

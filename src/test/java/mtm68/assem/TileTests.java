@@ -77,7 +77,7 @@ public class TileTests {
 	}
 	
 	@Test
-	void tileCall() {
+	void tileCallExtraArgsAndRets() {
 		IRCallStmt call = new IRCallStmt(new IRName("f"), 4, 
 				temp("t1"),
 				temp("t2"),
@@ -97,6 +97,46 @@ public class TileTests {
 		tile(seq);
 	}
 	
+	@Test
+	void tileCallExtraArgs() {
+		IRCallStmt call = new IRCallStmt(new IRName("f"), 0, 
+				temp("t1"),
+				temp("t2"),
+				temp("t3"),
+				op(OpType.ADD, temp("t4"), temp("t4")),
+				temp("t5"),
+				temp("t6"),
+				temp("t7"),
+				temp("t8")
+				);
+		
+		IRMove movRet2 = new IRMove(temp("t9"), temp("_RET0"));
+		IRMove movRet3 = new IRMove(temp("t10"), temp("_RET1"));
+		
+		IRSeq seq = new IRSeq(call, movRet2, movRet3, ret());
+		
+		tile(seq);
+	}
+
+	@Test
+	void tileCall() {
+		IRCallStmt call = new IRCallStmt(new IRName("f"), 0, 
+				temp("t1"),
+				temp("t2"),
+				temp("t3"),
+				op(OpType.ADD, temp("t4"), temp("t4")),
+				temp("t5"),
+				temp("t6")
+				);
+		
+		IRMove movRet2 = new IRMove(temp("t9"), temp("_RET0"));
+		IRMove movRet3 = new IRMove(temp("t10"), temp("_RET1"));
+		
+		IRSeq seq = new IRSeq(call, movRet2, movRet3, ret());
+		
+		tile(seq);
+	}
+
 	private Assem tile(IRNode node) {
 		System.out.println("Before\n=========\n" + node);
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
