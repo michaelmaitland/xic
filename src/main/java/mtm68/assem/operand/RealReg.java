@@ -1,6 +1,13 @@
 package mtm68.assem.operand;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import mtm68.util.ArrayUtils;
+
 public class RealReg extends Reg{
+	
+	public static final RealReg RSP = new RealReg(RealRegId.RSP);
 
 	public RealReg(RealRegId regId) {
 		this.id = regId.toString();
@@ -11,7 +18,7 @@ public class RealReg extends Reg{
 		RBX,
 		RCX,
 		RDX,
-		ROI,
+		RSI,
 		RDI,
 		RSP,
 		RBP,
@@ -27,6 +34,16 @@ public class RealReg extends Reg{
 		@Override
 		public String toString() {
 			return name().toLowerCase();
+		}
+		
+		public static List<RealRegId> getArgRegIds() {
+			return ArrayUtils.elems(RDI, RSI, RDX, RCX, R8, R9);
+		}
+
+		public static List<RealReg> getArgRegs() {
+			return getArgRegIds().stream()
+					.map(RealReg::new)
+					.collect(Collectors.toList());
 		}
 	}
 }

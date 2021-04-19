@@ -70,7 +70,15 @@ public class IRTestUtils {
 	}
 
 	public static IRCallStmt call(String name) {
-		return new IRCallStmt(new IRName(name));
+		return call(name, 0);
+	}
+
+	public static IRCallStmt call(String name, int numRets) {
+		return call(name, numRets);
+	}
+
+	public static IRCallStmt call(String name, int numRets, IRExpr...args) {
+		return new IRCallStmt(new IRName(name), numRets, args);
 	}
 	
 	public static IRBinOp op(OpType type, IRExpr left, IRExpr right) {

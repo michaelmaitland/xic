@@ -9,8 +9,11 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.Assem;
+import mtm68.assem.SeqAssem;
 import mtm68.ir.cfg.CFGBuilder;
 import mtm68.ir.cfg.CFGTracer;
 
@@ -123,5 +126,14 @@ public class IRSeq extends IRStmt {
 		newSeq.stmts = newStmts;
 		
 		return newSeq;
+	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		List<Assem> assems = stmts.stream()
+			.map(IRNode::getAssem)
+			.collect(Collectors.toList());
+
+		return copyAndSetAssem(new SeqAssem(assems));
 	}
 }

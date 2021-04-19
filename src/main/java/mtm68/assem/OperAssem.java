@@ -1,14 +1,15 @@
 package mtm68.assem;
 
 import mtm68.assem.operand.Dest;
-import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 
-public class OperAssem extends TwoOpAssem{
+public abstract class OperAssem extends TwoOpAssem{
+	protected String name;
 	protected Dest dest;
 	protected Src src;
 	
-	public OperAssem(Dest dest, Src src) {
+	public OperAssem(String name, Dest dest, Src src) {
+		this.name = name;
 		this.dest = dest;
 		this.src = src;
 	}
@@ -19,6 +20,11 @@ public class OperAssem extends TwoOpAssem{
 	
 	public Src getSrc() {
 		return src;
+	}
+
+	@Override
+	public String toString() {
+		return name + " " + dest + ", " + src;
 	}
 
 }

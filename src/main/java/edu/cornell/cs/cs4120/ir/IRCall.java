@@ -96,7 +96,7 @@ public class IRCall extends IRExpr_c {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		return v.transformCall(target, args);
+		return v.transformCall(target, 1, args);
 	}
 
 	@Override

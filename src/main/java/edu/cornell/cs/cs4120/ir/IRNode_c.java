@@ -14,7 +14,9 @@ import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.Assem;
+import mtm68.assem.SeqAssem;
 import mtm68.ir.cfg.CFGBuilder;
+import mtm68.util.ArrayUtils;
 
 /**
  * A node in an intermediate-representation abstract syntax tree.
@@ -108,8 +110,17 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 		return newN;
 	}
 
+	public void setAssem(Assem assem) {
+		this.assem = assem;
+	}
+
 	@Override
 	public Assem getAssem() {
 		return assem;
+	}
+	
+	@Override
+	public void appendAssems(List<Assem> assems) {
+		assem = new SeqAssem(ArrayUtils.prepend(assem, assems));
 	}
 }

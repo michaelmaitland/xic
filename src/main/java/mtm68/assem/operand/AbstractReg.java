@@ -5,5 +5,4 @@ public class AbstractReg extends Reg {
 	public AbstractReg(String id) {
 		this.id = id;
 	}
-	
 }

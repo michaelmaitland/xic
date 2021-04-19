@@ -33,6 +33,10 @@ public class SeqAssem extends Assem{
 	public List<Assem> getAssems() {
 		return assems;
 	}
+
+	public void appendAssems(List<Assem> assems) {
+		assems.addAll(assems);
+	}
 	
 	@Override
 	public String toString() {

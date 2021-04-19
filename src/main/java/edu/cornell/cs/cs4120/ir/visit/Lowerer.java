@@ -17,7 +17,6 @@ import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
-import mtm68.util.ArrayUtils;
 import mtm68.util.FreshTempGenerator;
 
 public class Lowerer extends IRVisitor {
@@ -53,9 +52,9 @@ public class Lowerer extends IRVisitor {
 		return newSeq;
 	}
 	
-	public IRSeq transformCall(IRExpr func, List<IRExpr> args) {
+	public IRSeq transformCall(IRExpr func, int numRets, List<IRExpr> args) {
 		List<IRStmt> callStmts = new ArrayList<>();
-		List<IRTemp> tempArgs = new ArrayList<>();
+		List<IRExpr> tempArgs = new ArrayList<>();
 		
 		for(int i = 0; i < args.size(); i++) {
 			IRExpr arg = args.get(i);
@@ -65,14 +64,7 @@ public class Lowerer extends IRVisitor {
 			tempArgs.add(new IRTemp(argName));
 		}
 		
-		List<IRExpr> finalArgs = new ArrayList<>();
-		for(int i = 0; i < tempArgs.size(); i++) {
-			IRTemp tempArg = tempArgs.get(i);
-			String argName = "_ARG" + i;
-			callStmts.add(new IRMove(new IRTemp(argName), tempArg));
-			finalArgs.add(new IRTemp(argName));
-		}
-		IRCallStmt newCall = new IRCallStmt(func, finalArgs); 
+		IRCallStmt newCall = new IRCallStmt(func, numRets, tempArgs); 
 		callStmts.add(newCall);
 		return new IRSeq(callStmts);
 	}
@@ -80,7 +72,7 @@ public class Lowerer extends IRVisitor {
 	public IRSeq transformReturn(List<IRExpr> rets) {
 		List<IRStmt> retStmts = new ArrayList<>();
 		
-		List<IRTemp> tempRets = new ArrayList<>();
+		List<IRExpr> tempRets = new ArrayList<>();
 		for(int i = 0; i < rets.size(); i++) {
 			IRExpr ret = rets.get(i);
 			retStmts.addAll(ret.getSideEffects());
@@ -89,13 +81,7 @@ public class Lowerer extends IRVisitor {
 			tempRets.add(new IRTemp(argName));
 		}
 		
-		for(int i = 0; i < tempRets.size(); i++) {
-			IRTemp ret = tempRets.get(i);
-			String retName = "_RET" + i;
-			retStmts.add(new IRMove(new IRTemp(retName), ret));
-		}
-				
-		IRReturn newRet = new IRReturn(ArrayUtils.empty());
+		IRReturn newRet = new IRReturn(tempRets);
 		retStmts.add(newRet);
 		return new IRSeq(retStmts);
 	}

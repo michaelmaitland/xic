@@ -4,10 +4,9 @@ import mtm68.assem.OperAssem;
 import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Src;
 
-public class LeaAssem extends OperAssem{
-	
-	public LeaAssem(Dest dest, Src src) {
-		super("lea", dest, src);
-	}
+public class AddAssem extends OperAssem {
 
+	public AddAssem(Dest dest, Src src) {
+		super("add", dest, src);
+	}
 }
