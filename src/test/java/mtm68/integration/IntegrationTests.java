@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
+import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import mtm68.FileType;
 import mtm68.SymbolTableManager;
 import mtm68.ast.nodes.FunctionDecl;
@@ -151,9 +153,9 @@ public class IntegrationTests {
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
 			
-//			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-//			irRoot.printSExp(codeWriter);
-//			codeWriter.flush();
+			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+			irRoot.printSExp(codeWriter);
+			codeWriter.flush();
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				

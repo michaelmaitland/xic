@@ -1,5 +1,20 @@
 package mtm68.assem.operand;
 
-public class Reg implements Ref, Acc, Src, Dest {
+import mtm68.util.Constants;
 
+public abstract class Reg implements Ref, Acc, Src, Dest {
+	protected String id;
+
+	public String getId() {
+		return id;
+	}
+	
+	public boolean isResultReg() {
+		return id.startsWith(Constants.RET_PREFIX);
+	}
+	
+	@Override
+	public String toString() {
+		return id;
+	}
 }

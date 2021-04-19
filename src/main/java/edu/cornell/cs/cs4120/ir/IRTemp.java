@@ -2,7 +2,9 @@ package edu.cornell.cs.cs4120.ir;
 
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.operand.AbstractReg;
 import mtm68.util.ArrayUtils;
 
 /**
@@ -46,4 +48,12 @@ public class IRTemp extends IRExpr_c {
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
 	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		IRTemp newTemp = copy();
+		newTemp.setResultReg(new AbstractReg(name));
+		return newTemp;
+	}
+
 }

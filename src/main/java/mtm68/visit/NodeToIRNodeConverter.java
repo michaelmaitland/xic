@@ -41,6 +41,7 @@ import mtm68.ast.types.IntType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.util.ArrayUtils;
+import mtm68.util.Constants;
 import mtm68.util.Debug;
 import mtm68.util.FreshTempGenerator;
 
@@ -128,7 +129,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * @return a temp that does not need to be used by a different node.
 	 */
 	public String newTemp() {
-		return "_t" + FreshTempGenerator.getFreshTemp();
+		return FreshTempGenerator.getFreshTemp();
 	}
 	
 	/**
@@ -143,7 +144,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	public String retVal(int retIdx) {
-		return "_RET" + retIdx;
+		return Constants.RET_PREFIX + retIdx;
 	}
 	
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
@@ -151,7 +152,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	public String argVal(int argIdx) {
-		return "_ARG" + argIdx;
+		return Constants.ARG_PREFIX + argIdx;
 	}
 	
 	/**
@@ -326,7 +327,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		return inf.IRSeq(
 				inf.IRCJump(boundsCheck, ok.name(), err.name()),
 				err,
-				inf.IRCallStmt(inf.IRName(getOutOfBoundsLabel()), ArrayUtils.empty()),
+				inf.IRCallStmt(inf.IRName(getOutOfBoundsLabel())),
 				ok);
 	}
 
@@ -474,7 +475,7 @@ public class NodeToIRNodeConverter extends Visitor {
 			// After last CJump, add call to error function
 			if(i == idxTemps.size() - 1) {
 				condStmts.add(inf.IRLabel(err));
-				condStmts.add(inf.IRCallStmt(inf.IRName(getOutOfBoundsLabel()), ArrayUtils.empty()));
+				condStmts.add(inf.IRCallStmt(inf.IRName(getOutOfBoundsLabel())));
 			}
 			condStmts.add(next);
 		}
@@ -554,7 +555,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	   			offsetTemps.get(i + 1),
 	   			basePtr);
 
-	   	allocLayerStmts.add(new IRCallStmt(inf.IRName(ALLOC_LAYER), args));
+	   	allocLayerStmts.add(inf.IRCallStmt(inf.IRName(ALLOC_LAYER), args));
 	   }
 	   
 	   // 8. Move basePtr + 8 into our id

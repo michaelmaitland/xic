@@ -2,8 +2,10 @@ package edu.cornell.cs.cs4120.ir;
 
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.LabelAssem;
 
 /**
  * An intermediate representation for naming a memory address
@@ -68,5 +70,10 @@ public class IRLabel extends IRStmt {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return this;
+	}
+
+	@Override
+	public IRNode tile(Tiler t) {
+		return copyAndSetAssem(new LabelAssem(name));
 	}
 }

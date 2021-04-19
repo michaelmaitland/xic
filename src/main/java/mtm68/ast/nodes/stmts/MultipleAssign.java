@@ -120,7 +120,9 @@ public class MultipleAssign extends Assign {
 		List<IRExpr> irArgs = rhs.getArgs().stream()
 								.map(Expr::getIRExpr)
 								.collect(Collectors.toList());
-		IRCallStmt call = inf.IRCallStmt(name, irArgs);	
+		
+		int numRets = decls.size();
+		IRCallStmt call = inf.IRCallStmt(name, numRets, irArgs);	
 
 		List<IRStmt> stmts = ArrayUtils.empty();
 		stmts.add(call);

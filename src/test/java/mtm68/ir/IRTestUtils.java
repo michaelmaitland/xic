@@ -10,6 +10,7 @@ import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
@@ -26,6 +27,10 @@ public class IRTestUtils {
 
 	public static IRMove move(String temp, IRExpr expr) {
 		return new IRMove(temp(temp), expr);
+	}
+	
+	public static IRMove move(IRExpr target, IRExpr src) {
+		return new IRMove(target, src);
 	}
 
 	public static IRMove move(String t1, String t2) {
@@ -59,9 +64,21 @@ public class IRTestUtils {
 	public static IRTemp temp(String name) {
 		return new IRTemp(name);
 	}
+	
+	public static IRMem mem(IRExpr expr) {
+		return new IRMem(expr);
+	}
 
 	public static IRCallStmt call(String name) {
-		return new IRCallStmt(new IRName(name));
+		return call(name, 0);
+	}
+
+	public static IRCallStmt call(String name, int numRets) {
+		return call(name, numRets);
+	}
+
+	public static IRCallStmt call(String name, int numRets, IRExpr...args) {
+		return new IRCallStmt(new IRName(name), numRets, args);
 	}
 	
 	public static IRBinOp op(OpType type, IRExpr left, IRExpr right) {

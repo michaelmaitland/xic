@@ -91,6 +91,14 @@ public interface IRNodeFactory {
     IRCallStmt IRCallStmt(IRExpr target, List<IRExpr> args);
 
     /**
+     * @param target address of the code for this function call
+     * @param args arguments of this function call
+     */
+    IRCallStmt IRCallStmt(IRExpr target, IRExpr... args);
+
+    IRCallStmt IRCallStmt(IRExpr target, int numRets, List<IRExpr> args);
+
+    /**
      *
      * @param target the destination of this move
      * @param expr the expression whose value is to be moved

@@ -8,6 +8,7 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
@@ -18,22 +19,24 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 public class IRCallStmt extends IRStmt {
     protected IRExpr target;
     protected List<IRExpr> args;
+    protected int numRets;
 
     /**
      * @param target address of the code for this function call
      * @param args arguments of this function call
      */
-    public IRCallStmt(IRExpr target, IRExpr... args) {
-        this(target, Arrays.asList(args));
+    public IRCallStmt(IRExpr target, int numRets, IRExpr... args) {
+        this(target, numRets, Arrays.asList(args));
     }
 
     /**
      * @param target address of the code for this function call
      * @param args arguments of this function call
      */
-    public IRCallStmt(IRExpr target, List<IRExpr> args) {
+    public IRCallStmt(IRExpr target, int numRets, List<IRExpr> args) {
         this.target = target;
         this.args = args;
+        this.numRets = numRets;
     }
 
     public IRExpr target() {
@@ -43,7 +46,11 @@ public class IRCallStmt extends IRStmt {
     public List<IRExpr> args() {
         return args;
     }
-
+    
+    public int getNumRets() {
+		return numRets;
+	}
+    
     @Override
     public String label() {
         return "CALL_STMT";
@@ -63,7 +70,7 @@ public class IRCallStmt extends IRStmt {
             results.add(newExpr);
         }
 
-        if (modified) return v.nodeFactory().IRCallStmt(target, results);
+        if (modified) return v.nodeFactory().IRCallStmt(target, numRets, results);
 
         return this;
     }
@@ -94,12 +101,17 @@ public class IRCallStmt extends IRStmt {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		return v.transformCall(target, args);
+		return v.transformCall(target, numRets, args);
 	}
 	
 	@Override
 	public IRNode unusedLabels(UnusedLabelVisitor v) {
 		v.addLabelsInUse(((IRName)target).name());
 		return this;
+	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		return t.tileCallStmt(this);
 	}
 }

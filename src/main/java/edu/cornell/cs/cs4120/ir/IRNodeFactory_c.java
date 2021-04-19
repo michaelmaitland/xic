@@ -79,9 +79,19 @@ public class IRNodeFactory_c implements IRNodeFactory {
     }
 
     @Override
-    public IRCallStmt IRCallStmt(IRExpr target, List<IRExpr> args) {
-        return new IRCallStmt(target, args);
+    public IRCallStmt IRCallStmt(IRExpr target, int numRets, List<IRExpr> args) {
+        return new IRCallStmt(target, numRets, args);
     }
+
+    @Override
+    public IRCallStmt IRCallStmt(IRExpr target, List<IRExpr> args) {
+        return IRCallStmt(target, 0, args);
+    }
+    
+    @Override
+   public IRCallStmt IRCallStmt(IRExpr target, IRExpr... args) {
+   	return new IRCallStmt(target, 0, args);
+   }
 
     @Override
     public IRMove IRMove(IRExpr target, IRExpr expr) {
