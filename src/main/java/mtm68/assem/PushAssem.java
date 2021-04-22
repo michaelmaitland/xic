@@ -31,7 +31,10 @@ public class PushAssem extends Assem {
 	@Override
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
 		Reg newReg = (Reg)reg.copyAndSetRealRegs(toSet);
-		return new PushAssem(newReg);
+
+		PushAssem newPush = copy();
+		newPush.setReg(newReg);
+		return newPush;
 	}
 
 	@Override

@@ -39,6 +39,10 @@ public class FuncDefnAssem extends Assem {
 	@Override
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
 		SeqAssem newAssem = (SeqAssem)assem.copyAndSetRealRegs(toSet);
-		return new FuncDefnAssem(name, newAssem);
+
+		FuncDefnAssem newFuncDefn = copy();
+		newFuncDefn.setAssem(newAssem);
+
+		return newFuncDefn;
 	}
 }

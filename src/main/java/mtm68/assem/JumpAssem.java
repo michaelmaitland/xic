@@ -29,15 +29,4 @@ public class JumpAssem extends Assem {
 			return name().toLowerCase();
 		}
 	}
-
-	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		/* Do nothing since jump has no regs */
-		return this;
-	}
-
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		return ArrayUtils.empty();
-	}
 }

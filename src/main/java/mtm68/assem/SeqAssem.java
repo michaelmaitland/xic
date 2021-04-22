@@ -45,6 +45,10 @@ public class SeqAssem extends Assem {
 		assems.add(0, assem);
 	}
 	
+	public void setAssems(List<Assem> assems) {
+		this.assems = assems;
+	}
+
 	@Override
 	public String toString() {
 		return assems.stream()
@@ -72,6 +76,8 @@ public class SeqAssem extends Assem {
 			numSet += numToSet;
 		}
 		
-		return new SeqAssem(newAssems);
+		SeqAssem newSeq = copy();
+		newSeq.setAssems(newAssems);
+		return newSeq;
 	}
 }

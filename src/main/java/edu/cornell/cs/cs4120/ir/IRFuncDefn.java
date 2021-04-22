@@ -83,6 +83,7 @@ public class IRFuncDefn extends IRNode_c {
 	
 	@Override
 	public IRNode tile(Tiler t) {
+		// TODO: prologue and epiloge
 		SeqAssem bodyAssem = (SeqAssem)body.getAssem();
 		bodyAssem.prependAssem(new LabelAssem(name));
 		FuncDefnAssem assem = new FuncDefnAssem(name, bodyAssem);

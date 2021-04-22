@@ -22,15 +22,4 @@ public class CallAssem extends Assem {
 	public String toString() {
 		return "call " + name;
 	}
-
-	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		/* Do nothing since call has no regs */
-		return this;
-	}
-
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		return ArrayUtils.empty();
-	}
 }
