@@ -41,6 +41,10 @@ public class SeqAssem extends Assem {
 		assems.addAll(assems);
 	}
 	
+	public void prependAssem(Assem assem) {
+		assems.add(0, assem);
+	}
+	
 	@Override
 	public String toString() {
 		return assems.stream()
