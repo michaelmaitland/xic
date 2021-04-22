@@ -35,7 +35,7 @@ public class SeqAssem extends Assem{
 	}
 
 	public void appendAssems(List<Assem> assems) {
-		assems.addAll(assems);
+		assems.addAll(flattenSeqs(assems));
 	}
 	
 	@Override

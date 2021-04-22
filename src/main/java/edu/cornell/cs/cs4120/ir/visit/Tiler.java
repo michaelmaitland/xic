@@ -45,7 +45,7 @@ public class Tiler extends IRVisitor {
 
 	@Override
 	protected IRVisitor enter(IRNode parent, IRNode n) {
-		if (afterCallStmt && !(isRetMove(n) || isRetMove(parent))) {
+		if (afterCallStmt && !(isRetMove(n) || isRetMove(parent))) { // MOVE t1 RET0
 			afterCallStmt = false;
 
 			// Add in instructions to reset ret space
