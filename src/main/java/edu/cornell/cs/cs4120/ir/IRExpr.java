@@ -5,7 +5,7 @@ import java.util.List;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.pattern.PatternMatch;
 
-public interface IRExpr extends IRNode, PatternMatch {
+public interface IRExpr extends IRNode {
     boolean isConstant();
 
     long constant();

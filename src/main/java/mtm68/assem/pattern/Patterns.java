@@ -8,16 +8,16 @@ public class Patterns {
 		return new BinopPattern(opType, left, right); 
 	}
 	
-	public static VarPattern var() {
-		return new VarPattern();
+	public static VarPattern var(String name) {
+		return new VarPattern(name);
 	}
 	
-	public static ConstantPattern constant(long value) {
-		return new ConstantPattern(value);
+	public static ConstantPattern constant(String name, long value) {
+		return new ConstantPattern(name, value);
 	}
 
-	public static ConstantPattern anyConstant() {
-		return new ConstantPattern();
+	public static ConstantPattern anyConstant(String name) {
+		return new ConstantPattern(name);
 	}
 
 	public static MemPattern mem(Pattern inner) {
@@ -28,8 +28,8 @@ public class Patterns {
 		return new MovePattern(dest, src);
 	}
 	
-	public static IndexPattern index() {
-		return new IndexPattern();
+	public static IndexPattern index(String name) {
+		return new IndexPattern(name);
 	}
 
 }

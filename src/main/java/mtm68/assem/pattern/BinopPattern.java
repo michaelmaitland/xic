@@ -1,10 +1,10 @@
 package mtm68.assem.pattern;
 
-import java.util.List;
+import java.util.Map;
 
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import mtm68.util.ArrayUtils;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
 public class BinopPattern implements Pattern {
@@ -59,8 +59,9 @@ public class BinopPattern implements Pattern {
 	}
 
 	@Override
-	public List<PatternMatch> getPatternMatches() {
-		return ArrayUtils.concat(leftPattern.getPatternMatches(), rightPattern.getPatternMatches());
+	public void addMatchedExprs(Map<String, IRExpr> exprs) {
+		leftPattern.addMatchedExprs(exprs);
+		rightPattern.addMatchedExprs(exprs);
 	}
 
 }

@@ -3,9 +3,13 @@ package mtm68.assem;
 import static mtm68.ir.IRTestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import mtm68.assem.pattern.Pattern;
@@ -18,14 +22,17 @@ public class PatternTests {
 		Pattern pattern = Patterns.mem(
 				Patterns.op(
 						OpType.ADD, 
-						Patterns.var(), 
-						Patterns.anyConstant()));
+						Patterns.var("t"), 
+						Patterns.anyConstant("c")));
 		
 		IRMem mem = mem(op(OpType.ADD, constant(12L), temp("t")));
 		
 		assertTrue(pattern.matches(mem));
 		
-		System.out.println(pattern.getPatternMatches());
+		Map<String, IRExpr> matches = new HashMap<>();
+		pattern.addMatchedExprs(matches);
+
+		System.out.println(matches);
 	}
 
 	@Test
@@ -35,14 +42,14 @@ public class PatternTests {
 				Patterns.mem(
 						Patterns.op(
 								OpType.ADD,
-								Patterns.var(),
+								Patterns.var("t1"),
 								Patterns.op(OpType.MUL, 
-										Patterns.index(), 
-										Patterns.var())
+										Patterns.index("i"), 
+										Patterns.var("t2"))
 								)),
-				Patterns.anyConstant()
+				Patterns.anyConstant("c")
 				);
-		
+
 		IRMove move = move(
 				mem(op(OpType.ADD,
 						op(OpType.MUL,
@@ -58,7 +65,10 @@ public class PatternTests {
 		
 		assertTrue(pattern.matches(move));
 		
-		System.out.println(pattern.getPatternMatches());
+		Map<String, IRExpr> matches = new HashMap<>();
+		pattern.addMatchedExprs(matches);
+
+		System.out.println(matches);
 	}
 
 }

@@ -2,7 +2,10 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
@@ -12,9 +15,13 @@ import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.Assem;
 import mtm68.assem.SeqAssem;
+import mtm68.assem.pattern.Pattern;
+import mtm68.assem.pattern.PatternResults;
+import mtm68.assem.tile.Tile;
 import mtm68.ir.cfg.CFGBuilder;
 import mtm68.util.ArrayUtils;
 
@@ -24,7 +31,8 @@ import mtm68.util.ArrayUtils;
 public abstract class IRNode_c implements IRNode, Cloneable {
 
 	protected Assem assem;
-	
+	protected float tileCost = Float.MAX_VALUE;
+
 	@Override
 	public IRNode visitChildren(IRVisitor v) {
 		return this;
@@ -60,10 +68,43 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 	public boolean isConstFolded(CheckConstFoldedIRVisitor v) {
 		return true;
 	}
-	
+
 	@Override
 	public IRNode tile(Tiler t) {
-		return this;
+		if(assem != null) return this;
+		
+		List<Tile> tiles = getTiles();
+		float leastCost = Float.MAX_VALUE;
+		Assem bestAssem = null;
+		
+		for(Tile tile : tiles) {
+			Pattern pattern = tile.getPattern();
+
+			Map<String, IRExpr> matchedExprs = new HashMap<>();
+			if(pattern.matches(this)) {
+				pattern.addMatchedExprs(matchedExprs);
+				
+				float cost = matchedExprs.values()
+						.stream()
+						.map(IRNode::getTileCost)
+						.collect(Collectors.reducing(0.0f, (a, b) -> a + b));
+				
+				cost += tile.getCost();
+				
+				if(cost >= leastCost) continue;
+				leastCost = cost;
+				
+				PatternResults patternResults = new PatternResults(matchedExprs);
+				
+				bestAssem = tile.getTiledAssem(patternResults);
+			}
+		}
+
+		if(bestAssem == null) throw new InternalCompilerError("Could not tile node: " + this);
+		
+		IRNode_c newNode = copyAndSetAssem(bestAssem);
+		newNode.tileCost = leastCost;
+		return newNode;
 	}
 
 	@Override
@@ -103,7 +144,7 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
-	
+
 	public <N extends IRNode_c> N copyAndSetAssem(Assem assem) {
 		N newN = this.copy();
 		newN.assem = assem;
@@ -120,7 +161,17 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 	}
 	
 	@Override
+	public float getTileCost() {
+		return tileCost;
+	}
+
+	@Override
 	public void appendAssems(List<Assem> assems) {
 		assem = new SeqAssem(ArrayUtils.prepend(assem, assems));
+	}
+
+	@Override
+	public List<Tile> getTiles() {
+		return ArrayUtils.empty();
 	}
 }

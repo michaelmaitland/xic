@@ -1,7 +1,8 @@
 package mtm68.assem.pattern;
 
-import java.util.List;
+import java.util.Map;
 
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
@@ -21,8 +22,7 @@ public class MemPattern implements Pattern {
 	}
 
 	@Override
-	public List<PatternMatch> getPatternMatches() {
-		return operandPattern.getPatternMatches();
+	public void addMatchedExprs(Map<String, IRExpr> exprs) {
+		operandPattern.addMatchedExprs(exprs);
 	}
-
 }

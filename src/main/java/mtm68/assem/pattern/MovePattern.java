@@ -1,10 +1,10 @@
 package mtm68.assem.pattern;
 
-import java.util.List;
+import java.util.Map;
 
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNode;
-import mtm68.util.ArrayUtils;
 
 public class MovePattern implements Pattern {
 	
@@ -26,8 +26,9 @@ public class MovePattern implements Pattern {
 	}
 
 	@Override
-	public List<PatternMatch> getPatternMatches() {
-		return ArrayUtils.concat(destPattern.getPatternMatches(), srcPattern.getPatternMatches());
+	public void addMatchedExprs(Map<String, IRExpr> exprs) {
+		destPattern.addMatchedExprs(exprs);
+		srcPattern.addMatchedExprs(exprs);
 	}
 
 }
