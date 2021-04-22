@@ -1,15 +1,21 @@
 package mtm68.assem.operand;
 
-public class Imm implements Ref, Src {
-	
-	private int value;
+import mtm68.assem.pattern.PatternMatch;
 
-	public Imm(int value) {
+public class Imm implements Ref, Src, PatternMatch {
+	
+	private long value;
+
+	public Imm(long value) {
 		this.value = value;
 	}
 	
-	public int getValue() {
+	public long getValue() {
 		return value;
+	}
+
+	public boolean is32Bit() {
+		return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE;
 	}
 	
 	@Override

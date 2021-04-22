@@ -1,5 +1,6 @@
 package mtm68.assem.operand;
 
+import mtm68.assem.pattern.PatternMatch;
 import mtm68.util.Constants;
 
 public abstract class Reg implements Ref, Acc, Src, Dest {
