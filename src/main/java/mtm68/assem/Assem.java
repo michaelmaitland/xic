@@ -1,9 +1,5 @@
 package mtm68.assem;
 
-import java.util.List;
-
-import mtm68.assem.operand.AbstractReg;
-
 public abstract class Assem implements Cloneable, HasRegs {
 	private String assem;
 	

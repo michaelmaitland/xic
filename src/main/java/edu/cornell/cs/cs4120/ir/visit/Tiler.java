@@ -1,6 +1,7 @@
 package edu.cornell.cs.cs4120.ir.visit;
 
-import static mtm68.util.ArrayUtils.*;
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.ArrayUtils.empty;
 
 import java.util.List;
 import java.util.stream.Collectors;

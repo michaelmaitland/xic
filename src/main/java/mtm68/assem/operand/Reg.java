@@ -18,4 +18,5 @@ public abstract class Reg implements HasRegs, Ref, Acc, Src, Dest {
 	public String toString() {
 		return id;
 	}
+
 }

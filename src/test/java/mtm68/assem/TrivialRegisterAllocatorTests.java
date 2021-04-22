@@ -152,7 +152,7 @@ public class TrivialRegisterAllocatorTests {
 		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
 
 		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(1));
-		assertEquals(RealReg.R10, m2.getSrc());
+		assertEquals(RealReg.R10, m2.getDest());
 		assertInstanceOfAndReturn(Mem.class, m2.getSrc());
 
 		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(2));
@@ -165,8 +165,7 @@ public class TrivialRegisterAllocatorTests {
 
 		MoveAssem m4 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(4));
 		assertEquals(RealReg.R10, m4.getSrc());
-		assertInstanceOfAndReturn(Mem.class, m4.getSrc());
-		printInsts(insts);
+		assertInstanceOfAndReturn(Mem.class, m4.getDest());
 	}
 	
 	@Test

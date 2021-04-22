@@ -8,7 +8,6 @@ import java.util.Map;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
-import mtm68.ast.types.ContextType;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
 

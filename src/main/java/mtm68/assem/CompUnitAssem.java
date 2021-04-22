@@ -1,7 +1,6 @@
 package mtm68.assem;
 
 import java.util.List;
-import java.util.Map;
 
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.RealReg;

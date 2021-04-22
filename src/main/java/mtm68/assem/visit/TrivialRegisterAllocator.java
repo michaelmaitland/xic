@@ -1,8 +1,13 @@
 package mtm68.assem.visit;
 
+import static mtm68.assem.operand.RealReg.R10;
+import static mtm68.assem.operand.RealReg.R11;
+import static mtm68.assem.operand.RealReg.R9;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +22,6 @@ import mtm68.assem.SeqAssem;
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
-import static mtm68.assem.operand.RealReg.*;
 import mtm68.util.ArrayUtils;
 
 public class TrivialRegisterAllocator {
@@ -38,7 +42,8 @@ public class TrivialRegisterAllocator {
 			allAssems.addAll(funcAssems);
 		}
 		
-		return allAssems;
+		// flatten all seqs
+		return new SeqAssem(allAssems).getAssems();
 	}
 
 	private List<Assem> allocateForFunc(FuncDefnAssem func) {
@@ -96,23 +101,36 @@ public class TrivialRegisterAllocator {
 		}
 		
 		List<Assem> seq = ArrayUtils.empty();
+		Map<AbstractReg, RealReg> abstrToRealMap = new LinkedHashMap<>();
+		List<RealReg> realRegs = ArrayUtils.empty();
 
 		int i = 0;
 		for(AbstractReg reg : abstrRegs) {
+			// check to see if we shuttled for this temp already
+			if(abstrToRealMap.containsKey(reg)) {
+				realRegs.add(abstrToRealMap.get(reg));
+				continue;
+			}
+
+			// mark that we shuttled this reg
+			RealReg shuttle = SHUTTLE_REGS.get(i);
+			realRegs.add(shuttle);
+			abstrToRealMap.put(reg, shuttle);
+
 			// Move from stack to shuttle
 			Mem stackOffset = regsToLoc.get(reg.getId());
-			RealReg shuttle = SHUTTLE_REGS.get(i);
 			MoveAssem fromStack = new MoveAssem(shuttle, stackOffset);
 			seq.add(fromStack);
 			i++;
 		}
 		
-		// inst uses shuttle
-		Assem newInst = (Assem)inst.copyAndSetRealRegs(SHUTTLE_REGS.subList(0, i));
+		// inst uses shuttles
+		Assem newInst = (Assem)inst.copyAndSetRealRegs(realRegs);
 		seq.add(newInst);
 		
 		i = 0;
-		for(AbstractReg reg : abstrRegs) {
+		for(AbstractReg reg : abstrToRealMap.keySet()) {
+			
 			// Move from shuttle back to stack
 			Mem stackOffset = regsToLoc.get(reg.getId());
 			RealReg shuttle = SHUTTLE_REGS.get(i);
