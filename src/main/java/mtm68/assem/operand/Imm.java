@@ -16,4 +16,14 @@ public class Imm implements Ref, Src {
 	public String toString() {
 		return "" + value;
 	}
+
+	@Override
+	public boolean isReg() {
+		return false;
+	}
+
+	@Override
+	public Reg getReg() {
+		return null;
+	}
 }

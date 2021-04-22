@@ -1,12 +1,17 @@
 package mtm68.assem;
 
-import mtm68.assem.operand.Loc;
+import java.util.List;
 
-public class JumpAssem extends OneOpAssem{
+import mtm68.assem.operand.AbstractReg;
+import mtm68.assem.operand.Loc;
+import mtm68.util.ArrayUtils;
+
+public class JumpAssem extends OneOpAssem {
 	private JumpType type;
 	private Loc loc;
 
 	public JumpAssem(JumpType type, Loc loc) {
+		super(null);
 		this.type = type;
 		this.loc = loc;
 	}
@@ -23,5 +28,10 @@ public class JumpAssem extends OneOpAssem{
 		public String toString() {
 			return name().toLowerCase();
 		}
+	}
+
+	@Override
+	public List<AbstractReg> getAbstractRegs() {
+		return ArrayUtils.empty();
 	}
 }

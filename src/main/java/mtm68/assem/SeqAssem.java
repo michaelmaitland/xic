@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import mtm68.assem.operand.AbstractReg;
 import mtm68.util.ArrayUtils;
 
-public class SeqAssem extends Assem{
+public class SeqAssem extends Assem {
+
 	private List<Assem> assems;
 
 	public SeqAssem(List<Assem> assems) {
@@ -14,6 +16,7 @@ public class SeqAssem extends Assem{
 	}
 	
 	public SeqAssem(Assem...assems) {
+		// TODO: flatten???
 		this(ArrayUtils.elems(assems));
 	}
 	
@@ -43,5 +46,13 @@ public class SeqAssem extends Assem{
 		return assems.stream()
 				.map(Assem::toString)
 				.collect(Collectors.joining("\n"));
+	}
+
+	@Override
+	public List<AbstractReg> getAbstractRegs() {
+		return assems.stream()
+					 .map(Assem::getAbstractRegs)
+					 .flatMap(List::stream)
+					 .collect(Collectors.toList());
 	}
 }

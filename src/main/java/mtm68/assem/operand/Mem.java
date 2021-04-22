@@ -46,4 +46,15 @@ public class Mem implements Acc, Src, Dest {
 		
 		return sb.toString();
 	}
+
+	@Override
+	public boolean isReg() {
+		return true;
+	}
+
+	@Override
+	public Reg getReg() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

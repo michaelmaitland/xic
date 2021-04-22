@@ -5,7 +5,10 @@ import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.FuncDefnAssem;
+import mtm68.assem.SeqAssem;
 
 /** An IR function definition */
 public class IRFuncDefn extends IRNode_c {
@@ -75,5 +78,11 @@ public class IRFuncDefn extends IRNode_c {
 	@Override
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
+	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		FuncDefnAssem assem = new FuncDefnAssem(name, (SeqAssem)body.getAssem());
+		return this.copyAndSetAssem(assem);
 	}
 }

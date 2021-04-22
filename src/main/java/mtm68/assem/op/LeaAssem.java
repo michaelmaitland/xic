@@ -10,4 +10,8 @@ public class LeaAssem extends OperAssem{
 		super("lea", dest, src);
 	}
 
+	@Override
+	public String toString() {
+		return "lea " + dest + ", " + src;
+	}
 }

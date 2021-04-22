@@ -17,4 +17,6 @@ public abstract class Reg implements Ref, Acc, Src, Dest {
 	public String toString() {
 		return id;
 	}
+
+	protected abstract AbstractReg getAbstractReg();
 }

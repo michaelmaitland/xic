@@ -10,4 +10,8 @@ public class SubAssem extends OperAssem {
 		super("sub", dest, src);
 	}
 	
+	@Override
+	public String toString() {
+		return "sub " + dest + ", " + src;
+	}
 }
