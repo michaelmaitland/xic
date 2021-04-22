@@ -127,6 +127,8 @@ public class TrivialRegisterAllocatorTests {
 				new AddAssem(RealReg.RBX, abstrReg("t1"))
 				);
 		
+		assertAllRealReg(insts);
+
 		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
 		assertEquals(RealReg.R9, m1.getDest());
 		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
@@ -138,7 +140,6 @@ public class TrivialRegisterAllocatorTests {
 		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
 		assertEquals(RealReg.R9, m2.getSrc());
 		assertInstanceOfAndReturn(Mem.class, m2.getDest());
-		assertAllRealReg(insts);
 	}	
 	
 	@Test
@@ -173,7 +174,6 @@ public class TrivialRegisterAllocatorTests {
 		List<Assem> insts = allocateSingleFunc(
 				new AddAssem(abstrReg("t1"), abstrReg("t1"))
 				);
-		printInsts(insts);
 		assertAllRealReg(insts);
 		
 		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
@@ -197,7 +197,30 @@ public class TrivialRegisterAllocatorTests {
 				new SubAssem(RealReg.RAX, abstrReg("t1"))
 				);
 		assertAllRealReg(insts);
-		printInsts(insts);
+
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(1));
+		assertEquals(RealReg.R9, a.getDest());
+		assertEquals(RealReg.RBX, a.getSrc());
+		
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
+		
+		MoveAssem m3 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(3));
+		assertEquals(RealReg.R9, m3.getDest());
+		assertInstanceOfAndReturn(Mem.class, m3.getSrc());
+
+		SubAssem s = assertInstanceOfAndReturn(SubAssem.class, insts.get(4));
+		assertEquals(RealReg.RAX, s.getDest());
+		assertEquals(RealReg.R9, s.getSrc());
+		
+		MoveAssem m4 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(5));
+		assertEquals(RealReg.R9, m4.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m4.getDest());
 	}
 	
 	@Test
@@ -206,8 +229,31 @@ public class TrivialRegisterAllocatorTests {
 				new AddAssem(abstrReg("t1"), abstrReg("t1")),
 				new SubAssem(RealReg.RAX, abstrReg("t1"))
 				);
+
 		assertAllRealReg(insts);
-		printInsts(insts);
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(1));
+		assertEquals(RealReg.R9, a.getDest());
+		assertEquals(RealReg.R9, a.getSrc());
+		
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
+
+		MoveAssem m3 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(3));
+		assertEquals(RealReg.R9, m3.getDest());
+		assertInstanceOfAndReturn(Mem.class, m3.getSrc());
+
+		SubAssem s = assertInstanceOfAndReturn(SubAssem.class, insts.get(4));
+		assertEquals(RealReg.RAX, s.getDest());
+		assertEquals(RealReg.R9, s.getSrc());
+		
+		MoveAssem m4 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(5));
+		assertEquals(RealReg.R9, m4.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m4.getDest());
 	}
 	
 	@Test
@@ -217,7 +263,30 @@ public class TrivialRegisterAllocatorTests {
 				new SubAssem(abstrReg("t1"), abstrReg("t1"))
 				);
 		assertAllRealReg(insts);
-		printInsts(insts);
+		
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(1));
+		assertEquals(RealReg.R9, a.getDest());
+		assertEquals(RealReg.R9, a.getSrc());
+		
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
+		
+		MoveAssem m3 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(3));
+		assertEquals(RealReg.R9, m3.getDest());
+		assertInstanceOfAndReturn(Mem.class, m3.getSrc());
+
+		SubAssem s = assertInstanceOfAndReturn(SubAssem.class, insts.get(4));
+		assertEquals(RealReg.R9, s.getDest());
+		assertEquals(RealReg.R9, s.getSrc());
+		
+		MoveAssem m4 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(5));
+		assertEquals(RealReg.R9, m4.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m4.getDest());
 	}
 	
 	@Test
@@ -250,11 +319,6 @@ public class TrivialRegisterAllocatorTests {
 		printInsts(insts);
 	}
 	
-	@Test
-	public void testMultipleInstsSameAbstr() {
-		
-	}
-
 	@Test
 	public void testMultiFunc() {
 		
