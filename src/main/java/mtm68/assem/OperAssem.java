@@ -32,8 +32,6 @@ public abstract class OperAssem extends Assem {
 		return name + " " + dest + ", " + src;
 	}
 	
-	
-	
 	@Override
 	public List<AbstractReg> getAbstractRegs() {
 		List<AbstractReg> destRegs = dest.getAbstractRegs();
