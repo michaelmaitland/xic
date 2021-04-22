@@ -1,2 +1,2 @@
 #!/bin/bash
-git --no-pager log > $(uuidgen).log 
+git --no-pager log > $(uuidgen).txt
