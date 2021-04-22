@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import mtm68.assem.operand.AbstractReg;
+import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 
 public class SeqAssem extends Assem {
@@ -16,7 +17,6 @@ public class SeqAssem extends Assem {
 	}
 	
 	public SeqAssem(Assem...assems) {
-		// TODO: flatten???
 		this(ArrayUtils.elems(assems));
 	}
 	
@@ -54,5 +54,20 @@ public class SeqAssem extends Assem {
 					 .map(Assem::getAbstractRegs)
 					 .flatMap(List::stream)
 					 .collect(Collectors.toList());
+	}
+
+	@Override
+	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
+		List<Assem> newAssems = ArrayUtils.empty();
+
+		int numSet = 0;
+		for(Assem assem : assems) {
+			int numToSet = assem.getAbstractRegs().size();
+			Assem newAssem = (Assem)assem.copyAndSetRealRegs(toSet.subList(numSet, numToSet));
+			newAssems.add(newAssem);
+			numSet += numToSet;
+		}
+		
+		return new SeqAssem(newAssems);
 	}
 }

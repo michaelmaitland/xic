@@ -1,5 +1,9 @@
 package mtm68.assem.operand;
 
+import java.util.List;
+
+import mtm68.assem.HasRegs;
+
 public class Mem implements Acc, Src, Dest {
 	private Reg base;
 	private Reg index;
@@ -28,6 +32,11 @@ public class Mem implements Acc, Src, Dest {
 		this.base = base;
 	}
 	
+	public Mem(Reg base, int disp) {
+		this.base = base;
+		this.disp = disp;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -48,13 +57,29 @@ public class Mem implements Acc, Src, Dest {
 	}
 
 	@Override
-	public boolean isReg() {
-		return true;
+	public List<AbstractReg> getAbstractRegs() {
+		List<AbstractReg> regs = base.getAbstractRegs();
+		
+		if(index != null) {
+			regs.addAll(index.getAbstractRegs());
+		}
+
+		return regs;
 	}
 
 	@Override
-	public Reg getReg() {
-		// TODO Auto-generated method stub
-		return null;
+	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
+		int numBase = base.getAbstractRegs().size();
+		
+		Reg newBase = (Reg)base.copyAndSetRealRegs(toSet.subList(0, numBase));
+		
+		Reg newIndex;
+		if(index != null) {
+			newIndex = (Reg)index.copyAndSetRealRegs(toSet.subList(numBase, toSet.size()));
+		} else {
+			newIndex = index;
+		}
+		
+		return new Mem(newBase, newIndex, scale, disp);
 	}
 }

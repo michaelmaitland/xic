@@ -137,9 +137,9 @@ public class IRCompUnit extends IRNode_c {
 	
 	@Override 
 	public IRNode tile(Tiler t) {
-		Map<String, FuncDefnAssem> funcAssems = new LinkedHashMap<>();
+		List<FuncDefnAssem> funcAssems = new ArrayList<>();
         for (IRFuncDefn func : functions.values()) {
-            funcAssems.put(func.name(), (FuncDefnAssem)func.getAssem());
+            funcAssems.add((FuncDefnAssem)func.getAssem());
         }
 		return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
 	}

@@ -3,6 +3,7 @@ package mtm68.assem.operand;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import mtm68.assem.HasRegs;
 import mtm68.util.ArrayUtils;
 
 public class RealReg extends Reg{
@@ -79,17 +80,14 @@ public class RealReg extends Reg{
 	}
 
 	@Override
-	public boolean isReg() {
-		return true;
+	public List<AbstractReg> getAbstractRegs() {
+		return ArrayUtils.empty();
 	}
 
 	@Override
-	public Reg getReg() {
+	public Reg copyAndSetRealRegs(List<RealReg> toSet) {
+		/* No abstract regs to set */
 		return this;
 	}
 
-	@Override
-	protected AbstractReg getAbstractReg() {
-		return null;
-	}
 }

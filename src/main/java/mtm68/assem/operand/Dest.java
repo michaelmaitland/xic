@@ -1,9 +1,7 @@
 package mtm68.assem.operand;
 
-public interface Dest {
+import mtm68.assem.HasRegs;
 
-	boolean isReg();
-
-	Reg getReg();
+public interface Dest extends HasRegs {
 
 }

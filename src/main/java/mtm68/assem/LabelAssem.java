@@ -3,14 +3,20 @@ package mtm68.assem;
 import java.util.List;
 
 import mtm68.assem.operand.AbstractReg;
+import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 
-public class LabelAssem extends OneOpAssem {
+public class LabelAssem extends Assem {
 	private String name;
 	
 	public LabelAssem(String name) {
-		super(null);
 		this.name = name;
+	}
+
+	
+	@Override
+	public String toString() {
+		return name + ":";
 	}
 
 	@Override
@@ -19,7 +25,8 @@ public class LabelAssem extends OneOpAssem {
 	}
 	
 	@Override
-	public String toString() {
-		return name + ":";
+	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
+		/* Do nothing since label has no regs */
+		return this;	
 	}
 }

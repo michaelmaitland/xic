@@ -4,14 +4,14 @@ import java.util.List;
 
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Loc;
+import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 
-public class JumpAssem extends OneOpAssem {
+public class JumpAssem extends Assem {
 	private JumpType type;
 	private Loc loc;
 
 	public JumpAssem(JumpType type, Loc loc) {
-		super(null);
 		this.type = type;
 		this.loc = loc;
 	}
@@ -28,6 +28,12 @@ public class JumpAssem extends OneOpAssem {
 		public String toString() {
 			return name().toLowerCase();
 		}
+	}
+
+	@Override
+	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
+		/* Do nothing since jump has no regs */
+		return this;
 	}
 
 	@Override

@@ -2,9 +2,8 @@ package mtm68.assem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -206,8 +205,8 @@ public class TrivialRegisterAllocatorTests {
 		SeqAssem seq = new SeqAssem(assems);
 		FuncDefnAssem func = new FuncDefnAssem("f", seq);
 		
-		Map<String, FuncDefnAssem> funcs = new HashMap<>();
-		funcs.put("f", func);
+		List<FuncDefnAssem> funcs = new ArrayList<>();
+		funcs.add(func);
 		CompUnitAssem comp = new CompUnitAssem("test.xi", funcs);
 
 		return allocate(comp);
