@@ -13,8 +13,10 @@ import mtm68.assem.op.LeaAssem;
 import mtm68.assem.op.SubAssem;
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Loc;
+import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.visit.TrivialRegisterAllocator;
+import static mtm68.util.TestUtils.*;
 
 public class TrivialRegisterAllocatorTests {
 	
@@ -45,7 +47,8 @@ public class TrivialRegisterAllocatorTests {
 				new PushAssem(RealReg.RCX)
 				);
 		assertAllRealReg(insts);
-		printInsts(insts);	
+		PushAssem p = assertInstanceOfAndReturn(PushAssem.class, insts.get(0));
+		assertEquals(RealReg.RCX, p.getReg());
 	}
 	
 	@Test
@@ -56,7 +59,12 @@ public class TrivialRegisterAllocatorTests {
 				new PushAssem(RealReg.RBP)
 				);
 		assertAllRealReg(insts);
-		printInsts(insts);	
+		PushAssem p0 = assertInstanceOfAndReturn(PushAssem.class, insts.get(0));
+		assertEquals(RealReg.RCX, p0.getReg());
+		PushAssem p1 = assertInstanceOfAndReturn(PushAssem.class, insts.get(1));
+		assertEquals(RealReg.RCX, p1.getReg());
+		PushAssem p2 = assertInstanceOfAndReturn(PushAssem.class, insts.get(2));
+		assertEquals(RealReg.RBP, p2.getReg());
 	}
 	
 	@Test
@@ -64,8 +72,17 @@ public class TrivialRegisterAllocatorTests {
 		List<Assem> insts = allocateSingleFunc(
 				new PushAssem(abstrReg("t"))
 				);
+
 		assertAllRealReg(insts);
-		printInsts(insts);	
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+		PushAssem p = assertInstanceOfAndReturn(PushAssem.class, insts.get(1));
+		assertEquals(RealReg.R9, p.getReg());
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
+
 	}
 	
 	// -----------------------------------------------------------------
@@ -77,8 +94,11 @@ public class TrivialRegisterAllocatorTests {
 		List<Assem> insts = allocateSingleFunc(
 				new AddAssem(RealReg.RAX, RealReg.RBX)
 				);
+
 		assertAllRealReg(insts);
-		printInsts(insts);
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(0));
+		assertEquals(RealReg.RAX, a.getDest());	
+		assertEquals(RealReg.RBX, a.getSrc());	
 	}
 
 	@Test
@@ -87,7 +107,18 @@ public class TrivialRegisterAllocatorTests {
 				new AddAssem(abstrReg("t1"), RealReg.RBX)
 				);
 		assertAllRealReg(insts);
-		printInsts(insts);
+		
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(1));
+		assertEquals(RealReg.R9, a.getDest());
+		assertEquals(RealReg.RBX, a.getSrc());
+		
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
 	}
 	
 	@Test
@@ -95,8 +126,19 @@ public class TrivialRegisterAllocatorTests {
 		List<Assem> insts = allocateSingleFunc(
 				new AddAssem(RealReg.RBX, abstrReg("t1"))
 				);
+		
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(1));
+		assertEquals(RealReg.RBX, a.getDest());
+		assertEquals(RealReg.R9, a.getSrc());
+		
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
 		assertAllRealReg(insts);
-		printInsts(insts);
 	}	
 	
 	@Test
@@ -105,6 +147,25 @@ public class TrivialRegisterAllocatorTests {
 				new AddAssem(abstrReg("t1"), abstrReg("t2"))
 				);
 		assertAllRealReg(insts);
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(1));
+		assertEquals(RealReg.R10, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, a.getDest());
+		assertEquals(RealReg.R10, a.getSrc());
+		
+		MoveAssem m3 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(3));
+		assertEquals(RealReg.R9, m3.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m3.getDest());
+
+		MoveAssem m4 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(4));
+		assertEquals(RealReg.R10, m4.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m4.getSrc());
 		printInsts(insts);
 	}
 	
@@ -113,8 +174,21 @@ public class TrivialRegisterAllocatorTests {
 		List<Assem> insts = allocateSingleFunc(
 				new AddAssem(abstrReg("t1"), abstrReg("t1"))
 				);
-		assertAllRealReg(insts);
 		printInsts(insts);
+		assertAllRealReg(insts);
+		
+		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(RealReg.R9, m1.getDest());
+		assertInstanceOfAndReturn(Mem.class, m1.getSrc());
+
+		AddAssem a = assertInstanceOfAndReturn(AddAssem.class, insts.get(1));
+		assertEquals(RealReg.R9, a.getDest());
+		assertEquals(RealReg.R9, a.getSrc());
+		
+		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(2));
+		assertEquals(RealReg.R9, m2.getSrc());
+		assertInstanceOfAndReturn(Mem.class, m2.getDest());
+		assertAllRealReg(insts);
 	}
 
 	@Test
