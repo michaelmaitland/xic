@@ -7,8 +7,6 @@ import mtm68.assem.operand.AbstractReg;
 public abstract class Assem implements Cloneable, HasRegs {
 	private String assem;
 	
-	public abstract List<AbstractReg> getAbstractRegs();
-	
 	@SuppressWarnings("unchecked")
 	public <A extends Assem> A copy() {
 		try {
