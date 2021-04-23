@@ -112,7 +112,7 @@ public class Main {
 			System.out.println(e.getMessage());
 		}
 		
-		FileUtils.dPath = dPath;
+		FileUtils.diagPath = dPath;
 		Debug.DEBUG_ON = debug;
 
 		if (help || sourceFiles.isEmpty())

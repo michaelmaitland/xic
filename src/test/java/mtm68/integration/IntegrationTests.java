@@ -6,12 +6,18 @@ import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -27,10 +33,14 @@ import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import mtm68.FileType;
 import mtm68.SymbolTableManager;
+import mtm68.assem.Assem;
+import mtm68.assem.LabelAssem;
+import mtm68.assem.SeqAssem;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
@@ -39,12 +49,21 @@ import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
+import mtm68.util.ArrayUtils;
 import mtm68.util.ErrorUtils;
+import mtm68.util.FileUtils;
 import mtm68.visit.FunctionCollector;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 
 public class IntegrationTests {
+	private static final OSType OS = OSType.getOSType(System.getProperty("os.name").toLowerCase());
+	
+	@Test
+	void testBasic() {
+		Assem assem = new SeqAssem(new LabelAssem("_Imain_paai"));
+		runAndAssertAssem(assem, "Hello world!");
+	}
 	
 	@Test
 	void testHelloWorld() {
@@ -156,17 +175,87 @@ public class IntegrationTests {
 			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
 			irRoot.printSExp(codeWriter);
 			codeWriter.flush();
+		
+			assertIRSimulatorOutput(irRoot, expected);
 			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot, baos);
-			simulator.call("_Imain_paai", 0);
-
-			assertEquals(expected, baos.toString());
+			Assem assem = generateAssem(irRoot);
+			runAndAssertAssem(assem, expected);
+			
 		} catch (FileNotFoundException | SemanticException e) {
 			e.printStackTrace();
 			fail();
 		}
+	}
+	
+	private void assertIRSimulatorOutput(IRNode root, String expected) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		
+		IRSimulator simulator = new IRSimulator((IRCompUnit) root, baos);
+		simulator.call("_Imain_paai", 0);
+
+		assertEquals(expected, baos.toString());
+	}
+	
+	private Assem generateAssem(IRNode root) {
+		Tiler tiler = new Tiler(new IRNodeFactory_c());
+		tiler.visit(root);
+		
+		return root.getAssem();
+	}
+	
+	private void runAndAssertAssem(Assem assem, String expected) {
+		try {
+			Path pwd = Paths.get(System.getProperty("user.dir"));
+
+			String assemPathStr = "src/test/resources/runtime/release";
+			
+			FileUtils.assemPath = Paths.get(assemPathStr);
+			FileUtils.writeToFile("unitTest.xi", assem);
+			
+			// Run linkxi.sh to generate executable
+			ProcessBuilder link = getProcessBuilder(assemPathStr + "/linkxi.sh", assemPathStr + "/unitTest.s"); 
+			Process linkProc = link.start();
+					
+			linkProc.waitFor();
+			
+			BufferedReader stdLinkOut = new BufferedReader(new InputStreamReader(linkProc.getInputStream()));
+			String s = null;
+			
+			if(!Files.exists(pwd.resolve("a.out"))) {
+				System.out.println("linkxi.sh encounted the following error:\n");
+				while ((s = stdLinkOut.readLine()) != null) {
+				    System.out.println(s);
+				}
+				fail();
+			}
+			
+			// Run executable and compare output to console with expected value
+			ProcessBuilder runAssem = getProcessBuilder("./a.out");
+			Process runProc = runAssem.start();
+	
+			BufferedReader assemOut = new BufferedReader(new InputStreamReader(runProc.getInputStream()));
+			
+			StringBuilder assemOutput = new StringBuilder();
+			while ((s = assemOut.readLine()) != null) {
+			    assemOutput.append(s);
+			}
+			
+			runProc.waitFor();
+			
+			Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
+			Files.delete(pwd.resolve("a.out"));
+			
+			assertEquals(expected, assemOutput.toString());
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private ProcessBuilder getProcessBuilder(String... commandAndArgs) {
+		List<String> commandList = new ArrayList<>(Arrays.asList(commandAndArgs));		
+		if(OS == OSType.WINDOWS) ArrayUtils.prepend("wsl", commandList);
+		
+		return new ProcessBuilder(commandList);
 	}
 	
 	private void generateAndAssertError(String filename, String expected){
@@ -174,7 +263,6 @@ public class IntegrationTests {
 			IRNode irRoot = generateIRFromFile(filename);
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			
 			
 			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot, baos);
 			simulator.call("_Imain_paai", 0);
@@ -250,7 +338,15 @@ public class IntegrationTests {
 		return irRoot;
 	}
 	
-	
-	
-	
+	private enum OSType{
+		WINDOWS,
+		LINUX;
+		
+		static OSType getOSType(String os) {
+			if(os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+				return LINUX;
+			}
+			else return WINDOWS;
+		}
+	}
 }
