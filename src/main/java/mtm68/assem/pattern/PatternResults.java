@@ -38,6 +38,11 @@ public class PatternResults {
 		throw new InternalCompilerError("Invalid class " + clazz + " for pattern extraction");
 	}
 	
+	@SuppressWarnings("unchecked")
+	public <T extends IRExpr> T getExpr(String name) {
+		return (T)matchedExprs.get(name);
+	}
+	
 	public boolean containsKey(String name) {
 		return matchedExprs.containsKey(name);
 	}

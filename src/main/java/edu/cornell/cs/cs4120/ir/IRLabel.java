@@ -74,6 +74,6 @@ public class IRLabel extends IRStmt {
 
 	@Override
 	public IRNode tile(Tiler t) {
-		return copyAndSetAssem(new LabelAssem(name));
+		return copyAndSetAssem(new LabelAssem(name), 0.0f);
 	}
 }

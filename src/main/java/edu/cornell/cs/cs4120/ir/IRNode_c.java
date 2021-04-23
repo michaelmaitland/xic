@@ -81,6 +81,9 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 		Reg resultReg = null;
 		
 		for(Tile tile : tiles) {
+			tile.setTiler(t);
+			tile.setBaseNode(this);
+
 			Pattern pattern = tile.getPattern();
 
 			Map<String, IRExpr> matchedExprs = new HashMap<>();

@@ -3,20 +3,24 @@ package mtm68.assem.tile;
 import static mtm68.assem.pattern.Patterns.*;
 import static mtm68.assem.tile.TileCosts.*;
 
-import java.util.Map;
-
-import edu.cornell.cs.cs4120.ir.IRExpr;
-import edu.cornell.cs.cs4120.ir.IRNode;
-import edu.cornell.cs.cs4120.ir.IRReturn;
+import edu.cornell.cs.cs4120.ir.IRCJump;
 import mtm68.assem.Assem;
+import mtm68.assem.CmpAssem;
+import mtm68.assem.JEAssem;
 import mtm68.assem.MoveAssem;
+import mtm68.assem.SeqAssem;
 import mtm68.assem.operand.Imm;
+import mtm68.assem.operand.Loc;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.pattern.Pattern;
 import mtm68.assem.pattern.PatternResults;
 
 public class TileFactory {
+	
+	//--------------------------------------------------------------------------------
+	// Constant
+	//--------------------------------------------------------------------------------
 	
 	public static Tile constTile() {
 		Pattern pattern = anyConstant("c");
@@ -28,6 +32,10 @@ public class TileFactory {
 			}
 		};
 	}
+
+	//--------------------------------------------------------------------------------
+	// Mem
+	//--------------------------------------------------------------------------------
 	
 	public static Tile memAddTile() {
 		Pattern pattern = mem(add(var("t"), smallConstant("c")));
@@ -53,6 +61,10 @@ public class TileFactory {
 			}
 		};
 	}
+
+	//--------------------------------------------------------------------------------
+	// Move
+	//--------------------------------------------------------------------------------
 	
 	public static Tile moveBasic() {
 		Pattern pattern = move(var("t1"), var("t2"));
@@ -96,10 +108,35 @@ public class TileFactory {
 			}
 		};
 	}
+
+	//--------------------------------------------------------------------------------
+	// Return
+	//--------------------------------------------------------------------------------
 	
 	public static Tile returnBasic() {
 		Pattern pattern = ret(); 
 		
 		return new ReturnTile(pattern, RETURN_COST);
+	}
+
+	//--------------------------------------------------------------------------------
+	// CJump
+	//--------------------------------------------------------------------------------
+
+	public static Tile cjumpBasic() {
+		Pattern pattern = cjump(var("t")); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t = results.get("t", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t, new Imm(1L)),
+						new JEAssem(new Loc(jumpLoc))
+					);
+			}
+		};
 	}
 }

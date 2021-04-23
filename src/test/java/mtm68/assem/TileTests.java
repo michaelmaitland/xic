@@ -7,6 +7,7 @@ import static mtm68.util.TestUtils.*;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
@@ -182,6 +183,12 @@ public class TileTests {
 		IRSeq seq = new IRSeq(call, movRet2, movRet3, ret());
 		
 		tile(seq);
+	}
+
+	@Test
+	void tileCJump() {
+		IRCJump cjump = cjump(op(OpType.ADD, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
 	}
 
 	private Assem tile(IRNode node) {

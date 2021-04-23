@@ -44,4 +44,8 @@ public class Patterns {
 		return new ReturnPattern();
 	}
 
+	public static CJumpPattern cjump(Pattern conditionPattern) {
+		return new CJumpPattern(conditionPattern);
+	}
+
 }

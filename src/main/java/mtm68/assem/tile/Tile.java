@@ -1,5 +1,6 @@
 package mtm68.assem.tile;
 
+import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import mtm68.assem.Assem;
 import mtm68.assem.operand.Reg;
@@ -11,6 +12,7 @@ public abstract class Tile {
 	private Pattern pattern;
 	private float cost;
 	protected Tiler tiler;
+	protected IRNode baseNode;
 
 	public Tile(Pattern pattern, float cost) {
 		super();
@@ -31,4 +33,9 @@ public abstract class Tile {
 	public void setTiler(Tiler tiler) {
 		this.tiler = tiler;
 	}
+	
+	public void setBaseNode(IRNode baseNode) {
+		this.baseNode = baseNode;
+	}
+	
 }

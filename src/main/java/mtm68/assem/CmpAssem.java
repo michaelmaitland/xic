@@ -1,10 +1,11 @@
 package mtm68.assem;
 
-import mtm68.assem.operand.Minuend;
-import mtm68.assem.operand.Subtrahend;
+import mtm68.assem.operand.Dest;
+import mtm68.assem.operand.Src;
 
-public class CmpAssem {
+public class CmpAssem extends OperAssem {
 
-	private Minuend min;
-	private Subtrahend sub;
+	public CmpAssem(Dest dest, Src src) {
+		super("cmp", dest, src);
+	}
 }
