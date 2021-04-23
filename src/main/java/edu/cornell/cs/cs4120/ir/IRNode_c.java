@@ -18,7 +18,9 @@ import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.Assem;
+import mtm68.assem.FreshRegGenerator;
 import mtm68.assem.SeqAssem;
+import mtm68.assem.operand.Reg;
 import mtm68.assem.pattern.Pattern;
 import mtm68.assem.pattern.PatternResults;
 import mtm68.assem.tile.Tile;
@@ -76,6 +78,7 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 		List<Tile> tiles = getTiles();
 		float leastCost = Float.MAX_VALUE;
 		Assem bestAssem = null;
+		Reg resultReg = null;
 		
 		for(Tile tile : tiles) {
 			Pattern pattern = tile.getPattern();
@@ -86,6 +89,7 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 				
 				float cost = matchedExprs.values()
 						.stream()
+						.filter(e -> e != this)
 						.map(IRNode::getTileCost)
 						.collect(Collectors.reducing(0.0f, (a, b) -> a + b));
 				
@@ -96,7 +100,16 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 				
 				PatternResults patternResults = new PatternResults(matchedExprs);
 				
-				bestAssem = tile.getTiledAssem(patternResults);
+				resultReg = FreshRegGenerator.getFreshAbstractReg();
+				Assem tiledAssem = tile.getTiledAssem(resultReg, patternResults);
+				
+				List<Assem> requiredAssem = patternResults.getUsedExprs().stream()
+					.map(IRExpr::getAssem)
+					.collect(Collectors.toList());
+
+				requiredAssem.add(tiledAssem);
+				
+				bestAssem = new SeqAssem(requiredAssem);
 			}
 		}
 
@@ -104,6 +117,11 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 		
 		IRNode_c newNode = copyAndSetAssem(bestAssem);
 		newNode.tileCost = leastCost;
+		
+		if(newNode instanceof IRExpr_c) {
+			((IRExpr_c)newNode).setResultReg(resultReg);
+		}
+		
 		return newNode;
 	}
 

@@ -1,5 +1,7 @@
 package mtm68.assem.operand;
 
+import polyglot.util.InternalCompilerError;
+
 public class Mem implements Acc, Src, Dest {
 	private Reg base;
 	private Reg index;
@@ -13,10 +15,35 @@ public class Mem implements Acc, Src, Dest {
 		this.disp = disp;
 	}
 
+	public Mem(Reg base, Reg index, Imm scale, Imm disp) {
+		assertValidScale(scale);
+		assert32Bit(disp);
+
+		this.base = base;
+		this.index = index;
+		this.scale = (int)scale.getValue();
+		this.disp = (int)disp.getValue();
+	}
+
+	public Mem(Reg base, Imm disp) {
+		assert32Bit(disp);
+
+		this.base = base;
+		this.disp = (int)disp.getValue();
+	}
+
 	public Mem(Reg base, Reg index, int scale) {
 		this.base = base;
 		this.index = index;
 		this.scale = scale;
+	}
+
+	public Mem(Reg base, Reg index, Imm scale) {
+		assertValidScale(scale);
+
+		this.base = base;
+		this.index = index;
+		this.scale = (int)scale.getValue();
 	}
 
 	public Mem(Reg base, Reg index) {
@@ -26,6 +53,16 @@ public class Mem implements Acc, Src, Dest {
 
 	public Mem(Reg base) {
 		this.base = base;
+	}
+	
+	private void assert32Bit(Imm imm) {
+		if(!imm.is32Bit()) throw new InternalCompilerError("Immediates in mem operand must be 32-bit");
+	}
+
+	private void assertValidScale(Imm imm) {
+		long value = imm.getValue();
+		boolean valid = value == 1L || value == 2L || value == 4L || value == 8L;
+		if(!valid) throw new InternalCompilerError("Scale must be either 1, 2, 4, or 8. Got: " + value);
 	}
 	
 	@Override

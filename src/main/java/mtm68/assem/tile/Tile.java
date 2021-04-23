@@ -1,6 +1,7 @@
 package mtm68.assem.tile;
 
 import mtm68.assem.Assem;
+import mtm68.assem.operand.Reg;
 import mtm68.assem.pattern.Pattern;
 import mtm68.assem.pattern.PatternResults;
 
@@ -15,7 +16,7 @@ public abstract class Tile {
 		this.cost = cost;
 	}
 	
-	public abstract Assem getTiledAssem(PatternResults results);
+	public abstract Assem getTiledAssem(Reg resultReg, PatternResults results);
 
 	public Pattern getPattern() {
 		return pattern;

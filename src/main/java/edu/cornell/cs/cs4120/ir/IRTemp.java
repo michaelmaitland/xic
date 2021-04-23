@@ -53,6 +53,7 @@ public class IRTemp extends IRExpr_c {
 	public IRNode tile(Tiler t) {
 		IRTemp newTemp = copy();
 		newTemp.setResultReg(new AbstractReg(name));
+		newTemp.tileCost = 0.0f;
 		return newTemp;
 	}
 

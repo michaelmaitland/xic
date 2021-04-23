@@ -14,9 +14,37 @@ import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
-import mtm68.assem.op.LeaAssem;
 
 public class TileTests {
+	
+	@Test
+	void tileConst() {
+		IRNode constant = constant(12L);
+		tile(constant);
+	}
+
+	@Test
+	void tileMemAdd() {
+		IRNode constant = mem(op(OpType.ADD, temp("t"), constant(12L)));
+		tile(constant);
+	}
+
+	@Test
+	void tileInClassExample() {
+		IRMove move = move(
+				mem(op(OpType.ADD,
+						op(OpType.MUL,
+								mem(op(OpType.ADD, constant(12L), temp("t"))),
+								constant(4L)
+								),
+						mem(op(OpType.ADD,
+								temp("t"),
+								constant(8L)))
+						)),
+				constant(7L)
+			);
+		tile(move);
+	}
 
 	@Test
 	void tileAdd() {

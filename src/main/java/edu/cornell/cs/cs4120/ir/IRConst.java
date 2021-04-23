@@ -1,9 +1,12 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
-import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
 import mtm68.util.ArrayUtils;
 
 /**
@@ -59,7 +62,7 @@ public class IRConst extends IRExpr_c {
 	}
 	
 	@Override
-	public IRNode tile(Tiler t) {
-		return super.tile(t);
+	public List<Tile> getTiles() {
+		return ArrayUtils.elems(TileFactory.constTile());
 	}
 }

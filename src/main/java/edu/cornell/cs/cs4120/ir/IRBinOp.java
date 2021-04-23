@@ -13,6 +13,7 @@ import mtm68.assem.SeqAssem;
 import mtm68.assem.op.LeaAssem;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.Reg;
+import mtm68.assem.tile.TileCosts;
 
 /**
  * An intermediate representation for a binary operation
@@ -208,6 +209,7 @@ public class IRBinOp extends IRExpr_c {
 		}
 		IRBinOp newOp = copyAndSetAssem(new SeqAssem(left.getAssem(), right.getAssem(), assem));
 		newOp.setResultReg(resultReg);
+		newOp.tileCost = TileCosts.BINOP_COST;
 		return newOp;
 	}
 }

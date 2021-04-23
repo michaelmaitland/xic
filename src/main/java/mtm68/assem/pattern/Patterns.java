@@ -7,6 +7,14 @@ public class Patterns {
 	public static BinopPattern op(OpType opType, Pattern left, Pattern right) {
 		return new BinopPattern(opType, left, right); 
 	}
+
+	public static BinopPattern add(Pattern left, Pattern right) {
+		return new BinopPattern(OpType.ADD, left, right); 
+	}
+
+	public static BinopPattern mul(Pattern left, Pattern right) {
+		return new BinopPattern(OpType.MUL, left, right); 
+	}
 	
 	public static VarPattern var(String name) {
 		return new VarPattern(name);
