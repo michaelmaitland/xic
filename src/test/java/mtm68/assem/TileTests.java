@@ -13,8 +13,10 @@ import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
+import mtm68.util.Constants;
 
 public class TileTests {
 	
@@ -191,13 +193,25 @@ public class TileTests {
 		tile(cjump);
 	}
 
-	private Assem tile(IRNode node) {
+	@Test
+	void tileReturn() {
+		IRReturn ret = new IRReturn(temp("t1"), temp("t2"), temp("t3"), temp("t4"));
+		tile(ret, 10);
+	}
+
+	private Assem tile(IRNode node, int numArgs) {
 		System.out.println("Before\n=========\n" + node);
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
+		tiler.setRetSpaceOff(Constants.WORD_SIZE * (Math.max(numArgs - 6, 0) + 1));
+
 		IRNode result = tiler.visit(node);
 		System.out.println("After\n=========\n" + result.getAssem());
 		System.out.println();
 
 		return result.getAssem();
+	}
+
+	private Assem tile(IRNode node) {
+		return tile(node, 0);
 	}
 }

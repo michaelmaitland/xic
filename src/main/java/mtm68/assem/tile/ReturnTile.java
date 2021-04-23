@@ -34,7 +34,7 @@ public class ReturnTile extends Tile {
 			
 			Reg src = results.get(name, Reg.class);
 			
-			if(i > 2 && retSpaceReg == null) {
+			if(i >= 2 && retSpaceReg == null) {
 				retSpaceReg = FreshRegGenerator.getFreshAbstractReg();
 
 				MoveAssem move = new MoveAssem(retSpaceReg, new Mem(RealReg.RBP, tiler.getRetSpaceOff())); 
@@ -55,7 +55,7 @@ public class ReturnTile extends Tile {
 		if(returnIdx == 0) return RealReg.RAX;
 		if(returnIdx == 1) return RealReg.RDX;
 		
-		return new Mem(retSpaceReg, Constants.WORD_SIZE * (returnIdx - 2));
+		return new Mem(retSpaceReg, -Constants.WORD_SIZE * (returnIdx - 2));
 	}
 
 }

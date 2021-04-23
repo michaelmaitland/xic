@@ -23,7 +23,7 @@ public class ReturnPattern implements Pattern{
 
 	@Override
 	public void addMatchedExprs(Map<String, IRExpr> exprs) {
-		for(int i = 0; i < exprs.size(); i++) {
+		for(int i = 0; i < rets.size(); i++) {
 			exprs.put("ret" + i, rets.get(i));
 		}
 	}
