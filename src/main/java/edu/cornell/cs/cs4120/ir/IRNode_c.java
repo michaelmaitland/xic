@@ -164,8 +164,13 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 	}
 
 	public <N extends IRNode_c> N copyAndSetAssem(Assem assem) {
+		return copyAndSetAssem(assem, tileCost);
+	}
+
+	public <N extends IRNode_c> N copyAndSetAssem(Assem assem, float tileCost) {
 		N newN = this.copy();
 		newN.assem = assem;
+		newN.tileCost = tileCost;
 		return newN;
 	}
 

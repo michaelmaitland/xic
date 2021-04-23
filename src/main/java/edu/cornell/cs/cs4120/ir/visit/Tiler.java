@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
@@ -36,6 +37,7 @@ public class Tiler extends IRVisitor {
 	private boolean afterCallStmt;
 	private IRCallStmt callStmt;
 	private List<IRMove> moveStmts;
+	private int retSpaceOff;
 
 	public Tiler(IRNodeFactory inf) {
 		super(inf);
@@ -67,6 +69,9 @@ public class Tiler extends IRVisitor {
 			// We're done with these
 			callStmt = null;
 			moveStmts.clear();
+		} else if(n instanceof IRFuncDefn) {
+			IRFuncDefn func = (IRFuncDefn) n;
+			setRetSpaceOff(Constants.WORD_SIZE * (Math.max(func.numArgs() - 6, 0) + 1));
 		}
 		return this;
 	}
@@ -184,5 +189,14 @@ public class Tiler extends IRVisitor {
 
 	private int getExtraRetCount(IRCallStmt stmt) {
 		return Math.max(stmt.getNumRets() - 2, 0);
+	}
+	
+	/** Offset from rbp */
+	public int getRetSpaceOff() {
+		return retSpaceOff;
+	}
+	
+	public void setRetSpaceOff(int retSpaceOff) {
+		this.retSpaceOff = retSpaceOff;
 	}
 }

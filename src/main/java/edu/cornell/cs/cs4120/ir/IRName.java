@@ -47,5 +47,10 @@ public class IRName extends IRExpr_c {
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
 	}
+	
+	@Override
+	public IRNode tile(Tiler t) {
+		return copyAndSetAssem(null, 0.0f);
+	}
 
 }

@@ -25,6 +25,11 @@ public class Mem implements Acc, Src, Dest {
 		this.disp = (int)disp.getValue();
 	}
 
+	public Mem(Reg base, int disp) {
+		this.base = base;
+		this.disp = disp;
+	}
+
 	public Mem(Reg base, Imm disp) {
 		assert32Bit(disp);
 

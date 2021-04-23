@@ -39,5 +39,9 @@ public class Patterns {
 	public static IndexPattern index(String name) {
 		return new IndexPattern(name);
 	}
+	
+	public static ReturnPattern ret() {
+		return new ReturnPattern();
+	}
 
 }

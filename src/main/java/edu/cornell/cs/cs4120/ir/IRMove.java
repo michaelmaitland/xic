@@ -101,7 +101,10 @@ public class IRMove extends IRStmt {
 	
 	@Override
 	public List<Tile> getTiles() {
-		return ArrayUtils.elems(TileFactory.moveMemBaseAndIndex());
+		return ArrayUtils.elems(
+				TileFactory.moveBasic(),
+				TileFactory.moveFromMem(),
+				TileFactory.moveMemBaseAndIndex());
 	}
 	
 }

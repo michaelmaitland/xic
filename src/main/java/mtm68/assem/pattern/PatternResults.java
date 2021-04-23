@@ -38,6 +38,10 @@ public class PatternResults {
 		throw new InternalCompilerError("Invalid class " + clazz + " for pattern extraction");
 	}
 	
+	public boolean containsKey(String name) {
+		return matchedExprs.containsKey(name);
+	}
+	
 	public List<IRExpr> getUsedExprs() {
 		return usedExprs;
 	}
