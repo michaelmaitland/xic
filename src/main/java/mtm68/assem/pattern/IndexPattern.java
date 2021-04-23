@@ -1,21 +1,13 @@
 package mtm68.assem.pattern;
 
-import edu.cornell.cs.cs4120.ir.IRConst;
-import edu.cornell.cs.cs4120.ir.IRNode;
-
-public class IndexPattern extends MatchablePattern {
+public class IndexPattern extends ConstantPattern {
 	
 	public IndexPattern(String name) {
 		super(name);
 	}
-	
-	@Override
-	public boolean matches(IRNode node) {
-		if(!(node instanceof IRConst)) return false;
-		
-		matched = (IRConst) node;
-		long value = matched.constant();
 
+	@Override
+	protected boolean valueMatches(long value) {
 		return value == 1L || value == 2L || value == 4L || value == 8L;
 	}
 

@@ -17,6 +17,8 @@ import edu.cornell.cs.cs4120.ir.visit.Tiler;
 
 public class TileTests {
 	
+	private static final long LARGE_INT = 2 * (long)Integer.MAX_VALUE;
+	
 	@Test
 	void tileConst() {
 		IRNode constant = constant(12L);
@@ -30,7 +32,24 @@ public class TileTests {
 	}
 
 	@Test
-	void tileInClassExample() {
+	void tileInClassExampleLargeInt() {
+		IRMove move = move(
+				mem(op(OpType.ADD,
+						op(OpType.MUL,
+								mem(op(OpType.ADD, constant(12L), temp("t"))),
+								constant(4L)
+								),
+						mem(op(OpType.ADD,
+								temp("t"),
+								constant(LARGE_INT)))
+						)),
+				constant(7L)
+			);
+		tile(move);
+	}
+
+	@Test
+	void tileInClassExampleSmallInt() {
 		IRMove move = move(
 				mem(op(OpType.ADD,
 						op(OpType.MUL,

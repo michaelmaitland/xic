@@ -19,13 +19,13 @@ public class Patterns {
 	public static VarPattern var(String name) {
 		return new VarPattern(name);
 	}
-	
-	public static ConstantPattern constant(String name, long value) {
-		return new ConstantPattern(name, value);
-	}
 
 	public static ConstantPattern anyConstant(String name) {
-		return new ConstantPattern(name);
+		return new AnyConstantPattern(name);
+	}
+
+	public static ConstantPattern smallConstant(String name) {
+		return new SmallConstantPattern(name);
 	}
 
 	public static MemPattern mem(Pattern inner) {

@@ -25,7 +25,7 @@ public class TileFactory {
 	}
 	
 	public static Tile memAddTile() {
-		Pattern pattern = mem(add(var("t"), anyConstant("c")));
+		Pattern pattern = mem(add(var("t"), smallConstant("c")));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
