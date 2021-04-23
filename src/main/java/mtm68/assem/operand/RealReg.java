@@ -24,11 +24,11 @@ public class RealReg extends Reg{
 	public static final RealReg R14 = new RealReg(RealRegId.R14);
 	public static final RealReg R15 = new RealReg(RealRegId.R15);
 
-	public static final List<RealReg> getCallerSaveRegIds() {
+	public static final List<RealReg> getCallerSaveReg() {
 		return ArrayUtils.elems(RAX, RCX, RDX, RSI, RDI, R8, R9, R10, R11);
 	}
 
-	public static final List<RealReg> getCalleeSaveRegIds() {
+	public static final List<RealReg> getCalleeSaveReg() {
 		return ArrayUtils.elems(RBP, RSP, RBX, R12, R13, R14, R15);
 	}
 

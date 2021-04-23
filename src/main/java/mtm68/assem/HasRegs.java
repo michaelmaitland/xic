@@ -19,4 +19,5 @@ public interface HasRegs {
 	 */
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet);
 
+
 }

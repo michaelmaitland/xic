@@ -19,12 +19,5 @@ public class AddAssem extends OperAssem {
 		return "add " + dest + ", " + src;
 	}
 
-	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		int numDestRegs = dest.getAbstractRegs().size();
-		Dest newDest = (Dest)dest.copyAndSetRealRegs(toSet.subList(0, numDestRegs));
-		Src newSrc = (Src)src.copyAndSetRealRegs(toSet.subList(numDestRegs, toSet.size()));
-		
-		return new AddAssem(newDest, newSrc);
-	}
+
 }

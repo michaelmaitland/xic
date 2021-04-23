@@ -37,6 +37,38 @@ public class Mem implements Acc, Src, Dest {
 		this.disp = disp;
 	}
 	
+	public Reg getBase() {
+		return base;
+	}
+
+	public void setBase(Reg base) {
+		this.base = base;
+	}
+
+	public Reg getIndex() {
+		return index;
+	}
+
+	public void setIndex(Reg index) {
+		this.index = index;
+	}
+
+	public int getScale() {
+		return scale;
+	}
+
+	public void setScale(int scale) {
+		this.scale = scale;
+	}
+
+	public int getDisp() {
+		return disp;
+	}
+
+	public void setDisp(int disp) {
+		this.disp = disp;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -80,6 +112,9 @@ public class Mem implements Acc, Src, Dest {
 			newIndex = index;
 		}
 		
-		return new Mem(newBase, newIndex, scale, disp);
+		Mem newMem = copy();
+		newMem.setBase(newBase);
+		newMem.setIndex(newIndex);
+		return newMem;
 	}
 }
