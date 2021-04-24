@@ -93,6 +93,11 @@ public class TrivialRegisterAllocator {
 		return realAssem;
 	}
 	
+	/**
+	 * Returns the instruction(s) that moves from the stack location into a
+	 * register, does the instruction using the real register, and moves from the
+	 * register back to the stack location (if the register contents were mutated).
+	 */
 	private Assem assignAbstrRegsToRealRegs(Assem inst, Map<String, Mem> regsToLoc) {
 		
 		List<AbstractReg> abstrRegs = inst.getAbstractRegs();
@@ -100,11 +105,29 @@ public class TrivialRegisterAllocator {
 			throw new InternalCompilerError("Instruction may have at most 3 registers");
 		}
 		
+		// moveFromStack and writeMutatedRegs add to seq
 		List<Assem> seq = ArrayUtils.empty();
-		Map<AbstractReg, RealReg> abstrToRealMap = new LinkedHashMap<>();
-		List<RealReg> realRegs = ArrayUtils.empty();
 
+		List<RealReg> realRegs = moveFromStackIntoRegs(abstrRegs, seq, regsToLoc);
+	
+		Assem newInst = (Assem)inst.copyAndSetRealRegs(realRegs);
+		seq.add(newInst);
+		
+		writeMutatedRegsToStack(inst.getMutatedAbstractRegs(), seq, regsToLoc);
+		return new SeqAssem(seq);
+	}
+	
+	/**
+	 * Adds to {@code prevInsts} the instructions needed to move from the stack
+	 * location corresponding to each abstract register into a real register. The
+	 * list of real registers is is returned. Each index in the RealReg list
+	 * corresponds to the index of the AbstractReg list.
+	 */
+	private List<RealReg> moveFromStackIntoRegs(List<AbstractReg> abstrRegs, List<Assem> prevInsts, Map<String, Mem> regsToLoc) {
+		List<RealReg> realRegs = ArrayUtils.empty();
+		Map<AbstractReg, RealReg> abstrToRealMap = new LinkedHashMap<>();
 		int i = 0;
+
 		for(AbstractReg reg : abstrRegs) {
 			// check to see if we shuttled for this temp already
 			if(abstrToRealMap.containsKey(reg)) {
@@ -120,25 +143,24 @@ public class TrivialRegisterAllocator {
 			// Move from stack to shuttle
 			Mem stackOffset = regsToLoc.get(reg.getId());
 			MoveAssem fromStack = new MoveAssem(shuttle, stackOffset);
-			seq.add(fromStack);
+			prevInsts.add(fromStack);
 			i++;
 		}
-		
-		// inst uses shuttles
-		Assem newInst = (Assem)inst.copyAndSetRealRegs(realRegs);
-		seq.add(newInst);
-		
-		i = 0;
-		for(AbstractReg reg : inst.getMutatedAbstractRegs()) {
-			
-			// Move from shuttle back to stack
+		return realRegs;
+	}
+	
+	/**
+	 * Adds to {@code prevInsts} the instructions needed to move from the real
+	 * register back to the stack location corresponding to each abstract register.
+	 */
+	private void writeMutatedRegsToStack(List<AbstractReg> regs, List<Assem> prevInsts, Map<String, Mem> regsToLoc) {
+		int i = 0;
+		for(AbstractReg reg : regs) {
 			Mem stackOffset = regsToLoc.get(reg.getId());
 			RealReg shuttle = SHUTTLE_REGS.get(i);
 			MoveAssem toStack = new MoveAssem(stackOffset, shuttle);
-			seq.add(toStack);
+			prevInsts.add(toStack);
 			i++;
 		}
-
-		return new SeqAssem(seq);
 	}
 }
