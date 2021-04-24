@@ -35,6 +35,11 @@ public class FuncDefnAssem extends Assem {
 	public List<AbstractReg> getAbstractRegs() {
 		return assem.getAbstractRegs();
 	}
+	
+	@Override
+	public List<AbstractReg> getMutatedAbstractRegs() {
+		return assem.getMutatedAbstractRegs();
+	}
 
 	@Override
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {

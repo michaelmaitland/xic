@@ -4,7 +4,7 @@ import java.util.List;
 
 import mtm68.assem.HasRegs;
 
-public class Mem implements Acc, Src, Dest {
+public class Mem extends AssemOp implements Acc, Src, Dest {
 	private Reg base;
 	private Reg index;
 	private int scale;

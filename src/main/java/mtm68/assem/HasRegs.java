@@ -12,6 +12,7 @@ public interface HasRegs {
 	 */
 	public List<AbstractReg> getAbstractRegs();
 	
+	
 	/**
 	 * Sets the abstract registers defined by getAbstractRegs()
 	 * in the same order that getAbstractRegs() returns.

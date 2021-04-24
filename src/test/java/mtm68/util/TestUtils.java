@@ -9,4 +9,8 @@ public class TestUtils {
 		Assertions.assertTrue(clazz.isAssignableFrom(obj.getClass()), obj.getClass() + " is not an instanceof " + clazz);
 		return (T) obj;
 	}
+	
+	public static <T> void assertInstanceOf(Class<T> clazz, Object obj) {
+		Assertions.assertTrue(clazz.isAssignableFrom(obj.getClass()), obj.getClass() + " is not an instanceof " + clazz);
+	}
 }

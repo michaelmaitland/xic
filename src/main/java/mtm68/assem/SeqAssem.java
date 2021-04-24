@@ -63,6 +63,14 @@ public class SeqAssem extends Assem {
 					 .flatMap(List::stream)
 					 .collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<AbstractReg> getMutatedAbstractRegs() {
+		return assems.stream()
+					 .map(Assem::getMutatedAbstractRegs)
+					 .flatMap(List::stream)
+					 .collect(Collectors.toList());
+	}
 
 	@Override
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {

@@ -5,7 +5,7 @@ import java.util.List;
 import mtm68.assem.HasRegs;
 import mtm68.util.ArrayUtils;
 
-public class Imm implements Ref, Src {
+public class Imm extends AssemOp implements Ref, Src {
 	
 	private int value;
 

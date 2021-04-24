@@ -6,7 +6,7 @@ import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 
-public abstract class Assem implements Cloneable, HasRegs {
+public abstract class Assem implements Cloneable, HasRegs, HasMutatableRegs {
 	private String assem;
 
 	@Override
@@ -19,6 +19,12 @@ public abstract class Assem implements Cloneable, HasRegs {
 	public List<AbstractReg> getAbstractRegs() {
 		return ArrayUtils.empty();
 	}
+	
+	@Override
+	public List<AbstractReg> getMutatedAbstractRegs() {
+		return ArrayUtils.empty();
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <A extends Assem> A copy() {
 		try {

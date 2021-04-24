@@ -1,11 +1,6 @@
 package mtm68.assem;
 
-import java.util.List;
-
-import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Loc;
-import mtm68.assem.operand.RealReg;
-import mtm68.util.ArrayUtils;
 
 public class JumpAssem extends Assem {
 	private JumpType type;

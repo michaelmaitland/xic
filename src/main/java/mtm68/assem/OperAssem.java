@@ -53,6 +53,11 @@ public abstract class OperAssem extends Assem {
 		List<AbstractReg> destRegs = dest.getAbstractRegs();
 		return ArrayUtils.concat(destRegs, src.getAbstractRegs());
 	}	
+	
+	@Override
+	public List<AbstractReg> getMutatedAbstractRegs() {
+		return dest.getAbstractRegs();
+	}	
 
 	@Override
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {

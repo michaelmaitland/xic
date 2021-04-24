@@ -129,7 +129,7 @@ public class TrivialRegisterAllocator {
 		seq.add(newInst);
 		
 		i = 0;
-		for(AbstractReg reg : abstrToRealMap.keySet()) {
+		for(AbstractReg reg : inst.getMutatedAbstractRegs()) {
 			
 			// Move from shuttle back to stack
 			Mem stackOffset = regsToLoc.get(reg.getId());

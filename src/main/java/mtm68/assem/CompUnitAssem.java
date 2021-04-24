@@ -38,6 +38,16 @@ public class CompUnitAssem extends Assem {
 		
 		return regs;
 	}
+	
+	@Override
+	public List<AbstractReg> getMutatedAbstractRegs() {
+		List<AbstractReg> regs = ArrayUtils.empty();
+		for(FuncDefnAssem func : functions) {
+			regs.addAll(func.getMutatedAbstractRegs());
+		}
+		
+		return regs;
+	}
 
 	@Override
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
