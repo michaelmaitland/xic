@@ -77,28 +77,7 @@ public class IRMove extends IRStmt {
 	public IRNode lower(Lowerer v) {
 		return v.transformMove(this);
 	}
-	
-//	@Override
-//	public IRNode tile(Tiler t) {
-//		List<Assem> assems = new ArrayList<>();		
-//		assems.add(src.getAssem());
-//		
-//		if(target instanceof IRMem) {
-//			IRMem targMem = (IRMem) target;
-//			assems.add(targMem.expr().getAssem());
-//			
-//			Mem mem = new Mem(targMem.expr().getResultReg());
-//			assems.add(new MoveAssem(mem, src.getResultReg()));
-//			
-//			return copyAndSetAssem(new SeqAssem(assems));
-//		}
-//		
-//		assems.add(target.getAssem());
-//		assems.add(new MoveAssem(target.getResultReg(), src.getResultReg()));
-//		
-//		return copyAndSetAssem(new SeqAssem(assems));
-//	}
-	
+
 	@Override
 	public List<Tile> getTiles() {
 		return ArrayUtils.elems(

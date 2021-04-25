@@ -26,7 +26,6 @@ public class BinopPattern implements Pattern {
 		IRBinOp binop = (IRBinOp) node;
 		
 		if(binop.opType() != opType) return false;
-		
 
 		return leftPattern.matches(binop.left()) && rightPattern.matches(binop.right()) ||
 					patternCommutes(opType) && rightPattern.matches(binop.left()) && leftPattern.matches(binop.right());

@@ -95,17 +95,6 @@ public class IRMem extends IRExpr_c {
 		return this;
 	}
 	
-//	@Override
-//	public IRNode tile(Tiler t) {
-//		IRMem mem = copy();
-//		Reg resultReg = t.getFreshAbstractReg();
-//		mem.setResultReg(resultReg);
-//		MoveAssem moveAssem = new MoveAssem(resultReg, new Mem(expr.getResultReg()));
-//		
-//		mem.assem = new SeqAssem(expr.getAssem(), moveAssem);
-//		return mem;
-//	}
-	
 	@Override
 	public List<Tile> getTiles() {
 		return ArrayUtils.elems(

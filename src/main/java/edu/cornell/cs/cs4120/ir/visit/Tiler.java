@@ -26,6 +26,7 @@ import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.RealReg.RealRegId;
+import mtm68.assem.tile.TileCosts;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
@@ -71,7 +72,7 @@ public class Tiler extends IRVisitor {
 			moveStmts.clear();
 		} else if(n instanceof IRFuncDefn) {
 			IRFuncDefn func = (IRFuncDefn) n;
-			setRetSpaceOff(Constants.WORD_SIZE * (Math.max(func.numArgs() - 6, 0) + 1));
+			setRetSpaceOff(Constants.WORD_SIZE * (getExtraArgCount(func.numArgs()) + 2));
 		}
 		return this;
 	}
@@ -180,12 +181,16 @@ public class Tiler extends IRVisitor {
 		String funcName = ((IRName) stmt.target()).name();
 		assems.add(new CallAssem(funcName));
 
-		// Since there's only one way to tile a IRCallStmt we can just give it 0 cost
-		return stmt.copyAndSetAssem(new SeqAssem(assems), 0.0f);
+		// Since there's only one way to tile a IRCallStmt we can just give it no cost
+		return stmt.copyAndSetAssem(new SeqAssem(assems), TileCosts.NO_COST);
 	}
 	
 	private int getExtraArgCount(IRCallStmt stmt) {
-		return Math.max(stmt.args().size() - 6, 0);
+		return getExtraArgCount(stmt.args().size());
+	}
+
+	private int getExtraArgCount(int numArgs) {
+		return Math.max(numArgs - 6, 0);
 	}
 
 	private int getExtraRetCount(IRCallStmt stmt) {
