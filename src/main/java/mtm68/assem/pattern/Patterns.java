@@ -20,6 +20,10 @@ public class Patterns {
 		return new VarPattern(name);
 	}
 
+	public static RegexVarPattern regex(String name, String regex) {
+		return new RegexVarPattern(name, regex);
+	}
+
 	public static ConstantPattern anyConstant(String name) {
 		return new AnyConstantPattern(name);
 	}

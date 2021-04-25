@@ -3,7 +3,10 @@ package mtm68.assem.tile;
 import static mtm68.assem.pattern.Patterns.*;
 import static mtm68.assem.tile.TileCosts.*;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.IRCJump;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.Assem;
 import mtm68.assem.CmpAssem;
 import mtm68.assem.JEAssem;
@@ -12,9 +15,13 @@ import mtm68.assem.SeqAssem;
 import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Loc;
 import mtm68.assem.operand.Mem;
+import mtm68.assem.operand.RealReg;
+import mtm68.assem.operand.RealReg.RealRegId;
 import mtm68.assem.operand.Reg;
+import mtm68.assem.operand.Src;
 import mtm68.assem.pattern.Pattern;
 import mtm68.assem.pattern.PatternResults;
+import mtm68.util.Constants;
 
 public class TileFactory {
 	
@@ -105,6 +112,32 @@ public class TileFactory {
 				Imm c = results.get("c", Imm.class);
 
 				return new MoveAssem(new Mem(t1, t2, i), c);
+			}
+		};
+	}
+	
+	public static Tile moveArg() {
+		Pattern pattern = move(var("t"), regex("arg", Constants.ARG_PREFIX + "[0-9]+"));
+
+		return new Tile(pattern, NO_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t = results.get("t", Reg.class);
+				IRTemp argTemp = results.getExpr("arg");
+				
+				Integer argNum = Integer.parseInt(argTemp.name().replace(Constants.ARG_PREFIX, ""));
+				List<RealReg> argRegs = RealRegId.getArgRegs();
+				
+				Src src = null;
+				if(argNum < argRegs.size()) {
+					src = argRegs.get(argNum);
+				}
+				else {
+					int extra = argNum - argRegs.size() + 1;
+					src = new Mem(RealReg.RBP, Constants.WORD_SIZE * (extra + 1));
+				}
+				
+				return new MoveAssem(t, src);
 			}
 		};
 	}

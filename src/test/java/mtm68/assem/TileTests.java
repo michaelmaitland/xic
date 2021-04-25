@@ -199,6 +199,22 @@ public class TileTests {
 		tile(ret, 10);
 	}
 
+	@Test
+	void tileMoveArg() {
+		IRSeq seq = new IRSeq(
+				move("t1", "_ARG0"),
+				move("t2", "_ARG1"),
+				move("t3", "_ARG2"),
+				move("t4", "_ARG3"),
+				move("t5", "_ARG4"),
+				move("t6", "_ARG5"),
+				move("t7", "_ARG6"),
+				move("t8", "_ARG7"),
+				move("t9", "_ARG8")
+				);
+		tile(seq);
+	}
+
 	private Assem tile(IRNode node, int numArgs) {
 		System.out.println("Before\n=========\n" + node);
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
