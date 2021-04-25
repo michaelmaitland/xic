@@ -6,6 +6,7 @@ import static mtm68.util.TestUtils.*;
 
 import org.junit.jupiter.api.Test;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
@@ -118,10 +119,27 @@ public class TileTests {
 	}
 	
 	@Test
+	void tileMod() {
+		IRBinOp mod = new IRBinOp(OpType.MOD, temp("t1"), temp("t2"));
+		tile(mod);
+	}
+
+	@Test
+	void tileDiv() {
+		IRBinOp div = new IRBinOp(OpType.DIV, temp("t1"), temp("t2"));
+		tile(div);
+	}
+
+	@Test
+	void tileHmul() {
+		IRBinOp hmul = new IRBinOp(OpType.HMUL, temp("t1"), temp("t2"));
+		tile(hmul);
+	}
+	
+	@Test
 	void tileJump() {
 		IRNode jump = jump("f");
 		JumpAssem tiled = assertInstanceOfAndReturn(JumpAssem.class, tile(jump));
-		
 	}
 	
 	@Test

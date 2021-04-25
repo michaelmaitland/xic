@@ -187,59 +187,11 @@ public class IRBinOp extends IRExpr_c {
 				TileFactory.binopCompareBasic(OpType.GEQ, CC.GE),
 				TileFactory.binopCompareBasic(OpType.GT, CC.G),
 				TileFactory.binopCompareBasic(OpType.LT, CC.L),
-				TileFactory.binopCompareBasic(OpType.LEQ, CC.LE)
+				TileFactory.binopCompareBasic(OpType.LEQ, CC.LE),
+				TileFactory.binopCompareBasic(OpType.ULT, CC.B),
+				TileFactory.binopDivOrMod(OpType.DIV),
+				TileFactory.binopDivOrMod(OpType.MOD),
+				TileFactory.binopHighMul()
 				);
 	}
-
-//	@Override
-//	public IRNode tile(Tiler t) {
-//		Assem assem = null;
-//		Reg resultReg = t.getFreshAbstractReg();
-//		switch(type) {
-//		case ADD:
-//			assem = new LeaAssem(resultReg, new Mem(left.getResultReg(), right.getResultReg()));
-//		case AND:
-//			break;
-//		case ARSHIFT:
-//			break;
-//		case DIV:
-//			break;
-//		case EQ:
-//			break;
-//		case GEQ:
-//			break;
-//		case GT:
-//			break;
-//		case HMUL:
-//			break;
-//		case LEQ:
-//			break;
-//		case LSHIFT:
-//			break;
-//		case LT:
-//			break;
-//		case MOD:
-//			break;
-//		case MUL:
-//			break;
-//		case NEQ:
-//			break;
-//		case OR:
-//			break;
-//		case RSHIFT:
-//			break;
-//		case SUB:
-//			break;
-//		case ULT:
-//			break;
-//		case XOR:
-//			break;
-//		default:
-//			break;
-//		}
-//		IRBinOp newOp = copyAndSetAssem(new SeqAssem(left.getAssem(), right.getAssem(), assem));
-//		newOp.setResultReg(resultReg);
-//		newOp.tileCost = TileCosts.BINOP_COST;
-//		return newOp;
-//	}
 }

@@ -19,6 +19,7 @@ public class Setcc extends Assem {
 		L,
 		LE,
 		E,
+		B,
 		NE;
 		
 		@Override

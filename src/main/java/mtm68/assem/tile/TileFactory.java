@@ -10,9 +10,12 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.Assem;
+import mtm68.assem.CDQAssem;
 import mtm68.assem.CmpAssem;
+import mtm68.assem.IDivAssem;
 import mtm68.assem.JEAssem;
 import mtm68.assem.MoveAssem;
+import mtm68.assem.MulAssem;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.Setcc;
 import mtm68.assem.Setcc.CC;
@@ -204,6 +207,47 @@ public class TileFactory {
 				Reg t1 = results.get("t1", Reg.class);
 				Imm c = results.get("c", Imm.class);
 				return new LeaAssem(resultReg, new Mem(t1, c));
+			}
+		};
+	}
+	
+	public static Tile binopDivOrMod(OpType divOrMod) {
+		if(divOrMod != OpType.DIV && divOrMod != OpType.MOD) throw new IllegalArgumentException(divOrMod + " must be either DIV or MOD");
+
+		Pattern pattern = op(divOrMod, var("t1"), var("t2"));
+		
+		return new Tile(pattern, 2 * MOVE_COST + DIV_COST + CDQ_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				
+				Reg resultFrom = divOrMod == OpType.DIV ? RealReg.RAX : RealReg.RDX;
+
+				return new SeqAssem(
+						new MoveAssem(RealReg.RAX, t1),
+						new CDQAssem(),
+						new IDivAssem(t2),
+						new MoveAssem(resultReg, resultFrom)
+						);
+			}
+		};
+	}
+
+	public static Tile binopHighMul() {
+		Pattern pattern = op(OpType.HMUL, var("t1"), var("t2"));
+		
+		return new Tile(pattern, 2 * MOVE_COST + MUL_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				
+				return new SeqAssem(
+						new MoveAssem(RealReg.RAX, t1),
+						new MulAssem(t2),
+						new MoveAssem(resultReg, RealReg.RDX)
+						);
 			}
 		};
 	}
