@@ -89,8 +89,13 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 			Map<String, IRExpr> matchedExprs = new HashMap<>();
 			if(pattern.matches(this)) {
 				pattern.addMatchedExprs(matchedExprs);
+
+				PatternResults patternResults = new PatternResults(matchedExprs);
 				
-				float cost = matchedExprs.values()
+				resultReg = FreshRegGenerator.getFreshAbstractReg();
+				Assem tiledAssem = tile.getTiledAssem(resultReg, patternResults);
+				
+				float cost = patternResults.getUsedExprs()
 						.stream()
 						.filter(e -> e != this)
 						.map(IRNode::getTileCost)
@@ -100,11 +105,6 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 				
 				if(cost >= leastCost) continue;
 				leastCost = cost;
-				
-				PatternResults patternResults = new PatternResults(matchedExprs);
-				
-				resultReg = FreshRegGenerator.getFreshAbstractReg();
-				Assem tiledAssem = tile.getTiledAssem(resultReg, patternResults);
 				
 				List<Assem> requiredAssem = patternResults.getUsedExprs().stream()
 					.map(IRExpr::getAssem)

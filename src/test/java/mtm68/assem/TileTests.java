@@ -72,7 +72,24 @@ public class TileTests {
 	void tileAdd() {
 		IRNode plus = op(OpType.ADD, temp("t1"), temp("t2"));
 		SeqAssem tiled = assertInstanceOfAndReturn(SeqAssem.class, tile(plus));
-		
+	}
+
+	@Test
+	void tileAddConstant() {
+		IRNode plus = op(OpType.ADD, constant(12L), temp("t1"));
+		tile(plus);
+	}
+
+	@Test
+	void tileAddLargeConstant() {
+		IRNode plus = op(OpType.ADD, temp("t1"), constant(LARGE_INT));
+		tile(plus);
+	}
+
+	@Test
+	void tileAddTwoConstants() {
+		IRNode plus = op(OpType.ADD, constant(LARGE_INT), constant(2L));
+		tile(plus);
 	}
 	
 	@Test

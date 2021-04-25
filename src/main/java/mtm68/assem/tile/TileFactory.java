@@ -12,6 +12,7 @@ import mtm68.assem.CmpAssem;
 import mtm68.assem.JEAssem;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.SeqAssem;
+import mtm68.assem.op.LeaAssem;
 import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Loc;
 import mtm68.assem.operand.Mem;
@@ -169,6 +170,35 @@ public class TileFactory {
 						new CmpAssem(t, new Imm(1L)),
 						new JEAssem(new Loc(jumpLoc))
 					);
+			}
+		};
+	}
+
+	//--------------------------------------------------------------------------------
+	// Binop
+	//--------------------------------------------------------------------------------
+	public static Tile addBasic() {
+		Pattern pattern = add(var("t1"), var("t2"));
+		
+		return new Tile(pattern, BINOP_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				return new LeaAssem(resultReg, new Mem(t1, t2));
+			}
+		};
+	}
+
+	public static Tile addConstant() {
+		Pattern pattern = add(var("t1"), smallConstant("c"));
+		
+		return new Tile(pattern, BINOP_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Imm c = results.get("c", Imm.class);
+				return new LeaAssem(resultReg, new Mem(t1, c));
 			}
 		};
 	}

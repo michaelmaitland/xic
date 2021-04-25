@@ -1,19 +1,17 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
-import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.assem.Assem;
-import mtm68.assem.SeqAssem;
-import mtm68.assem.op.LeaAssem;
-import mtm68.assem.operand.Mem;
-import mtm68.assem.operand.Reg;
-import mtm68.assem.tile.TileCosts;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
+import mtm68.util.ArrayUtils;
 
 /**
  * An intermediate representation for a binary operation
@@ -160,56 +158,64 @@ public class IRBinOp extends IRExpr_c {
 	public IRNode constantFold(IRConstantFolder v) {
 		return v.foldBinOp(this);
 	}
-
+	
 	@Override
-	public IRNode tile(Tiler t) {
-		Assem assem = null;
-		Reg resultReg = t.getFreshAbstractReg();
-		switch(type) {
-		case ADD:
-			assem = new LeaAssem(resultReg, new Mem(left.getResultReg(), right.getResultReg()));
-		case AND:
-			break;
-		case ARSHIFT:
-			break;
-		case DIV:
-			break;
-		case EQ:
-			break;
-		case GEQ:
-			break;
-		case GT:
-			break;
-		case HMUL:
-			break;
-		case LEQ:
-			break;
-		case LSHIFT:
-			break;
-		case LT:
-			break;
-		case MOD:
-			break;
-		case MUL:
-			break;
-		case NEQ:
-			break;
-		case OR:
-			break;
-		case RSHIFT:
-			break;
-		case SUB:
-			break;
-		case ULT:
-			break;
-		case XOR:
-			break;
-		default:
-			break;
-		}
-		IRBinOp newOp = copyAndSetAssem(new SeqAssem(left.getAssem(), right.getAssem(), assem));
-		newOp.setResultReg(resultReg);
-		newOp.tileCost = TileCosts.BINOP_COST;
-		return newOp;
+	public List<Tile> getTiles() {
+		return ArrayUtils.elems(
+				TileFactory.addBasic(),
+				TileFactory.addConstant()
+				);
 	}
+
+//	@Override
+//	public IRNode tile(Tiler t) {
+//		Assem assem = null;
+//		Reg resultReg = t.getFreshAbstractReg();
+//		switch(type) {
+//		case ADD:
+//			assem = new LeaAssem(resultReg, new Mem(left.getResultReg(), right.getResultReg()));
+//		case AND:
+//			break;
+//		case ARSHIFT:
+//			break;
+//		case DIV:
+//			break;
+//		case EQ:
+//			break;
+//		case GEQ:
+//			break;
+//		case GT:
+//			break;
+//		case HMUL:
+//			break;
+//		case LEQ:
+//			break;
+//		case LSHIFT:
+//			break;
+//		case LT:
+//			break;
+//		case MOD:
+//			break;
+//		case MUL:
+//			break;
+//		case NEQ:
+//			break;
+//		case OR:
+//			break;
+//		case RSHIFT:
+//			break;
+//		case SUB:
+//			break;
+//		case ULT:
+//			break;
+//		case XOR:
+//			break;
+//		default:
+//			break;
+//		}
+//		IRBinOp newOp = copyAndSetAssem(new SeqAssem(left.getAssem(), right.getAssem(), assem));
+//		newOp.setResultReg(resultReg);
+//		newOp.tileCost = TileCosts.BINOP_COST;
+//		return newOp;
+//	}
 }
