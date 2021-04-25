@@ -1,8 +1,9 @@
 package mtm68.assem.operand;
 
+import mtm68.assem.HasRegs;
 import mtm68.util.Constants;
 
-public abstract class Reg implements Ref, Acc, Src, Dest {
+public abstract class Reg extends AssemOp implements HasRegs, Ref, Acc, Src, Dest {
 	protected String id;
 
 	public String getId() {
@@ -17,4 +18,5 @@ public abstract class Reg implements Ref, Acc, Src, Dest {
 	public String toString() {
 		return id;
 	}
+
 }

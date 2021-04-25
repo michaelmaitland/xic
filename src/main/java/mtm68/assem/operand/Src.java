@@ -1,5 +1,7 @@
 package mtm68.assem.operand;
 
-public interface Src {
+import mtm68.assem.HasRegs;
+
+public interface Src extends HasRegs {
 
 }

@@ -1,8 +1,5 @@
 package mtm68.ast.nodes.binary;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;

@@ -2,7 +2,7 @@ package mtm68.assem;
 
 import mtm68.assem.operand.Loc;
 
-public class JumpAssem extends OneOpAssem{
+public class JumpAssem extends Assem {
 	private JumpType type;
 	private Loc loc;
 

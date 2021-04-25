@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import mtm68.assem.operand.AbstractReg;
+import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 
-public class SeqAssem extends Assem{
+public class SeqAssem extends Assem {
+
 	private List<Assem> assems;
 
 	public SeqAssem(List<Assem> assems) {
@@ -38,10 +41,51 @@ public class SeqAssem extends Assem{
 		assems.addAll(flattenSeqs(assems));
 	}
 	
+	public void prependAssem(Assem assem) {
+		assems.add(0, assem);
+	}
+	
+	public void setAssems(List<Assem> assems) {
+		this.assems = assems;
+	}
+
 	@Override
 	public String toString() {
 		return assems.stream()
 				.map(Assem::toString)
 				.collect(Collectors.joining("\n"));
+	}
+
+	@Override
+	public List<AbstractReg> getAbstractRegs() {
+		return assems.stream()
+					 .map(Assem::getAbstractRegs)
+					 .flatMap(List::stream)
+					 .collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<AbstractReg> getMutatedAbstractRegs() {
+		return assems.stream()
+					 .map(Assem::getMutatedAbstractRegs)
+					 .flatMap(List::stream)
+					 .collect(Collectors.toList());
+	}
+
+	@Override
+	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
+		List<Assem> newAssems = ArrayUtils.empty();
+
+		int numSet = 0;
+		for(Assem assem : assems) {
+			int numToSet = assem.getAbstractRegs().size();
+			Assem newAssem = (Assem)assem.copyAndSetRealRegs(toSet.subList(numSet, numToSet));
+			newAssems.add(newAssem);
+			numSet += numToSet;
+		}
+		
+		SeqAssem newSeq = copy();
+		newSeq.setAssems(newAssems);
+		return newSeq;
 	}
 }

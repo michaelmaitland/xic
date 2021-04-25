@@ -9,7 +9,6 @@ import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Use;
-import mtm68.ast.types.ContextType;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;

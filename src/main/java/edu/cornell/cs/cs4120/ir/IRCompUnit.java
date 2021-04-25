@@ -9,7 +9,10 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.CompUnitAssem;
+import mtm68.assem.FuncDefnAssem;
 
 /**
  * An intermediate representation for a compilation unit
@@ -130,5 +133,14 @@ public class IRCompUnit extends IRNode_c {
 	@Override
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
+	}
+	
+	@Override 
+	public IRNode tile(Tiler t) {
+		List<FuncDefnAssem> funcAssems = new ArrayList<>();
+        for (IRFuncDefn func : functions.values()) {
+            funcAssems.add((FuncDefnAssem)func.getAssem());
+        }
+		return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
 	}
 }

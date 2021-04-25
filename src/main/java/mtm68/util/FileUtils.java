@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRNode;
@@ -17,7 +16,6 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.Assem;
 import mtm68.assem.visit.AssemToFileBuilder;
 import mtm68.ast.nodes.Node;
-import mtm68.exception.BaseError;
 import mtm68.lexer.Token;
 import mtm68.parser.ParseResult;
 

@@ -2,7 +2,6 @@ package mtm68.ast.types;
 
 import java.util.List;
 
-import mtm68.ast.nodes.Expr;
 import mtm68.util.ArrayUtils;
 
 public class Types {
