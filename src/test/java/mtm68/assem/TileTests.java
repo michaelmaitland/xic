@@ -91,6 +91,31 @@ public class TileTests {
 		IRNode plus = op(OpType.ADD, constant(LARGE_INT), constant(2L));
 		tile(plus);
 	}
+
+	@Test
+	void tileSub() {
+		IRNode sub = op(OpType.SUB, temp("t1"), constant(2L));
+		tile(sub);
+	}
+
+	@Test
+	void tileMul() {
+		IRNode mul = op(OpType.MUL, temp("t1"), constant(2L));
+		tile(mul);
+	}
+
+	@Test
+	void tileCmp() {
+		IRSeq seq = new IRSeq(
+				move(temp("res"), op(OpType.GEQ, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.GT, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.LEQ, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.LT, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.EQ, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.NEQ, temp("t1"), temp("t2")))
+				);
+		tile(seq);
+	}
 	
 	@Test
 	void tileJump() {

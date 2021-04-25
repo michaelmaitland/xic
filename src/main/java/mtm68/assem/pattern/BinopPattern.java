@@ -36,26 +36,28 @@ public class BinopPattern implements Pattern {
 		switch(opType) {
 		case ADD:
 		case AND:
-		case ARSHIFT:
-		case DIV:
 		case EQ:
-		case GEQ:
-		case GT:
-		case HMUL:
-		case LEQ:
-		case LSHIFT:
-		case LT:
-		case MOD:
 		case MUL:
 		case NEQ:
 		case OR:
-		case RSHIFT:
-		case SUB:
-		case ULT:
 		case XOR:
-		default:
 			return true;
+		case SUB:
+		case ARSHIFT:
+		case RSHIFT:
+		case LSHIFT:
+		case GEQ:
+		case GT:
+		case LT:
+		case LEQ:
+		case ULT:
+		case MOD:
+		case HMUL:
+		case DIV:
+			return false;
 		}
+
+		return false;
 	}
 
 	@Override

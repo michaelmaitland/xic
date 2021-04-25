@@ -6,5 +6,6 @@ public class TileCosts {
 	public static final float MOVE_COST = 1.0f;
 	public static final float BINOP_COST = 1.0f;
 	public static final float RETURN_COST = 1.0f;
+	public static final float SETCC_COST = 1.0f;
 
 }

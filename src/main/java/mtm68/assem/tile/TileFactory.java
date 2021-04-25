@@ -4,7 +4,9 @@ import static mtm68.assem.pattern.Patterns.*;
 import static mtm68.assem.tile.TileCosts.*;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.Assem;
@@ -12,7 +14,10 @@ import mtm68.assem.CmpAssem;
 import mtm68.assem.JEAssem;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.SeqAssem;
+import mtm68.assem.Setcc;
+import mtm68.assem.Setcc.CC;
 import mtm68.assem.op.LeaAssem;
+import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Loc;
 import mtm68.assem.operand.Mem;
@@ -199,6 +204,42 @@ public class TileFactory {
 				Reg t1 = results.get("t1", Reg.class);
 				Imm c = results.get("c", Imm.class);
 				return new LeaAssem(resultReg, new Mem(t1, c));
+			}
+		};
+	}
+
+	public static Tile binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor) {
+		return binopBasic(opType, assemConstructor, BINOP_COST); 
+	}
+	
+	public static Tile binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor, float assemCost) {
+		Pattern pattern = op(opType, var("t1"), var("t2"));
+		
+		return new Tile(pattern, MOVE_COST + assemCost) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				return new SeqAssem(
+						new MoveAssem(resultReg, t1),
+						assemConstructor.apply(resultReg, t2)
+						);
+			}
+		};
+	}
+
+	public static Tile binopCompareBasic(OpType opType, CC cc) {
+		Pattern pattern = op(opType, var("t1"), var("t2"));
+		
+		return new Tile(pattern, BINOP_COST + MOVE_COST + SETCC_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				return new SeqAssem(
+						new CmpAssem(t1, t2),
+						new Setcc(cc),
+						new MoveAssem(resultReg, RealReg.RAX));
 			}
 		};
 	}
