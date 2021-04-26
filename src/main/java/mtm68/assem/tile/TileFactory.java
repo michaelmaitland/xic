@@ -13,7 +13,8 @@ import mtm68.assem.Assem;
 import mtm68.assem.CDQAssem;
 import mtm68.assem.CmpAssem;
 import mtm68.assem.IDivAssem;
-import mtm68.assem.JEAssem;
+import mtm68.assem.JumpAssem;
+import mtm68.assem.JumpAssem.JumpType;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.MulAssem;
 import mtm68.assem.SeqAssem;
@@ -176,7 +177,7 @@ public class TileFactory {
 				String jumpLoc = ((IRCJump)baseNode).trueLabel();
 				return new SeqAssem(
 						new CmpAssem(t, new Imm(1L)),
-						new JEAssem(new Loc(jumpLoc))
+						new JumpAssem(JumpType.JE, new Loc(jumpLoc))
 					);
 			}
 		};

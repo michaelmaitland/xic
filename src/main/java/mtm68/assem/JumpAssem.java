@@ -17,7 +17,8 @@ public class JumpAssem extends OneOpAssem{
 	}
 	
 	public enum JumpType{
-		JMP;
+		JMP,
+		JE;
 		
 		@Override
 		public String toString() {
