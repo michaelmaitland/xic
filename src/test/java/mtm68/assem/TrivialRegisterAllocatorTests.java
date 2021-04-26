@@ -6,8 +6,8 @@ import static mtm68.assem.operand.RealReg.RAX;
 import static mtm68.assem.operand.RealReg.RBP;
 import static mtm68.assem.operand.RealReg.RBX;
 import static mtm68.assem.operand.RealReg.RCX;
-import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
 import static mtm68.util.TestUtils.assertInstanceOf;
+import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -60,6 +60,42 @@ public class TrivialRegisterAllocatorTests {
 		MoveAssem m2 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(1));
 		assertInstanceOf(Mem.class, m2.getDest());
 		
+		assertEquals(2, insts.size());
+	}
+	
+	// -----------------------------------------------------------------
+	// IDiv
+	// -----------------------------------------------------------------
+	@Test
+	public void testIDiv() {
+		List<Assem> insts = allocateSingleFunc(new IDivAssem(abstrReg("t1")));
+		assertAllRealReg(insts);
+		printInsts(insts);
+
+		MoveAssem m = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(R9, m.getDest());
+
+		IDivAssem d = assertInstanceOfAndReturn(IDivAssem.class, insts.get(1));
+		assertEquals(R9, d.getSrc());
+
+		assertEquals(2, insts.size());
+	}
+	
+	// -----------------------------------------------------------------
+	// Mul
+	// -----------------------------------------------------------------
+	@Test
+	public void testMul() {
+		List<Assem> insts = allocateSingleFunc(new MulAssem(abstrReg("t1")));
+		assertAllRealReg(insts);
+		printInsts(insts);
+
+		MoveAssem m = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
+		assertEquals(R9, m.getDest());
+
+		MulAssem d = assertInstanceOfAndReturn(MulAssem.class, insts.get(1));
+		assertEquals(R9, d.getSrc());
+
 		assertEquals(2, insts.size());
 	}
 	
@@ -514,6 +550,9 @@ public class TrivialRegisterAllocatorTests {
 		assertEquals(R9, s2.getSrc());
 		
 	}
+	
+	
+	
 	
 	private void assertAllRealReg(List<Assem> insts) {
 		for(Assem inst : insts) {

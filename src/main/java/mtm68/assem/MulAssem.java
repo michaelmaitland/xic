@@ -16,6 +16,14 @@ public class MulAssem extends Assem {
 		this.src = src;
 	}
 	
+	public Src getSrc() {
+		return src;
+	}
+
+	public void setSrc(Src src) {
+		this.src = src;
+	}
+
 	@Override
 	public String toString() {
 		return "mul " + src;
@@ -25,9 +33,9 @@ public class MulAssem extends Assem {
 	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
 		Src newSrc = (Src)src.copyAndSetRealRegs(toSet);
 
-		IDivAssem newIDiv= copy();
-		newIDiv.setSrc(newSrc);
-		return newIDiv;
+		MulAssem newMul = copy();
+		newMul .setSrc(newSrc);
+		return newMul;
 	}
 
 	@Override
