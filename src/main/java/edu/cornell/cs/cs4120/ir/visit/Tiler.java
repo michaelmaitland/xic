@@ -16,8 +16,11 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.Assem;
 import mtm68.assem.CallAssem;
+import mtm68.assem.LabelAssem;
 import mtm68.assem.MoveAssem;
+import mtm68.assem.PopAssem;
 import mtm68.assem.PushAssem;
+import mtm68.assem.RetAssem;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.op.AddAssem;
 import mtm68.assem.op.LeaAssem;
@@ -27,9 +30,9 @@ import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.RealReg.RealRegId;
-import mtm68.assem.tile.TileCosts;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
+import mtm68.assem.tile.TileCosts;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 import mtm68.util.FreshTempGenerator;
@@ -205,5 +208,21 @@ public class Tiler extends IRVisitor {
 	
 	public void setRetSpaceOff(int retSpaceOff) {
 		this.retSpaceOff = retSpaceOff;
+	}
+
+	public SeqAssem getPrologue(String name, int l) {
+		return new SeqAssem(
+				new LabelAssem(name),
+				new MoveAssem(RealReg.RBP, RealReg.RSP),
+				new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l))
+				);
+	}
+
+	public SeqAssem getEpilogue() {
+		return new SeqAssem(
+				new MoveAssem(RealReg.RSP, RealReg.RBP),
+				new PopAssem(RealReg.RBP),
+				new RetAssem()
+				);
 	}
 }

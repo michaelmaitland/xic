@@ -8,7 +8,6 @@ import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.FuncDefnAssem;
-import mtm68.assem.LabelAssem;
 import mtm68.assem.SeqAssem;
 
 /** An IR function definition */
@@ -89,10 +88,16 @@ public class IRFuncDefn extends IRNode_c {
 	
 	@Override
 	public IRNode tile(Tiler t) {
-		// TODO: prologue and epiloge
+		
+		int numTemps = body.getAssem().getAbstractRegs().size();
+		SeqAssem prologue = t.getPrologue(name, numTemps);
 		SeqAssem bodyAssem = (SeqAssem)body.getAssem();
-		bodyAssem.prependAssem(new LabelAssem(name));
-		FuncDefnAssem assem = new FuncDefnAssem(name, bodyAssem);
+		SeqAssem epilogue = t.getEpilogue();
+		SeqAssem funcAssem = new SeqAssem(prologue, bodyAssem, epilogue);
+
+		FuncDefnAssem assem = new FuncDefnAssem(name, funcAssem);
 		return this.copyAndSetAssem(assem);
 	}
+
+	
 }
