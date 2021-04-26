@@ -1,6 +1,7 @@
 package mtm68.assem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.RealReg;
@@ -39,6 +40,11 @@ public class FuncDefnAssem extends Assem {
 	@Override
 	public List<AbstractReg> getMutatedAbstractRegs() {
 		return assem.getMutatedAbstractRegs();
+	}
+	
+	@Override
+	public String toString() {
+		return assem.toString();
 	}
 
 	@Override

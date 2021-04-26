@@ -213,6 +213,7 @@ public class Tiler extends IRVisitor {
 	public SeqAssem getPrologue(String name, int l) {
 		return new SeqAssem(
 				new LabelAssem(name),
+				new PushAssem(RealReg.RBP),
 				new MoveAssem(RealReg.RBP, RealReg.RSP),
 				new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l))
 				);

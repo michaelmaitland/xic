@@ -1,8 +1,15 @@
 package mtm68.assem;
 
-import static mtm68.ir.IRTestUtils.*;
-import static mtm68.util.ArrayUtils.*;
-import static mtm68.util.TestUtils.*;
+import static mtm68.ir.IRTestUtils.cjump;
+import static mtm68.ir.IRTestUtils.constant;
+import static mtm68.ir.IRTestUtils.jump;
+import static mtm68.ir.IRTestUtils.mem;
+import static mtm68.ir.IRTestUtils.move;
+import static mtm68.ir.IRTestUtils.op;
+import static mtm68.ir.IRTestUtils.ret;
+import static mtm68.ir.IRTestUtils.temp;
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
 
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +17,7 @@ import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
@@ -273,6 +281,17 @@ public class TileTests {
 				move("t9", "_ARG8")
 				);
 		tile(seq);
+	}
+	
+	@Test
+	void tileFuncDefn() {
+		IRSeq body = new IRSeq(
+				move("t1", "t2"),
+				move(mem(temp("t3")), op(OpType.ADD, temp("t4"),temp("t5")))
+				);
+		IRFuncDefn func = new IRFuncDefn("f", body, 0);
+		
+		FuncDefnAssem tiled = assertInstanceOfAndReturn(FuncDefnAssem.class, tile(func));
 	}
 
 	private Assem tile(IRNode node, int numArgs) {

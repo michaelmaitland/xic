@@ -25,7 +25,7 @@ public class PopAssem extends Assem {
 
 	@Override
 	public String toString() {
-		return "pop" + reg;
+		return "pop " + reg;
 	}
 
 	@Override
