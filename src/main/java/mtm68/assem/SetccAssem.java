@@ -1,10 +1,10 @@
 package mtm68.assem;
 
-public class Setcc extends Assem {
+public class SetccAssem extends Assem {
 	
 	private CC cc;
 	
-	public Setcc(CC cc) {
+	public SetccAssem(CC cc) {
 		this.cc = cc;
 	}
 	

@@ -1,8 +1,8 @@
 package mtm68.assem;
 
-public class CDQAssem extends Assem {
+public class CdqAssem extends Assem {
 
-	public CDQAssem() {
+	public CdqAssem() {
 		super();
 	}
 	

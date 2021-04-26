@@ -10,7 +10,7 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.Assem;
-import mtm68.assem.CDQAssem;
+import mtm68.assem.CdqAssem;
 import mtm68.assem.CmpAssem;
 import mtm68.assem.IDivAssem;
 import mtm68.assem.JumpAssem;
@@ -18,8 +18,8 @@ import mtm68.assem.JumpAssem.JumpType;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.MulAssem;
 import mtm68.assem.SeqAssem;
-import mtm68.assem.Setcc;
-import mtm68.assem.Setcc.CC;
+import mtm68.assem.SetccAssem;
+import mtm68.assem.SetccAssem.CC;
 import mtm68.assem.op.LeaAssem;
 import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Imm;
@@ -227,7 +227,7 @@ public class TileFactory {
 
 				return new SeqAssem(
 						new MoveAssem(RealReg.RAX, t1),
-						new CDQAssem(),
+						new CdqAssem(),
 						new IDivAssem(t2),
 						new MoveAssem(resultReg, resultFrom)
 						);
@@ -283,7 +283,7 @@ public class TileFactory {
 				Reg t2 = results.get("t2", Reg.class);
 				return new SeqAssem(
 						new CmpAssem(t1, t2),
-						new Setcc(cc),
+						new SetccAssem(cc),
 						new MoveAssem(resultReg, RealReg.RAX));
 			}
 		};

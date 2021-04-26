@@ -9,7 +9,7 @@ import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.assem.Setcc.CC;
+import mtm68.assem.SetccAssem.CC;
 import mtm68.assem.op.ARShiftAssem;
 import mtm68.assem.op.AndAssem;
 import mtm68.assem.op.IMulAssem;

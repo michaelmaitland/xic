@@ -1,6 +1,5 @@
-package mtm68.assem;
+package mtm68.assem.operand;
 
-import mtm68.assem.operand.AbstractReg;
 import mtm68.util.FreshTempGenerator;
 
 public class FreshRegGenerator {

@@ -3,11 +3,11 @@ package mtm68.assem.tile;
 import java.util.List;
 
 import mtm68.assem.Assem;
-import mtm68.assem.FreshRegGenerator;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.RetAssem;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.operand.Dest;
+import mtm68.assem.operand.FreshRegGenerator;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Reg;
