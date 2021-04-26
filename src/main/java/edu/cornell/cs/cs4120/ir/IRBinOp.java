@@ -1,18 +1,26 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
-import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.assem.Assem;
-import mtm68.assem.SeqAssem;
-import mtm68.assem.op.LeaAssem;
-import mtm68.assem.operand.Mem;
-import mtm68.assem.operand.Reg;
+import mtm68.assem.Setcc.CC;
+import mtm68.assem.op.ARShiftAssem;
+import mtm68.assem.op.AndAssem;
+import mtm68.assem.op.IMulAssem;
+import mtm68.assem.op.LShiftAssem;
+import mtm68.assem.op.OrAssem;
+import mtm68.assem.op.RShiftAssem;
+import mtm68.assem.op.SubAssem;
+import mtm68.assem.op.XorAssem;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
+import mtm68.util.ArrayUtils;
 
 /**
  * An intermediate representation for a binary operation
@@ -159,55 +167,31 @@ public class IRBinOp extends IRExpr_c {
 	public IRNode constantFold(IRConstantFolder v) {
 		return v.foldBinOp(this);
 	}
-
+	
 	@Override
-	public IRNode tile(Tiler t) {
-		Assem assem = null;
-		Reg resultReg = t.getFreshAbstractReg();
-		switch(type) {
-		case ADD:
-			assem = new LeaAssem(resultReg, new Mem(left.getResultReg(), right.getResultReg()));
-		case AND:
-			break;
-		case ARSHIFT:
-			break;
-		case DIV:
-			break;
-		case EQ:
-			break;
-		case GEQ:
-			break;
-		case GT:
-			break;
-		case HMUL:
-			break;
-		case LEQ:
-			break;
-		case LSHIFT:
-			break;
-		case LT:
-			break;
-		case MOD:
-			break;
-		case MUL:
-			break;
-		case NEQ:
-			break;
-		case OR:
-			break;
-		case RSHIFT:
-			break;
-		case SUB:
-			break;
-		case ULT:
-			break;
-		case XOR:
-			break;
-		default:
-			break;
-		}
-		IRBinOp newOp = copyAndSetAssem(new SeqAssem(left.getAssem(), right.getAssem(), assem));
-		newOp.setResultReg(resultReg);
-		return newOp;
+	public List<Tile> getTiles() {
+		return ArrayUtils.elems(
+				TileFactory.addBasic(),
+				TileFactory.addConstant(),
+				TileFactory.binopBasic(OpType.SUB, SubAssem::new),
+				TileFactory.binopBasic(OpType.AND, AndAssem::new),
+				TileFactory.binopBasic(OpType.MUL, IMulAssem::new),
+				TileFactory.binopBasic(OpType.NEQ, XorAssem::new),
+				TileFactory.binopBasic(OpType.XOR, XorAssem::new),
+				TileFactory.binopBasic(OpType.OR, OrAssem::new),
+				TileFactory.binopBasic(OpType.ARSHIFT, ARShiftAssem::new),
+				TileFactory.binopBasic(OpType.LSHIFT, LShiftAssem::new),
+				TileFactory.binopBasic(OpType.RSHIFT, RShiftAssem::new),
+				TileFactory.binopCompareBasic(OpType.EQ, CC.E),
+				TileFactory.binopCompareBasic(OpType.NEQ, CC.NE),
+				TileFactory.binopCompareBasic(OpType.GEQ, CC.GE),
+				TileFactory.binopCompareBasic(OpType.GT, CC.G),
+				TileFactory.binopCompareBasic(OpType.LT, CC.L),
+				TileFactory.binopCompareBasic(OpType.LEQ, CC.LE),
+				TileFactory.binopCompareBasic(OpType.ULT, CC.B),
+				TileFactory.binopDivOrMod(OpType.DIV),
+				TileFactory.binopDivOrMod(OpType.MOD),
+				TileFactory.binopHighMul()
+				);
 	}
 }

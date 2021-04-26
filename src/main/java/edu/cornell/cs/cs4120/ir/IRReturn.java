@@ -8,6 +8,9 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
+import mtm68.util.ArrayUtils;
 
 /** RETURN statement */
 public class IRReturn extends IRStmt {
@@ -77,5 +80,10 @@ public class IRReturn extends IRStmt {
 	@Override
 	public IRNode lower(Lowerer v) {
 		return v.transformReturn(rets);
+	}
+	
+	@Override
+	public List<Tile> getTiles() {
+		return ArrayUtils.singleton(TileFactory.returnBasic());
 	}
 }

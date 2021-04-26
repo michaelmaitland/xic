@@ -6,6 +6,7 @@ import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.LabelAssem;
+import mtm68.assem.tile.TileCosts;
 
 /**
  * An intermediate representation for naming a memory address
@@ -74,6 +75,6 @@ public class IRLabel extends IRStmt {
 
 	@Override
 	public IRNode tile(Tiler t) {
-		return copyAndSetAssem(new LabelAssem(name));
+		return copyAndSetAssem(new LabelAssem(name), TileCosts.NO_COST);
 	}
 }

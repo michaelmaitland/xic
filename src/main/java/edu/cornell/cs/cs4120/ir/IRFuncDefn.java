@@ -15,10 +15,12 @@ import mtm68.assem.SeqAssem;
 public class IRFuncDefn extends IRNode_c {
     private String name;
     private IRStmt body;
+    private int numArgs;
 
-    public IRFuncDefn(String name, IRStmt body) {
+    public IRFuncDefn(String name, IRStmt body, int numArgs) {
         this.name = name;
         this.body = body;
+        this.numArgs = numArgs;
     }
 
     public String name() {
@@ -27,6 +29,10 @@ public class IRFuncDefn extends IRNode_c {
 
     public IRStmt body() {
         return body;
+    }
+    
+    public int numArgs() {
+   	 return numArgs;
     }
 
     @Override
@@ -38,7 +44,7 @@ public class IRFuncDefn extends IRNode_c {
     public IRNode visitChildren(IRVisitor v) {
         IRStmt stmt = (IRStmt) v.visit(this, body);
 
-        if (stmt != body) return v.nodeFactory().IRFuncDefn(name, stmt);
+        if (stmt != body) return v.nodeFactory().IRFuncDefn(name, stmt, numArgs);
 
         return this;
     }

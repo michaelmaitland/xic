@@ -663,7 +663,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		stmts.add(doneLabel);
 		stmts.add(inf.IRReturn());
 		
-		return inf.IRFuncDefn(ALLOC_LAYER, inf.IRSeq(stmts));
+		return inf.IRFuncDefn(ALLOC_LAYER, inf.IRSeq(stmts), 6);
 	}
 
 	private IRBinOp eq(IRExpr left, IRExpr right) {

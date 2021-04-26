@@ -1,17 +1,14 @@
 package edu.cornell.cs.cs4120.ir;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
-import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.assem.Assem;
-import mtm68.assem.MoveAssem;
-import mtm68.assem.SeqAssem;
-import mtm68.assem.operand.Mem;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
+import mtm68.util.ArrayUtils;
 
 /**
  * An intermediate representation for a move statement
@@ -80,26 +77,14 @@ public class IRMove extends IRStmt {
 	public IRNode lower(Lowerer v) {
 		return v.transformMove(this);
 	}
-	
+
 	@Override
-	public IRNode tile(Tiler t) {
-		List<Assem> assems = new ArrayList<>();		
-		assems.add(src.getAssem());
-		
-		if(target instanceof IRMem) {
-			IRMem targMem = (IRMem) target;
-			assems.add(targMem.expr().getAssem());
-			
-			Mem mem = new Mem(targMem.expr().getResultReg());
-			assems.add(new MoveAssem(mem, src.getResultReg()));
-			
-			return copyAndSetAssem(new SeqAssem(assems));
-		}
-		
-		assems.add(target.getAssem());
-		assems.add(new MoveAssem(target.getResultReg(), src.getResultReg()));
-		
-		return copyAndSetAssem(new SeqAssem(assems));
+	public List<Tile> getTiles() {
+		return ArrayUtils.elems(
+				TileFactory.moveBasic(),
+				TileFactory.moveArg(),
+				TileFactory.moveFromMem(),
+				TileFactory.moveMemBaseAndIndex());
 	}
 	
 }

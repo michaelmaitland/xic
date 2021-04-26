@@ -1,5 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
@@ -7,6 +9,9 @@ import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
+import mtm68.util.ArrayUtils;
 
 /**
  * An intermediate representation for a conditional transfer of control
@@ -121,5 +126,10 @@ public class IRCJump extends IRStmt {
 		newJump.falseLabel = null;
 		
 		return newJump;
+	}
+	
+	@Override
+	public List<Tile> getTiles() {
+		return ArrayUtils.elems(TileFactory.cjumpBasic());
 	}
 }

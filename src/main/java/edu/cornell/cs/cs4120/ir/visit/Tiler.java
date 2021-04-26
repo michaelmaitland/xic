@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
@@ -26,6 +27,7 @@ import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.RealReg.RealRegId;
+import mtm68.assem.tile.TileCosts;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
@@ -37,6 +39,7 @@ public class Tiler extends IRVisitor {
 	private boolean afterCallStmt;
 	private IRCallStmt callStmt;
 	private List<IRMove> moveStmts;
+	private int retSpaceOff;
 
 	public Tiler(IRNodeFactory inf) {
 		super(inf);
@@ -68,6 +71,9 @@ public class Tiler extends IRVisitor {
 			// We're done with these
 			callStmt = null;
 			moveStmts.clear();
+		} else if(n instanceof IRFuncDefn) {
+			IRFuncDefn func = (IRFuncDefn) n;
+			setRetSpaceOff(Constants.WORD_SIZE * (getExtraArgCount(func.numArgs()) + 2));
 		}
 		return this;
 	}
@@ -176,14 +182,28 @@ public class Tiler extends IRVisitor {
 		String funcName = ((IRName) stmt.target()).name();
 		assems.add(new CallAssem(funcName));
 
-		return stmt.copyAndSetAssem(new SeqAssem(assems));
+		// Since there's only one way to tile a IRCallStmt we can just give it no cost
+		return stmt.copyAndSetAssem(new SeqAssem(assems), TileCosts.NO_COST);
 	}
 	
 	private int getExtraArgCount(IRCallStmt stmt) {
-		return Math.max(stmt.args().size() - 6, 0);
+		return getExtraArgCount(stmt.args().size());
+	}
+
+	private int getExtraArgCount(int numArgs) {
+		return Math.max(numArgs - 6, 0);
 	}
 
 	private int getExtraRetCount(IRCallStmt stmt) {
 		return Math.max(stmt.getNumRets() - 2, 0);
+	}
+	
+	/** Offset from rbp */
+	public int getRetSpaceOff() {
+		return retSpaceOff;
+	}
+	
+	public void setRetSpaceOff(int retSpaceOff) {
+		this.retSpaceOff = retSpaceOff;
 	}
 }

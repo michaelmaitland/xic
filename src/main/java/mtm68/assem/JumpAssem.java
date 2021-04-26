@@ -17,7 +17,8 @@ public class JumpAssem extends Assem {
 	}
 	
 	public enum JumpType{
-		JMP;
+		JMP,
+		JE;
 		
 		@Override
 		public String toString() {

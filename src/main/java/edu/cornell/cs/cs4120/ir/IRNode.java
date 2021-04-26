@@ -13,6 +13,7 @@ import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.Assem;
+import mtm68.assem.tile.Tile;
 import mtm68.ir.cfg.CFGBuilder;
 
 /**
@@ -60,4 +61,8 @@ public interface IRNode {
 	Assem getAssem();
 
 	void appendAssems(List<Assem> assems);
+	
+	List<Tile> getTiles();
+	
+	float getTileCost();
 }

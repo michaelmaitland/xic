@@ -6,30 +6,140 @@ import static mtm68.util.TestUtils.*;
 
 import org.junit.jupiter.api.Test;
 
+import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
-import mtm68.assem.op.LeaAssem;
+import mtm68.util.Constants;
 
 public class TileTests {
+	
+	private static final long LARGE_INT = 2 * (long)Integer.MAX_VALUE;
+	
+	@Test
+	void tileConst() {
+		IRNode constant = constant(12L);
+		tile(constant);
+	}
+
+	@Test
+	void tileMemAdd() {
+		IRNode constant = mem(op(OpType.ADD, temp("t"), constant(12L)));
+		tile(constant);
+	}
+
+	@Test
+	void tileInClassExampleLargeInt() {
+		IRMove move = move(
+				mem(op(OpType.ADD,
+						op(OpType.MUL,
+								mem(op(OpType.ADD, constant(12L), temp("t"))),
+								constant(4L)
+								),
+						mem(op(OpType.ADD,
+								temp("t"),
+								constant(LARGE_INT)))
+						)),
+				constant(7L)
+			);
+		tile(move);
+	}
+
+	@Test
+	void tileInClassExampleSmallInt() {
+		IRMove move = move(
+				mem(op(OpType.ADD,
+						op(OpType.MUL,
+								mem(op(OpType.ADD, constant(12L), temp("t"))),
+								constant(4L)
+								),
+						mem(op(OpType.ADD,
+								temp("t"),
+								constant(8L)))
+						)),
+				constant(7L)
+			);
+		tile(move);
+	}
 
 	@Test
 	void tileAdd() {
 		IRNode plus = op(OpType.ADD, temp("t1"), temp("t2"));
 		SeqAssem tiled = assertInstanceOfAndReturn(SeqAssem.class, tile(plus));
-		
+	}
+
+	@Test
+	void tileAddConstant() {
+		IRNode plus = op(OpType.ADD, constant(12L), temp("t1"));
+		tile(plus);
+	}
+
+	@Test
+	void tileAddLargeConstant() {
+		IRNode plus = op(OpType.ADD, temp("t1"), constant(LARGE_INT));
+		tile(plus);
+	}
+
+	@Test
+	void tileAddTwoConstants() {
+		IRNode plus = op(OpType.ADD, constant(LARGE_INT), constant(2L));
+		tile(plus);
+	}
+
+	@Test
+	void tileSub() {
+		IRNode sub = op(OpType.SUB, temp("t1"), constant(2L));
+		tile(sub);
+	}
+
+	@Test
+	void tileMul() {
+		IRNode mul = op(OpType.MUL, temp("t1"), constant(2L));
+		tile(mul);
+	}
+
+	@Test
+	void tileCmp() {
+		IRSeq seq = new IRSeq(
+				move(temp("res"), op(OpType.GEQ, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.GT, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.LEQ, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.LT, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.EQ, temp("t1"), temp("t2"))),
+				move(temp("res"), op(OpType.NEQ, temp("t1"), temp("t2")))
+				);
+		tile(seq);
+	}
+	
+	@Test
+	void tileMod() {
+		IRBinOp mod = new IRBinOp(OpType.MOD, temp("t1"), temp("t2"));
+		tile(mod);
+	}
+
+	@Test
+	void tileDiv() {
+		IRBinOp div = new IRBinOp(OpType.DIV, temp("t1"), temp("t2"));
+		tile(div);
+	}
+
+	@Test
+	void tileHmul() {
+		IRBinOp hmul = new IRBinOp(OpType.HMUL, temp("t1"), temp("t2"));
+		tile(hmul);
 	}
 	
 	@Test
 	void tileJump() {
 		IRNode jump = jump("f");
 		JumpAssem tiled = assertInstanceOfAndReturn(JumpAssem.class, tile(jump));
-		
 	}
 	
 	@Test
@@ -137,13 +247,47 @@ public class TileTests {
 		tile(seq);
 	}
 
-	private Assem tile(IRNode node) {
+	@Test
+	void tileCJump() {
+		IRCJump cjump = cjump(op(OpType.ADD, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
+	}
+
+	@Test
+	void tileReturn() {
+		IRReturn ret = new IRReturn(temp("t1"), temp("t2"), temp("t3"), temp("t4"));
+		tile(ret, 10);
+	}
+
+	@Test
+	void tileMoveArg() {
+		IRSeq seq = new IRSeq(
+				move("t1", "_ARG0"),
+				move("t2", "_ARG1"),
+				move("t3", "_ARG2"),
+				move("t4", "_ARG3"),
+				move("t5", "_ARG4"),
+				move("t6", "_ARG5"),
+				move("t7", "_ARG6"),
+				move("t8", "_ARG7"),
+				move("t9", "_ARG8")
+				);
+		tile(seq);
+	}
+
+	private Assem tile(IRNode node, int numArgs) {
 		System.out.println("Before\n=========\n" + node);
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
+		tiler.setRetSpaceOff(Constants.WORD_SIZE * (Math.max(numArgs - 6, 0) + 1));
+
 		IRNode result = tiler.visit(node);
 		System.out.println("After\n=========\n" + result.getAssem());
 		System.out.println();
 
 		return result.getAssem();
+	}
+
+	private Assem tile(IRNode node) {
+		return tile(node, 0);
 	}
 }

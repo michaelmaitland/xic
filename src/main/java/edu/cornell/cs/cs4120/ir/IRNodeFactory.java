@@ -64,7 +64,7 @@ public interface IRNodeFactory {
      */
     IRExp IRExp(IRExpr expr);
 
-    IRFuncDefn IRFuncDefn(String name, IRStmt stmt);
+    IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs);
 
     /**
      *
