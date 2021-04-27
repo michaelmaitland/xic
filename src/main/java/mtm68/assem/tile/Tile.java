@@ -11,6 +11,7 @@ public abstract class Tile {
 	
 	private Pattern pattern;
 	private float cost;
+
 	protected Tiler tiler;
 	protected IRNode baseNode;
 
