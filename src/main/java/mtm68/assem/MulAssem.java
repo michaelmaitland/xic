@@ -2,10 +2,7 @@ package mtm68.assem;
 
 import java.util.List;
 
-import mtm68.assem.operand.AbstractReg;
-import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Src;
-import mtm68.util.ArrayUtils;
 
 public class MulAssem extends Assem {
 	
@@ -30,21 +27,7 @@ public class MulAssem extends Assem {
 	}
 	
 	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		Src newSrc = (Src)src.copyAndSetRealRegs(toSet);
-
-		MulAssem newMul = copy();
-		newMul .setSrc(newSrc);
-		return newMul;
+	public List<ReplaceableReg> getReplaceableRegs() {
+		return ReplaceableReg.fromSrc(src, this::setSrc);
 	}
-
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		if(src instanceof AbstractReg) {
-			return ArrayUtils.singleton((AbstractReg)src);
-		} else {
-			return ArrayUtils.empty();
-		}
-	}
-
 }

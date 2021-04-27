@@ -1,10 +1,9 @@
 package mtm68.assem.operand;
 
-import mtm68.assem.HasRegs;
-import mtm68.util.Constants;
 import mtm68.assem.pattern.PatternMatch;
+import mtm68.util.Constants;
 
-public abstract class Reg extends AssemOp implements HasRegs, Ref, Acc, Src, Dest, PatternMatch {
+public abstract class Reg extends AssemOp implements Ref, Acc, Src, Dest, PatternMatch {
 
 	protected String id;
 

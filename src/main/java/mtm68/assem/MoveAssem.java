@@ -2,9 +2,7 @@ package mtm68.assem;
 
 import java.util.List;
 
-import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Dest;
-import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
 
@@ -33,25 +31,11 @@ public class MoveAssem extends Assem {
 	public String toString() {
 		return "mov " + dest + ", " + src;
 	}
-
+	
 	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-
-
-		int numDestRegs = dest.getAbstractRegs().size();
-		Dest newDest = (Dest)dest.copyAndSetRealRegs(toSet.subList(0, numDestRegs));
-		Src newSrc = (Src)src.copyAndSetRealRegs(toSet.subList(numDestRegs, toSet.size()));
-		
-		MoveAssem newMove = copy();
-		newMove.setDest(newDest);
-		newMove.setSrc(newSrc);
-		
-		return newMove;
-	}
-
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		List<AbstractReg> destRegs = dest.getAbstractRegs();
-		return ArrayUtils.concat(destRegs, src.getAbstractRegs());
+	public List<ReplaceableReg> getReplaceableRegs() {
+		return ArrayUtils.concat(
+				ReplaceableReg.fromDest(dest, this::setDest), 
+				ReplaceableReg.fromSrc(src, this::setSrc));
 	}
 }

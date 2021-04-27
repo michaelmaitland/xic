@@ -2,10 +2,7 @@ package mtm68.assem;
 
 import java.util.List;
 
-import mtm68.assem.operand.AbstractReg;
-import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Reg;
-import mtm68.util.ArrayUtils;
 
 public class PushAssem extends Assem {
 
@@ -27,22 +24,9 @@ public class PushAssem extends Assem {
 	public String toString() {
 		return "push " + reg;
 	}
-
+	
 	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		Reg newReg = (Reg)reg.copyAndSetRealRegs(toSet);
-
-		PushAssem newPush = copy();
-		newPush.setReg(newReg);
-		return newPush;
-	}
-
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		if(reg instanceof AbstractReg) {
-			return ArrayUtils.singleton((AbstractReg)reg);
-		} else {
-			return ArrayUtils.empty();
-		}
+	public List<ReplaceableReg> getReplaceableRegs() {
+		return ReplaceableReg.fromSrc(reg, this::setReg);
 	}
 }

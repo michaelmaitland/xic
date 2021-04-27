@@ -373,9 +373,10 @@ public class TrivialRegisterAllocatorTests {
 	@Test
 	public void testTwoOpAssemTwoAbstrMultipleInst() {
 		List<Assem> insts = allocateSingleFunc(
-				new AddAssem(abstrReg("t1"), RBX),
+				new AddAssem(abstrReg("t1"), RBX),	
 				new SubAssem(RAX, abstrReg("t2"))
 				);
+		
 		assertAllRealReg(insts);
 		
 		MoveAssem m1 = assertInstanceOfAndReturn(MoveAssem.class, insts.get(0));
@@ -556,7 +557,7 @@ public class TrivialRegisterAllocatorTests {
 	
 	private void assertAllRealReg(List<Assem> insts) {
 		for(Assem inst : insts) {
-			assertEquals(0, inst.getAbstractRegs().size());
+			assertEquals(0, inst.getReplaceableRegs().size());
 		}
 	}
 

@@ -3,9 +3,11 @@ package mtm68.assem.operand;
 import java.util.List;
 
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
-import mtm68.assem.HasRegs;
+import mtm68.assem.HasReplaceableRegs;
+import mtm68.assem.ReplaceableReg;
+import mtm68.util.ArrayUtils;
 
-public class Mem extends AssemOp implements Acc, Src, Dest {
+public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs {
 	private Reg base;
 	private Reg index;
 	private int scale;
@@ -125,32 +127,9 @@ public class Mem extends AssemOp implements Acc, Src, Dest {
 	}
 
 	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		List<AbstractReg> regs = base.getAbstractRegs();
-		
-		if(index != null) {
-			regs.addAll(index.getAbstractRegs());
-		}
-
-		return regs;
-	}
-
-	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		int numBase = base.getAbstractRegs().size();
-		
-		Reg newBase = (Reg)base.copyAndSetRealRegs(toSet.subList(0, numBase));
-		
-		Reg newIndex;
-		if(index != null) {
-			newIndex = (Reg)index.copyAndSetRealRegs(toSet.subList(numBase, toSet.size()));
-		} else {
-			newIndex = index;
-		}
-		
-		Mem newMem = copy();
-		newMem.setBase(newBase);
-		newMem.setIndex(newIndex);
-		return newMem;
+	public List<ReplaceableReg> getReplaceableRegs() {
+		return ArrayUtils.concat(
+				ReplaceableReg.fromSrc(base, this::setBase),
+				ReplaceableReg.fromSrc(index, this::setIndex));
 	}
 }

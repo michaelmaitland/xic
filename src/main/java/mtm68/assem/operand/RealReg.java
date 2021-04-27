@@ -78,15 +78,4 @@ public class RealReg extends Reg{
 		}
 	}
 
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		return ArrayUtils.empty();
-	}
-
-	@Override
-	public Reg copyAndSetRealRegs(List<RealReg> toSet) {
-		/* No abstract regs to set */
-		return this;
-	}
-
 }

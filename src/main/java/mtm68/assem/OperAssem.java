@@ -2,8 +2,6 @@ package mtm68.assem;
 
 import java.util.List;
 
-import mtm68.assem.operand.AbstractReg;
-import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
@@ -49,26 +47,10 @@ public abstract class OperAssem extends Assem {
 	}
 	
 	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		List<AbstractReg> destRegs = dest.getAbstractRegs();
-		return ArrayUtils.concat(destRegs, src.getAbstractRegs());
-	}	
-	
-	@Override
-	public List<AbstractReg> getMutatedAbstractRegs() {
-		return dest.getAbstractRegs();
-	}	
-
-	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		int numDestRegs = dest.getAbstractRegs().size();
-		Dest newDest = (Dest)dest.copyAndSetRealRegs(toSet.subList(0, numDestRegs));
-		Src newSrc = (Src)src.copyAndSetRealRegs(toSet.subList(numDestRegs, toSet.size()));
-		
-		OperAssem newAssem = copy();
-		newAssem.setDest(newDest);
-		newAssem.setSrc(newSrc);
-		
-		return newAssem;
+	public List<ReplaceableReg> getReplaceableRegs() {
+		return ArrayUtils.concat(
+				ReplaceableReg.fromDest(dest, this::setDest),
+				ReplaceableReg.fromSrc(src, this::setSrc)
+			);
 	}
 }

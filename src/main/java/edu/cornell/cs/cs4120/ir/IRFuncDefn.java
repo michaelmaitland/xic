@@ -8,7 +8,7 @@ import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.FuncDefnAssem;
-import mtm68.assem.LabelAssem;
+import mtm68.assem.ReplaceableReg;
 import mtm68.assem.SeqAssem;
 
 /** An IR function definition */
@@ -91,7 +91,12 @@ public class IRFuncDefn extends IRNode_c {
 	public IRNode tile(Tiler t) {
 		
 		// only care about unique temps
-		int numTemps = (int)body.getAssem().getAbstractRegs().stream().distinct().count();
+		int numTemps = (int)body.getAssem().getReplaceableRegs()
+				.stream()
+				.map(ReplaceableReg::getName)
+				.distinct()
+				.count();
+
 		SeqAssem prologue = t.getPrologue(name, numTemps);
 		SeqAssem bodyAssem = (SeqAssem)body.getAssem();
 		bodyAssem.getAssems().remove(bodyAssem.getAssems().size()-1);

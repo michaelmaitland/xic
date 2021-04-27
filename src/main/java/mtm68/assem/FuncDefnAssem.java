@@ -1,10 +1,6 @@
 package mtm68.assem;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import mtm68.assem.operand.AbstractReg;
-import mtm68.assem.operand.RealReg;
 
 public class FuncDefnAssem extends Assem {
 	private String name;
@@ -31,29 +27,14 @@ public class FuncDefnAssem extends Assem {
 	public void setAssem(SeqAssem assem) {
 		this.assem = assem;
 	}
+	
+	@Override
+	public List<ReplaceableReg> getReplaceableRegs() {
+		return assem.getReplaceableRegs();
+	}
 
-	@Override
-	public List<AbstractReg> getAbstractRegs() {
-		return assem.getAbstractRegs();
-	}
-	
-	@Override
-	public List<AbstractReg> getMutatedAbstractRegs() {
-		return assem.getMutatedAbstractRegs();
-	}
-	
 	@Override
 	public String toString() {
 		return assem.toString();
-	}
-
-	@Override
-	public HasRegs copyAndSetRealRegs(List<RealReg> toSet) {
-		SeqAssem newAssem = (SeqAssem)assem.copyAndSetRealRegs(toSet);
-
-		FuncDefnAssem newFuncDefn = copy();
-		newFuncDefn.setAssem(newAssem);
-
-		return newFuncDefn;
 	}
 }

@@ -216,6 +216,7 @@ public class IntegrationTests {
 	
 	private void runAndAssertAssem(List<Assem> assems, String expected) {
 		try {
+			assems.forEach(System.out::println);
 			Path pwd = Paths.get(System.getProperty("user.dir"));
 
 			String assemPathStr = "src/test/resources/runtime/release";

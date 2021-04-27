@@ -1,25 +1,23 @@
 package mtm68.assem.visit;
 
-import static mtm68.assem.operand.RealReg.R10;
-import static mtm68.assem.operand.RealReg.R11;
-import static mtm68.assem.operand.RealReg.R9;
+import static mtm68.assem.operand.RealReg.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
 import mtm68.assem.MoveAssem;
+import mtm68.assem.ReplaceableReg;
+import mtm68.assem.ReplaceableReg.RegType;
 import mtm68.assem.SeqAssem;
-import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
@@ -34,13 +32,10 @@ public class TrivialRegisterAllocator {
 	 * contains the assembly for all the functions where all Regs are RealRegs.
 	 */
 	public  List<Assem> allocate(CompUnitAssem assem) {
-		List<Assem> allAssems = ArrayUtils.empty();
-
-		List<FuncDefnAssem> funcs = assem.getFunctions();
-		for(FuncDefnAssem func : funcs) {
-			List<Assem> funcAssems = allocateForFunc(func);
-			allAssems.addAll(funcAssems);
-		}
+		List<Assem> allAssems = assem.getFunctions().stream()
+			.map(this::allocateForFunc)
+			.flatMap(List::stream)
+			.collect(Collectors.toList());
 		
 		// flatten all seqs
 		return new SeqAssem(allAssems).getAssems();
@@ -54,34 +49,30 @@ public class TrivialRegisterAllocator {
 
 	private Map<String, Mem> assignAbstrRegsToStackLocations(List<Assem> insts) {
 		// TODO: consider sorting by temp name
-		Set<String> abstrRegIds = getAbstractRegIds(insts);
-		return getAbstrRegsToStackLocs(abstrRegIds);
+		Set<String> regNames = getReplaceableRegNames(insts);
+		return getRegStackLocs(regNames);
 	}
 	
-	private Set<String> getAbstractRegIds(List<Assem> insts) {
-		Set<String> abstrRegIds = new HashSet<>();
-		for(Assem inst : insts) {
-			abstrRegIds.addAll(inst.getAbstractRegs()
-								 .stream()
-								 .map(AbstractReg::getId)
-								 .collect(Collectors.toList())
-			);
-		}
-		return abstrRegIds;
+	private Set<String> getReplaceableRegNames(List<Assem> insts) {
+		return insts.stream()
+					.map(Assem::getReplaceableRegs)
+					.flatMap(List::stream)
+					.map(ReplaceableReg::getName)
+					.collect(Collectors.toSet());
 	}
 	
-	private Map<String, Mem> getAbstrRegsToStackLocs(Set<String> abstrRegIds) {
-		Map<String, Mem> abstrRegsToStackLocs = new HashMap<>();
+	private Map<String, Mem> getRegStackLocs(Set<String> regNames) {
+		Map<String, Mem> regToStackLocs = new HashMap<>();
 		int size = 0;
 		
 		// stack location = [rbp - 8 * l]
-		for(String abstrRegId : abstrRegIds) {
+		for(String regName : regNames) {
 			Mem mem = new Mem(RealReg.RBP, (size + 1) * - 8);
-			abstrRegsToStackLocs.put(abstrRegId, mem);
+			regToStackLocs.put(regName, mem);
 			size++;
 		}
 		
-		return abstrRegsToStackLocs;
+		return regToStackLocs;
 	}
 
 	private List<Assem> assignAbstrRegsToRealRegs(List<Assem> insts, Map<String, Mem> regsToLoc) {
@@ -99,68 +90,47 @@ public class TrivialRegisterAllocator {
 	 * register back to the stack location (if the register contents were mutated).
 	 */
 	private Assem assignAbstrRegsToRealRegs(Assem inst, Map<String, Mem> regsToLoc) {
-		
-		List<AbstractReg> abstrRegs = inst.getAbstractRegs();
-		if(abstrRegs.size() > 3) {
-			throw new InternalCompilerError("Instruction may have at most 3 registers");
-		}
-		
-		// moveFromStack and writeMutatedRegs add to seq
-		List<Assem> seq = ArrayUtils.empty();
+		Assem newInst = inst.copy();
 
-		List<RealReg> realRegs = moveFromStackIntoRegs(abstrRegs, seq, regsToLoc);
-	
-		Assem newInst = (Assem)inst.copyAndSetRealRegs(realRegs);
-		seq.add(newInst);
+		Map<String, RealReg> replaceToRealMap = new LinkedHashMap<>();
+		List<ReplaceableReg> replaceableRegs = newInst.getReplaceableRegs();
 		
-		writeMutatedRegsToStack(inst.getMutatedAbstractRegs(), seq, regsToLoc);
-		return new SeqAssem(seq);
+		Map<Boolean, List<ReplaceableReg>> partitioned = replaceableRegs.stream()
+			.collect(Collectors.partitioningBy(r -> r.getRegType() == RegType.WRITE));
+		
+		List<ReplaceableReg> destRegs = partitioned.get(true);
+		List<ReplaceableReg> srcRegs = partitioned.get(false);
+		
+		List<Assem> assems = ArrayUtils.empty();
+		Iterator<RealReg> shuttleIterator = SHUTTLE_REGS.iterator();
+
+		doShuttling(srcRegs, RegType.READ, replaceToRealMap, shuttleIterator, assems, regsToLoc);
+		assems.add(newInst);
+		doShuttling(destRegs, RegType.WRITE, replaceToRealMap, shuttleIterator, assems, regsToLoc);
+
+		return new SeqAssem(assems);
+		
 	}
 	
-	/**
-	 * Adds to {@code prevInsts} the instructions needed to move from the stack
-	 * location corresponding to each abstract register into a real register. The
-	 * list of real registers is is returned. Each index in the RealReg list
-	 * corresponds to the index of the AbstractReg list.
-	 */
-	private List<RealReg> moveFromStackIntoRegs(List<AbstractReg> abstrRegs, List<Assem> prevInsts, Map<String, Mem> regsToLoc) {
-		List<RealReg> realRegs = ArrayUtils.empty();
-		Map<AbstractReg, RealReg> abstrToRealMap = new LinkedHashMap<>();
-		int i = 0;
-
-		for(AbstractReg reg : abstrRegs) {
-			// check to see if we shuttled for this temp already
-			if(abstrToRealMap.containsKey(reg)) {
-				realRegs.add(abstrToRealMap.get(reg));
+	private void doShuttling(List<ReplaceableReg> regs, RegType regType, Map<String, RealReg> replaceToRealMap,
+			Iterator<RealReg> shuttleIterator, List<Assem> assems, Map<String, Mem> regsToLoc) {
+		for(ReplaceableReg reg : regs) {
+			if(replaceToRealMap.containsKey(reg.getName())) {
+				reg.replace(replaceToRealMap.get(reg.getName()));
 				continue;
 			}
 
-			// mark that we shuttled this reg
-			RealReg shuttle = SHUTTLE_REGS.get(i);
-			realRegs.add(shuttle);
-			abstrToRealMap.put(reg, shuttle);
-
-			// Move from stack to shuttle
-			Mem stackOffset = regsToLoc.get(reg.getId());
-			MoveAssem fromStack = new MoveAssem(shuttle, stackOffset);
-			prevInsts.add(fromStack);
-			i++;
-		}
-		return realRegs;
-	}
-	
-	/**
-	 * Adds to {@code prevInsts} the instructions needed to move from the real
-	 * register back to the stack location corresponding to each abstract register.
-	 */
-	private void writeMutatedRegsToStack(List<AbstractReg> regs, List<Assem> prevInsts, Map<String, Mem> regsToLoc) {
-		int i = 0;
-		for(AbstractReg reg : regs) {
-			Mem stackOffset = regsToLoc.get(reg.getId());
-			RealReg shuttle = SHUTTLE_REGS.get(i);
-			MoveAssem toStack = new MoveAssem(stackOffset, shuttle);
-			prevInsts.add(toStack);
-			i++;
+			RealReg shuttle = shuttleIterator.next();
+			replaceToRealMap.put(reg.getName(), shuttle);
+			reg.replace(shuttle);
+			
+			Mem stackOffset = regsToLoc.get(reg.getName());
+			
+			if(regType == RegType.READ) {
+				assems.add(new MoveAssem(shuttle, stackOffset));
+			} else {
+				assems.add(new MoveAssem(stackOffset, shuttle));
+			}
 		}
 	}
 }
