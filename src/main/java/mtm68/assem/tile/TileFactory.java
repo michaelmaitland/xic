@@ -123,7 +123,7 @@ public class TileFactory {
 	}
 
 	public static Tile moveFromMem() {
-		Pattern pattern = move(var("t1"), mem(var("t2")));
+		Pattern pattern = move(temp("t1"), mem(var("t2")));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
