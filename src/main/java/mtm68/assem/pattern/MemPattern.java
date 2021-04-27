@@ -25,4 +25,9 @@ public class MemPattern implements Pattern {
 	public void addMatchedExprs(Map<String, IRExpr> exprs) {
 		operandPattern.addMatchedExprs(exprs);
 	}
+	
+	@Override
+	public String toString() {
+		return "mem (" + operandPattern + ")";
+	}
 }

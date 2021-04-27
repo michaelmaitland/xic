@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
@@ -40,8 +43,6 @@ import mtm68.FileType;
 import mtm68.SymbolTableManager;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
-import mtm68.assem.LabelAssem;
-import mtm68.assem.SeqAssem;
 import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
@@ -60,6 +61,7 @@ import mtm68.visit.TypeChecker;
 
 public class IntegrationTests {
 	private static final OSType OS = OSType.getOSType(System.getProperty("os.name").toLowerCase());
+	private static final int BUFFER_SIZE = 1024;
 	
 //	@Test
 //	void testBasic() {
@@ -111,6 +113,7 @@ public class IntegrationTests {
 		generateAndAssertOutput("ex01.xi", "Hello, World!\n");
 	}
 	
+	@Disabled
 	@Test
 	void testPrimes() {
 		generateAndAssertOutput("primes.xi", "Largest prime less than 1,000 is 997");
@@ -175,9 +178,20 @@ public class IntegrationTests {
 		generateAndAssertOutput("nested_side_effect.xi", "1234");
 	}
 	
+	@Test
+	void testSimpleArray() {
+		generateAndAssertOutput("simple_array.xi", "Just this\n");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
+			
+			String assemPathStr = "src/test/resources/runtime/release";
+
+			FileUtils.diagPath = Paths.get(assemPathStr);
+			FileUtils.assemPath = Paths.get(assemPathStr);
+			FileUtils.writeToFile("unitTest.ir", irRoot); 
 			
 			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
 			irRoot.printSExp(codeWriter);
@@ -217,11 +231,10 @@ public class IntegrationTests {
 	private void runAndAssertAssem(List<Assem> assems, String expected) {
 		try {
 			assems.forEach(System.out::println);
-			Path pwd = Paths.get(System.getProperty("user.dir"));
-
+			Path pwd = Paths.get(System.getProperty("user.dir"));			
+		
 			String assemPathStr = "src/test/resources/runtime/release";
 			
-			FileUtils.assemPath = Paths.get(assemPathStr);
 			FileUtils.writeAssemToFile("unitTest.xi", assems);
 			
 			// Run linkxi.sh to generate executable
@@ -246,22 +259,18 @@ public class IntegrationTests {
 			Process runProc = runAssem.start();
 							
 			BufferedReader assemOut = new BufferedReader(new InputStreamReader(runProc.getInputStream()));
-			BufferedReader assemErrorOut = new BufferedReader(new InputStreamReader(runProc.getErrorStream()));
-					
-			StringBuilder assemOutput = new StringBuilder();
-			while ((s = assemOut.readLine()) != null) {
-			    assemOutput.append(s);
-			}
-			while ((s = assemErrorOut.readLine()) != null) {
-			    assemOutput.append(s);
-			}
+			
+			CharBuffer cb = CharBuffer.allocate(BUFFER_SIZE);
+			assemOut.read(cb);
+			
+			String assemOutput = cb.flip().toString();
 			
 			runProc.waitFor();
 			
 			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
 			//Files.delete(pwd.resolve("a.out"));
 			
-			assertEquals(expected, assemOutput.toString());
+			assertEquals(expected, assemOutput);
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}

@@ -30,5 +30,10 @@ public class MovePattern implements Pattern {
 		destPattern.addMatchedExprs(exprs);
 		srcPattern.addMatchedExprs(exprs);
 	}
+	
+	@Override
+	public String toString() {
+		return "mov (" + destPattern + ") (" + srcPattern + ")";
+	}
 
 }

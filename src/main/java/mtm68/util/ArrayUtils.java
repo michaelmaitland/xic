@@ -36,6 +36,15 @@ public class ArrayUtils {
 		one.addAll(two);
 		return one;
 	}
+	
+	@SafeVarargs
+	public static <T> List<T> concatMulti(List<T>...lists) {
+		List<T> res = ArrayUtils.empty();
+		for(List<T> l : lists) {
+			res.addAll(l);
+		}
+		return res;
+	}
 
 	/** 
 	 *  Returns list with elem appended

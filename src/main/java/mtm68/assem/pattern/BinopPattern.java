@@ -64,5 +64,10 @@ public class BinopPattern implements Pattern {
 		leftPattern.addMatchedExprs(exprs);
 		rightPattern.addMatchedExprs(exprs);
 	}
+	
+	@Override
+	public String toString() {
+		return opType + " (" + leftPattern + ") (" + rightPattern + ")";
+	}
 
 }

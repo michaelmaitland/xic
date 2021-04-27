@@ -21,6 +21,7 @@ import mtm68.assem.SeqAssem;
 import mtm68.assem.SetccAssem;
 import mtm68.assem.SetccAssem.CC;
 import mtm68.assem.op.LeaAssem;
+import mtm68.assem.op.XorAssem;
 import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Loc;
@@ -123,7 +124,7 @@ public class TileFactory {
 	}
 
 	public static Tile moveFromMem() {
-		Pattern pattern = move(var("t1"), mem(var("t2")));
+		Pattern pattern = move(temp("t1"), mem(var("t2")));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
@@ -321,6 +322,7 @@ public class TileFactory {
 				Reg t1 = results.get("t1", Reg.class);
 				Reg t2 = results.get("t2", Reg.class);
 				return new SeqAssem(
+						new XorAssem(RealReg.RAX, RealReg.RAX),
 						new CmpAssem(t1, t2),
 						new SetccAssem(cc),
 						new MoveAssem(resultReg, RealReg.RAX));

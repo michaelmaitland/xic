@@ -32,6 +32,16 @@ public class ReplaceableReg {
 
 		return ArrayUtils.empty();
 	}
+	
+	public static List<ReplaceableReg> fromDestRead(Dest dest, Consumer<RealReg> replace){
+		if(dest instanceof Mem) {
+			return fromMem((Mem)dest);
+		} else if (dest instanceof AbstractReg){
+			return ArrayUtils.singleton(fromAbstractReg((AbstractReg)dest, RegType.READ, replace));
+		}
+
+		return ArrayUtils.empty();
+	}
 
 	public static List<ReplaceableReg> fromSrc(Src src, Consumer<RealReg> replace){
 		if(src instanceof Mem) {

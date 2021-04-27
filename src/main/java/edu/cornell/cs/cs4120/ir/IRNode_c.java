@@ -78,7 +78,8 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 		List<Tile> tiles = getTiles();
 		float leastCost = Float.MAX_VALUE;
 		Assem bestAssem = null;
-		Reg resultReg = null;
+		Reg bestResultReg = null;
+		Tile bestTile = null;
 		
 		for(Tile tile : tiles) {
 			tile.setTiler(t);
@@ -92,7 +93,7 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 
 				PatternResults patternResults = new PatternResults(matchedExprs);
 				
-				resultReg = FreshRegGenerator.getFreshAbstractReg();
+				Reg resultReg = FreshRegGenerator.getFreshAbstractReg();
 				Assem tiledAssem = tile.getTiledAssem(resultReg, patternResults);
 				
 				float cost = patternResults.getUsedExprs()
@@ -113,16 +114,20 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 				requiredAssem.add(tiledAssem);
 				
 				bestAssem = new SeqAssem(requiredAssem);
+				bestTile = tile;
+				bestResultReg = resultReg;
 			}
 		}
 
 		if(bestAssem == null) throw new InternalCompilerError("Could not tile node: " + this);
-		
+				
 		IRNode_c newNode = copyAndSetAssem(bestAssem);
 		newNode.tileCost = leastCost;
 		
+//		System.out.println("Best tile for " + newNode + " is " + bestTile.getPattern());
+		
 		if(newNode instanceof IRExpr_c) {
-			((IRExpr_c)newNode).setResultReg(resultReg);
+			((IRExpr_c)newNode).setResultReg(bestResultReg);
 		}
 		
 		return newNode;
