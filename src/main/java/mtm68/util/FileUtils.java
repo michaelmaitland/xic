@@ -124,14 +124,14 @@ public class FileUtils {
 		 * @param filename the name of the file parsed
 		 * @param assem    
 		 */
-		public static void writeToFile(String filename, Assem assem) {
+		public static void writeAssemToFile(String filename, List<Assem> assem) {
 			String outfile = filename.replaceFirst("\\.(xi|ixi)", ".s");
 			Path outpath = assemPath.resolve(outfile);
 			BufferedWriter writer;
 			try {
 				Files.createDirectories(outpath.getParent());			
 				writer = new BufferedWriter(new FileWriter(outpath.toString()));
-			    writer.write(AssemToFileBuilder.assemToFileString(assem));
+			    writer.write(AssemToFileBuilder.assemToFileString(filename, assem));
 			    writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();

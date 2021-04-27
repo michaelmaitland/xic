@@ -183,6 +183,12 @@ public class TileTests {
 		IRNode move = move(mem(op(OpType.ADD, temp("t1"), temp("t2"))), op(OpType.ADD, temp("t3"), temp("t4")));
 		SeqAssem tiled = assertInstanceOfAndReturn(SeqAssem.class, tile(move));
 	}
+	
+	@Test
+	void tileMoveConstIntoMem() {
+		IRMove move = move(mem(temp("t")), constant(1L));
+		tile(move);
+	}
 
 	@Test
 	void tileSeq() {

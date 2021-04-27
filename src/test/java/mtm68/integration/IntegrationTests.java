@@ -39,8 +39,10 @@ import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import mtm68.FileType;
 import mtm68.SymbolTableManager;
 import mtm68.assem.Assem;
+import mtm68.assem.CompUnitAssem;
 import mtm68.assem.LabelAssem;
 import mtm68.assem.SeqAssem;
+import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
@@ -59,10 +61,15 @@ import mtm68.visit.TypeChecker;
 public class IntegrationTests {
 	private static final OSType OS = OSType.getOSType(System.getProperty("os.name").toLowerCase());
 	
+//	@Test
+//	void testBasic() {
+//		Assem assem = new SeqAssem(new LabelAssem("_Imain_paai"));
+//		runAndAssertAssem(assem, "Hello world!");
+//	}
+	
 	@Test
-	void testBasic() {
-		Assem assem = new SeqAssem(new LabelAssem("_Imain_paai"));
-		runAndAssertAssem(assem, "Hello world!");
+	void testSimplePrint() {
+		generateAndAssertOutput("simple_print.xi", "a");
 	}
 	
 	@Test
@@ -178,7 +185,7 @@ public class IntegrationTests {
 		
 			assertIRSimulatorOutput(irRoot, expected);
 			
-			Assem assem = generateAssem(irRoot);
+			List<Assem> assem = generateAssem(irRoot);
 			runAndAssertAssem(assem, expected);
 			
 		} catch (FileNotFoundException | SemanticException e) {
@@ -196,21 +203,25 @@ public class IntegrationTests {
 		assertEquals(expected, baos.toString());
 	}
 	
-	private Assem generateAssem(IRNode root) {
+	private List<Assem> generateAssem(IRNode root) {
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
-		tiler.visit(root);
+		IRNode tiled = tiler.visit(root);
 		
-		return root.getAssem();
+		//System.out.println(tiled.getAssem());
+		
+		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+		
+		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
 	}
 	
-	private void runAndAssertAssem(Assem assem, String expected) {
+	private void runAndAssertAssem(List<Assem> assems, String expected) {
 		try {
 			Path pwd = Paths.get(System.getProperty("user.dir"));
 
 			String assemPathStr = "src/test/resources/runtime/release";
 			
 			FileUtils.assemPath = Paths.get(assemPathStr);
-			FileUtils.writeToFile("unitTest.xi", assem);
+			FileUtils.writeAssemToFile("unitTest.xi", assems);
 			
 			// Run linkxi.sh to generate executable
 			ProcessBuilder link = getProcessBuilder(assemPathStr + "/linkxi.sh", assemPathStr + "/unitTest.s"); 
@@ -232,18 +243,22 @@ public class IntegrationTests {
 			// Run executable and compare output to console with expected value
 			ProcessBuilder runAssem = getProcessBuilder("./a.out");
 			Process runProc = runAssem.start();
-	
+							
 			BufferedReader assemOut = new BufferedReader(new InputStreamReader(runProc.getInputStream()));
-			
+			BufferedReader assemErrorOut = new BufferedReader(new InputStreamReader(runProc.getErrorStream()));
+					
 			StringBuilder assemOutput = new StringBuilder();
 			while ((s = assemOut.readLine()) != null) {
+			    assemOutput.append(s);
+			}
+			while ((s = assemErrorOut.readLine()) != null) {
 			    assemOutput.append(s);
 			}
 			
 			runProc.waitFor();
 			
-			Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
-			Files.delete(pwd.resolve("a.out"));
+			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
+			//Files.delete(pwd.resolve("a.out"));
 			
 			assertEquals(expected, assemOutput.toString());
 		} catch (IOException | InterruptedException e) {

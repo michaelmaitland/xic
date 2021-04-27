@@ -82,8 +82,11 @@ public class IRMove extends IRStmt {
 	public List<Tile> getTiles() {
 		return ArrayUtils.elems(
 				TileFactory.moveBasic(),
+				TileFactory.moveConst(),
 				TileFactory.moveArg(),
 				TileFactory.moveFromMem(),
+				TileFactory.moveIntoMem(),
+				TileFactory.moveConstIntoMem(),
 				TileFactory.moveMemBaseAndIndex());
 	}
 	

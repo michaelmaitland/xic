@@ -133,6 +133,13 @@ public class IRSeq extends IRStmt {
 		List<Assem> assems = stmts.stream()
 			.map(IRNode::getAssem)
 			.collect(Collectors.toList());
+		
+		String out = assems.stream()
+			.filter(o -> o != null)
+			.map(Object::toString)
+			.collect(Collectors.joining("\n\n"));
+		
+		System.out.println("\n\nIR SEQ TILED\n========\n" + out + "\n===========");
 
 		return copyAndSetAssem(new SeqAssem(assems));
 	}

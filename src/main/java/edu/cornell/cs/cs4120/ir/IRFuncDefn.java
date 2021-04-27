@@ -1,7 +1,5 @@
 package edu.cornell.cs.cs4120.ir;
 
-import java.util.HashSet;
-
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
@@ -10,8 +8,8 @@ import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.FuncDefnAssem;
+import mtm68.assem.LabelAssem;
 import mtm68.assem.SeqAssem;
-import mtm68.assem.operand.AbstractReg;
 
 /** An IR function definition */
 public class IRFuncDefn extends IRNode_c {
@@ -96,6 +94,7 @@ public class IRFuncDefn extends IRNode_c {
 		int numTemps = (int)body.getAssem().getAbstractRegs().stream().distinct().count();
 		SeqAssem prologue = t.getPrologue(name, numTemps);
 		SeqAssem bodyAssem = (SeqAssem)body.getAssem();
+		bodyAssem.getAssems().remove(bodyAssem.getAssems().size()-1);
 		SeqAssem epilogue = t.getEpilogue();
 		SeqAssem funcAssem = new SeqAssem(prologue, bodyAssem, epilogue);
 

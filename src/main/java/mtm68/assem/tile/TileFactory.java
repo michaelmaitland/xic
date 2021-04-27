@@ -84,7 +84,7 @@ public class TileFactory {
 	//--------------------------------------------------------------------------------
 	
 	public static Tile moveBasic() {
-		Pattern pattern = move(var("t1"), var("t2"));
+		Pattern pattern = move(temp("t1"), var("t2"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
@@ -92,6 +92,32 @@ public class TileFactory {
 				Reg t1 = results.get("t1", Reg.class);
 				Reg t2 = results.get("t2", Reg.class);
 				return new MoveAssem(t1, t2);
+			}
+		};
+	}
+	
+	public static Tile moveConst() {
+		Pattern pattern = move(temp("t"), anyConstant("c"));
+		
+		return new Tile(pattern, MOVE_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t = results.get("t", Reg.class);
+				Imm c = results.get("c", Imm.class);
+				return new MoveAssem(t, c);
+			}
+		};
+	}
+	
+	public static Tile moveConstIntoMem() {
+		Pattern pattern = move(mem(var("t")), anyConstant("c"));
+		
+		return new Tile(pattern, MOVE_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t = results.get("t", Reg.class);
+				Imm c = results.get("c", Imm.class);
+				return new MoveAssem(new Mem(t), c);
 			}
 		};
 	}
@@ -105,6 +131,19 @@ public class TileFactory {
 				Reg t1 = results.get("t1", Reg.class);
 				Reg t2 = results.get("t2", Reg.class);
 				return new MoveAssem(t1, new Mem(t2));
+			}
+		};
+	}
+	
+	public static Tile moveIntoMem() {
+		Pattern pattern = move(mem(var("t1")), var("t2"));
+		
+		return new Tile(pattern, MOVE_COST) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				return new MoveAssem(new Mem(t1), t2);
 			}
 		};
 	}

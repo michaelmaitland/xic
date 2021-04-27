@@ -19,6 +19,10 @@ public class Patterns {
 	public static VarPattern var(String name) {
 		return new VarPattern(name);
 	}
+	
+	public static TempPattern temp(String name) {
+		return new TempPattern(name);
+	}
 
 	public static RegexVarPattern regex(String name, String regex) {
 		return new RegexVarPattern(name, regex);

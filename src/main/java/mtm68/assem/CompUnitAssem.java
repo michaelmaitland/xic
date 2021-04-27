@@ -63,4 +63,13 @@ public class CompUnitAssem extends Assem {
 		
 		return new CompUnitAssem(name, newFuncs);
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for(FuncDefnAssem fDefn : functions) {
+			sb.append(fDefn.toString() + "\n");
+		}
+		return sb.toString();
+	}
 }

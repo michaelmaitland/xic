@@ -160,7 +160,7 @@ public class Tiler extends IRVisitor {
 
 		// Push ret space pointer
 		Reg reg = getFreshAbstractReg();
-		assems.add(new LeaAssem(reg, new Mem(RealReg.RSP, null, 0, retSpaceSize - Constants.WORD_SIZE)));
+		assems.add(new LeaAssem(reg, new Mem(RealReg.RSP, retSpaceSize - Constants.WORD_SIZE)));
 		assems.add(new PushAssem(reg));
 
 		// Put args 1-6 in their designated registers
