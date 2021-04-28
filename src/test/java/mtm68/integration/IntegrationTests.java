@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -187,6 +189,34 @@ public class IntegrationTests {
 		generateAndAssertOutput("print_if_zero.xi", "true\n");
 	}
 	
+	@Test
+	void testBinary06() {
+		generateAndAssertOutput("binary06.xi");
+	}
+	
+	@Test
+	void testBinary12() {
+		generateAndAssertOutput("binary12.xi");
+	}
+	
+	private void generateAndAssertOutput(String filename) {
+		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
+		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
+		
+		StringBuilder expected = new StringBuilder();
+		 
+        try (Stream<String> stream = Files.lines(resultFile)) 
+        {
+            stream.forEach(s -> expected.append(s).append("\n"));
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        generateAndAssertOutput(filename, expected.toString());
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
@@ -201,7 +231,7 @@ public class IntegrationTests {
 			irRoot.printSExp(codeWriter);
 			codeWriter.flush();
 		
-//			assertIRSimulatorOutput(irRoot, expected);
+			assertIRSimulatorOutput(irRoot, expected);
 			
 			List<Assem> assem = generateAssem(irRoot);
 			runAndAssertAssem(assem, expected);
