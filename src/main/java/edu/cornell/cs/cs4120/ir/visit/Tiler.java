@@ -1,7 +1,6 @@
 package edu.cornell.cs.cs4120.ir.visit;
 
-import static mtm68.util.ArrayUtils.elems;
-import static mtm68.util.ArrayUtils.empty;
+import static mtm68.util.ArrayUtils.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,7 +75,7 @@ public class Tiler extends IRVisitor {
 			moveStmts.clear();
 		} else if(n instanceof IRFuncDefn) {
 			IRFuncDefn func = (IRFuncDefn) n;
-			setRetSpaceOff(Constants.WORD_SIZE * (getExtraArgCount(func.numArgs()) + 2));
+			setRetSpaceOff(Constants.WORD_SIZE * (getExtraArgCount(func.numArgs()) + 3));
 		}
 		return this;
 	}
@@ -96,7 +95,7 @@ public class Tiler extends IRVisitor {
 			break;
 		default: 
 			int retSpaceOff = Constants.WORD_SIZE * (retVal - 1);
-			src = new Mem(RealReg.RSP, null, 0, getFunctionStackSize() - retSpaceOff);
+			src = new Mem(RealReg.RSP, getFunctionStackSize() - retSpaceOff);
 			break;
 		}
 		
@@ -104,7 +103,7 @@ public class Tiler extends IRVisitor {
 	}
 	
 	private int getFunctionStackSize( ) {
-		return Constants.WORD_SIZE * (getExtraArgCount(callStmt) + getExtraRetCount(callStmt) + 1);
+		return Constants.WORD_SIZE * (getExtraArgCount(callStmt) + getExtraRetCount(callStmt) + 2);
 	}
 
 	private boolean isCallStmt(IRNode n) {
@@ -162,6 +161,9 @@ public class Tiler extends IRVisitor {
 		Reg reg = getFreshAbstractReg();
 		assems.add(new LeaAssem(reg, new Mem(RealReg.RSP, retSpaceSize - Constants.WORD_SIZE)));
 		assems.add(new PushAssem(reg));
+		
+		// 16 bytes in total for ret space pointer
+		assems.add(new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE)));
 
 		// Put args 1-6 in their designated registers
 		for (int i = 0; i < argRegs.size() && i < argAssems.size(); i++) {
@@ -198,7 +200,11 @@ public class Tiler extends IRVisitor {
 	}
 
 	private int getExtraRetCount(IRCallStmt stmt) {
-		return Math.max(stmt.getNumRets() - 2, 0);
+		return roundUpToEven(Math.max(stmt.getNumRets() - 2, 0));
+	}
+	
+	private int roundUpToEven(int num) {
+		return num % 2 == 0 ? num : num + 1;
 	}
 	
 	/** Offset from rbp */
@@ -210,7 +216,19 @@ public class Tiler extends IRVisitor {
 		this.retSpaceOff = retSpaceOff;
 	}
 
-	public SeqAssem getPrologue(String name, int l) {
+	public SeqAssem getPrologue(String name, int numArgs, int l) {
+		// In our stack frame we include a ret space pointer which isn't included
+		// when our main function is called. For alignment reasons, we have to treat
+		// the main function specially since its stack frame is off by one.
+		boolean isMainFunc = name.equals(Constants.MAIN_FUNC);
+		
+		// If we are allocating an odd number of words in total, we need to add an
+		// extra word to ensure 16 byte alignment
+		int align = l + getExtraArgCount(numArgs);
+		if(!isMainFunc) align += 2; // For ret space pointer
+		
+		if(align % 2 == 1) l++;
+		
 		return new SeqAssem(
 				new LabelAssem(name),
 				new PushAssem(RealReg.RBP),

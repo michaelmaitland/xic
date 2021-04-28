@@ -113,7 +113,6 @@ public class IntegrationTests {
 		generateAndAssertOutput("ex01.xi", "Hello, World!\n");
 	}
 	
-	@Disabled
 	@Test
 	void testPrimes() {
 		generateAndAssertOutput("primes.xi", "Largest prime less than 1,000 is 997");

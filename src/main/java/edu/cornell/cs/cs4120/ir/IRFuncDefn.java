@@ -97,11 +97,9 @@ public class IRFuncDefn extends IRNode_c {
 				.distinct()
 				.count();
 
-		SeqAssem prologue = t.getPrologue(name, numTemps);
+		SeqAssem prologue = t.getPrologue(name, numArgs, numTemps);
 		SeqAssem bodyAssem = (SeqAssem)body.getAssem();
-		bodyAssem.getAssems().remove(bodyAssem.getAssems().size()-1);
-		SeqAssem epilogue = t.getEpilogue();
-		SeqAssem funcAssem = new SeqAssem(prologue, bodyAssem, epilogue);
+		SeqAssem funcAssem = new SeqAssem(prologue, bodyAssem);
 
 		FuncDefnAssem assem = new FuncDefnAssem(name, funcAssem);
 		return this.copyAndSetAssem(assem);
