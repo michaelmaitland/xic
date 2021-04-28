@@ -18,4 +18,8 @@ public abstract class MatchablePattern implements Pattern {
 		exprs.put(name, matched);
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
 }

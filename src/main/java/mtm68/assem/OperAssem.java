@@ -48,9 +48,9 @@ public abstract class OperAssem extends Assem {
 	
 	@Override
 	public List<ReplaceableReg> getReplaceableRegs() {
-		return ArrayUtils.concat(
+		return ArrayUtils.concatMulti(
 				ReplaceableReg.fromDest(dest, this::setDest),
-				ReplaceableReg.fromSrc(src, this::setSrc)
-			);
+				ReplaceableReg.fromSrc(src, this::setSrc),
+				ReplaceableReg.fromSrc(dest, this::setDest));
 	}
 }

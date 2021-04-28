@@ -172,6 +172,26 @@ public class TileTests {
 	}
 	
 	@Test
+	void tileMoveAddMem() {
+		// (MOVE (TEMP _t2) (MEM (ADD (TEMP _t8) (CONST -8))))
+		IRMove move = move(
+				temp("t2"), 
+				mem(op(OpType.ADD, temp("t8"), constant(-8L))));
+		tile(move);
+	}
+	
+	@Test
+	void tileMoveMemToMem() {
+		// (MOVE (MEM (TEMP _t6)) (MEM (ADD (TEMP _t8) (MUL (TEMP _t7) (CONST 8)))))
+		IRMove move = move(
+				mem(temp("t6")),
+				mem(op(OpType.ADD, temp("t8"),
+						op(OpType.MUL, temp("t7"), constant(8L))))
+				);
+		tile(move);
+	}
+	
+	@Test
 	void tileMoveMemToReg() {
 		IRNode move = move("t1", mem(temp("t2")));
 		SeqAssem tiled = assertInstanceOfAndReturn(SeqAssem.class, tile(move));
@@ -271,6 +291,36 @@ public class TileTests {
 	@Test
 	void tileCJump() {
 		IRCJump cjump = cjump(op(OpType.ADD, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
+	}
+	
+	@Test
+	void tileCJumpLt() {
+		IRCJump cjump = cjump(op(OpType.LT, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
+	}
+	
+	@Test
+	void tileCJumpLeq() {
+		IRCJump cjump = cjump(op(OpType.LEQ, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
+	}
+	
+	@Test
+	void tileCJumpNeq() {
+		IRCJump cjump = cjump(op(OpType.NEQ, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
+	}
+	
+	@Test
+	void tileCJumpGt() {
+		IRCJump cjump = cjump(op(OpType.GT, temp("t1"), temp("t2")), "true", null);  
+		tile(cjump);
+	}
+	
+	@Test
+	void tileCJumpGeq() {
+		IRCJump cjump = cjump(op(OpType.GEQ, temp("t1"), temp("t2")), "true", null);  
 		tile(cjump);
 	}
 

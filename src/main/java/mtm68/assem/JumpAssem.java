@@ -18,8 +18,14 @@ public class JumpAssem extends Assem {
 	
 	public enum JumpType{
 		JMP,
-		JE;
-		
+		JE,
+		JL,
+		JNE,
+		JG,
+		JGE,
+		JLE,
+		JZ;
+
 		@Override
 		public String toString() {
 			return name().toLowerCase();

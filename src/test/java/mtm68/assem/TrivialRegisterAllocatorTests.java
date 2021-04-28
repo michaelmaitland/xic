@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import mtm68.assem.JumpAssem.JumpType;
 import mtm68.assem.op.AddAssem;
+import mtm68.assem.op.IMulAssem;
 import mtm68.assem.op.LeaAssem;
 import mtm68.assem.op.SubAssem;
 import mtm68.assem.operand.AbstractReg;
@@ -27,6 +28,14 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.util.ArrayUtils;
 
 public class TrivialRegisterAllocatorTests {
+	
+	@Test
+	void testIMul() {
+		List<Assem> insts = allocateSingleFunc(
+				new IMulAssem(abstrReg("t1"), abstrReg("t1")));
+		assertAllRealReg(insts);
+		printInsts(insts);
+	}
 	
 	@Test
 	public void testNoAbstr() {

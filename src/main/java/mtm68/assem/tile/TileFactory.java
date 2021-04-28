@@ -21,6 +21,7 @@ import mtm68.assem.SeqAssem;
 import mtm68.assem.SetccAssem;
 import mtm68.assem.SetccAssem.CC;
 import mtm68.assem.op.LeaAssem;
+import mtm68.assem.op.XorAssem;
 import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Loc;
@@ -221,6 +222,113 @@ public class TileFactory {
 			}
 		};
 	}
+	
+	public static Tile cjumpLessThan() {
+		Pattern pattern = cjump(op(OpType.LT, var("t1"), var("t2"))); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t1, t2),
+						new JumpAssem(JumpType.JL, new Loc(jumpLoc))
+					);
+			}
+		};
+	}
+	
+	public static Tile cjumpLessThanEqual() {
+		Pattern pattern = cjump(op(OpType.LEQ, var("t1"), var("t2"))); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t1, t2),
+						new JumpAssem(JumpType.JLE, new Loc(jumpLoc))
+					);
+			}
+		};
+	}
+	
+	public static Tile cjumpNotEqual() {
+		Pattern pattern = cjump(op(OpType.NEQ, var("t1"), var("t2"))); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t1, t2),
+						new JumpAssem(JumpType.JNE, new Loc(jumpLoc))
+					);
+			}
+		};
+	}
+	
+	public static Tile cjumpGreaterThan() {
+		Pattern pattern = cjump(op(OpType.GT, var("t1"), var("t2"))); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t1, t2),
+						new JumpAssem(JumpType.JG, new Loc(jumpLoc))
+					);
+			}
+		};
+	}
+	
+	public static Tile cjumpGreaterThanEqual() {
+		Pattern pattern = cjump(op(OpType.GEQ, var("t1"), var("t2"))); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Reg t2 = results.get("t2", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t1, t2),
+						new JumpAssem(JumpType.JGE, new Loc(jumpLoc))
+					);
+			}
+		};
+	}
+	
+	public static Tile cjumpIfZero() {
+		Pattern pattern = cjump(op(OpType.XOR, var("t1"), specificConstant("c", 1) )); 
+		
+		// TODO: Assign cost properly
+		return new Tile(pattern, 1.0f) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				String jumpLoc = ((IRCJump)baseNode).trueLabel();
+				return new SeqAssem(
+						new CmpAssem(t1, new Imm(1)),
+						new JumpAssem(JumpType.JZ, new Loc(jumpLoc))
+					);
+			}
+		};
+	}
 
 	//--------------------------------------------------------------------------------
 	// Binop
@@ -321,6 +429,7 @@ public class TileFactory {
 				Reg t1 = results.get("t1", Reg.class);
 				Reg t2 = results.get("t2", Reg.class);
 				return new SeqAssem(
+						new XorAssem(RealReg.RAX, RealReg.RAX),
 						new CmpAssem(t1, t2),
 						new SetccAssem(cc),
 						new MoveAssem(resultReg, RealReg.RAX));

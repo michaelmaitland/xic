@@ -4,6 +4,7 @@ import static mtm68.assem.operand.RealReg.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ import mtm68.util.ArrayUtils;
 
 public class TrivialRegisterAllocator {
 	
-	private static final List<RealReg> SHUTTLE_REGS = Arrays.asList(R9, R10, R11);
+	private static final List<RealReg> SHUTTLE_REGS = Arrays.asList(R10, R11, R12);
 	
 	/**
 	 * Does register allocation for each function in the CompUnitAssem. Each
@@ -67,11 +68,18 @@ public class TrivialRegisterAllocator {
 		
 		// stack location = [rbp - 8 * l]
 		for(String regName : regNames) {
-			Mem mem = new Mem(RealReg.RBP, (size + 1) * - 8);
+			Mem mem = new Mem(RealReg.RBP, (size+1) * - 8);
 			regToStackLocs.put(regName, mem);
 			size++;
 		}
 		
+		System.out.println("RegStackLocs\n==============");
+		
+		regToStackLocs.entrySet().stream()
+			.map(e -> e.getKey() + ": " + e.getValue())
+			.forEach(System.out::println);
+		
+		System.out.println();
 		return regToStackLocs;
 	}
 
@@ -114,17 +122,28 @@ public class TrivialRegisterAllocator {
 	
 	private void doShuttling(List<ReplaceableReg> regs, RegType regType, Map<String, RealReg> replaceToRealMap,
 			Iterator<RealReg> shuttleIterator, List<Assem> assems, Map<String, Mem> regsToLoc) {
+		Set<String> alreadyShuttled = new HashSet<>();
+		
 		for(ReplaceableReg reg : regs) {
-			if(replaceToRealMap.containsKey(reg.getName())) {
-				reg.replace(replaceToRealMap.get(reg.getName()));
+			String name = reg.getName();
+			
+			if(alreadyShuttled.contains(name)) {
+				reg.replace(replaceToRealMap.get(name));
 				continue;
 			}
-
-			RealReg shuttle = shuttleIterator.next();
-			replaceToRealMap.put(reg.getName(), shuttle);
-			reg.replace(shuttle);
 			
-			Mem stackOffset = regsToLoc.get(reg.getName());
+			RealReg shuttle = null;
+			if(replaceToRealMap.containsKey(name)) {
+				shuttle = replaceToRealMap.get(name);
+			} else {
+				shuttle = shuttleIterator.next();
+				replaceToRealMap.put(name, shuttle);
+			}
+
+			reg.replace(shuttle);
+			alreadyShuttled.add(name);
+			
+			Mem stackOffset = regsToLoc.get(name);
 			
 			if(regType == RegType.READ) {
 				assems.add(new MoveAssem(shuttle, stackOffset));

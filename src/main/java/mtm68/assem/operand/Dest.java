@@ -1,5 +1,5 @@
 package mtm68.assem.operand;
 
-public interface Dest {
+public interface Dest extends Src {
 
 }

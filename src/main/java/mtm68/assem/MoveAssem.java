@@ -3,6 +3,8 @@ package mtm68.assem;
 import java.util.List;
 
 import mtm68.assem.operand.Dest;
+import mtm68.assem.operand.Imm;
+import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
 
@@ -29,6 +31,9 @@ public class MoveAssem extends Assem {
 
 	@Override
 	public String toString() {
+		if(src instanceof Imm && dest instanceof Mem)
+			return "mov QWORD PTR " + dest + ", " + src;
+		
 		return "mov " + dest + ", " + src;
 	}
 	

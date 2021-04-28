@@ -46,7 +46,7 @@ public class ReturnTile extends Tile {
 			assems.add(new MoveAssem(dest, src));
 		}
 
-		assems.add(new RetAssem());
+		assems.add(tiler.getEpilogue());
 
 		return new SeqAssem(assems);
 	}

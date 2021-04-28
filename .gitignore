@@ -46,3 +46,8 @@ xth/**
 lib/**
 !lib/jflex-1.8.2/**
 !lib/java_cup.jar
+
+# Integration tests
+src/test/resources/runtime/release/unitTest.ir
+src/test/resources/runtime/release/unitTest.s
+a.out

@@ -130,6 +130,14 @@ public class IRCJump extends IRStmt {
 	
 	@Override
 	public List<Tile> getTiles() {
-		return ArrayUtils.elems(TileFactory.cjumpBasic());
+		return ArrayUtils.elems(
+				TileFactory.cjumpBasic(),
+				TileFactory.cjumpNotEqual(),
+				TileFactory.cjumpGreaterThan(),
+				TileFactory.cjumpGreaterThanEqual(),
+				TileFactory.cjumpLessThanEqual(),
+				TileFactory.cjumpLessThan()
+//				//TileFactory.cjumpIfZero()
+				);
 	}
 }

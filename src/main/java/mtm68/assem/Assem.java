@@ -5,8 +5,6 @@ import java.util.List;
 import mtm68.util.ArrayUtils;
 
 public abstract class Assem implements Cloneable, HasReplaceableRegs {
-	private String assem;
-
 	@Override
 	public List<ReplaceableReg> getReplaceableRegs() {
 		return ArrayUtils.empty();
