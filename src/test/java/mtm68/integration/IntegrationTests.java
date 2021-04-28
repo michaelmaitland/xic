@@ -16,13 +16,13 @@ import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
@@ -182,6 +182,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("simple_array.xi", "Just this\n");
 	}
 	
+	@Test
+	void testPrintIfVarZero() {
+		generateAndAssertOutput("print_if_zero.xi", "true\nfalse");
+	}
+	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
@@ -251,6 +256,8 @@ public class IntegrationTests {
 				    System.out.println(s);
 				}
 				fail();
+			} else {
+				makeFileExecutable(pwd, "a.out");
 			}
 			
 			// Run executable and compare output to console with expected value
@@ -275,6 +282,17 @@ public class IntegrationTests {
 		}
 	}
 	
+	private void makeFileExecutable(Path pwd, String filename) throws IOException {
+		// make a.out executable
+		if(OS != OSType.WINDOWS) {
+			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(pwd.resolve("a.out"));
+			perms.add(PosixFilePermission.GROUP_EXECUTE);
+			perms.add(PosixFilePermission.OTHERS_EXECUTE);
+			perms.add(PosixFilePermission.OWNER_EXECUTE);
+			Files.setPosixFilePermissions(pwd.resolve("a.out"), perms);
+		}
+	}
+
 	private ProcessBuilder getProcessBuilder(String... commandAndArgs) {
 		List<String> commandList = new ArrayList<>(Arrays.asList(commandAndArgs));		
 		if(OS == OSType.WINDOWS) ArrayUtils.prepend("wsl", commandList);

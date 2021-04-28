@@ -31,6 +31,10 @@ public class Patterns {
 	public static ConstantPattern anyConstant(String name) {
 		return new AnyConstantPattern(name);
 	}
+	
+	public static SpecificConstantPattern specificConstant(String name, long target) {
+		return new SpecificConstantPattern(name, target);
+	}
 
 	public static ConstantPattern smallConstant(String name) {
 		return new SmallConstantPattern(name);

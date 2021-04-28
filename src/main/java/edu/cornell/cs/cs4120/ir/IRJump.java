@@ -1,5 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.List;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -9,6 +11,9 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.JumpAssem;
 import mtm68.assem.JumpAssem.JumpType;
 import mtm68.assem.operand.Loc;
+import mtm68.assem.tile.Tile;
+import mtm68.assem.tile.TileFactory;
+import mtm68.util.ArrayUtils;
 
 /**
  * An intermediate representation for a transfer of control
