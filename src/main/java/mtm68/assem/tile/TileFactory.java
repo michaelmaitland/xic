@@ -54,27 +54,27 @@ public class TileFactory {
 	// Mem
 	//--------------------------------------------------------------------------------
 	
-	public static Tile memAddTile() {
-		Pattern pattern = mem(add(var("t"), smallConstant("c")));
-		
-		return new Tile(pattern, MOVE_COST) {
-			@Override
-			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t = results.get("t", Reg.class);
-				Imm c = results.get("c", Imm.class);
-				return new MoveAssem(resultReg, new Mem(t, c));
-			}
-		};
-	}
+//	public static Tile memAddTile() {
+//		Pattern pattern = mem(add(var("t"), smallConstant("c")));
+//		
+//		return new Tile(pattern, MOVE_COST) {
+//			@Override
+//			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+//				Reg t = results.get("t", Reg.class);
+//				Imm c = results.get("c", Imm.class);
+//				return new MoveAssem(resultReg, new Mem(t, c));
+//			}
+//		};
+//	}
 
 	public static Tile memBasic() {
-		Pattern pattern = mem(var("t"));
+		Pattern pattern = mem("t");
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t = results.get("t", Reg.class);
-				return new MoveAssem(resultReg, new Mem(t));
+				Mem t = results.get("t", Mem.class);
+				return new MoveAssem(resultReg, t);
 			}
 		};
 	}
@@ -110,60 +110,60 @@ public class TileFactory {
 	}
 	
 	public static Tile moveConstIntoMem() {
-		Pattern pattern = move(mem(var("t")), anyConstant("c"));
+		Pattern pattern = move(mem("m"), anyConstant("c"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t = results.get("t", Reg.class);
+				Mem m = results.get("m", Mem.class);
 				Imm c = results.get("c", Imm.class);
-				return new MoveAssem(new Mem(t), c);
+				return new MoveAssem(m, c);
 			}
 		};
 	}
 
 	public static Tile moveFromMem() {
-		Pattern pattern = move(temp("t1"), mem(var("t2")));
+		Pattern pattern = move(temp("t1"), mem("m"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
-				Reg t2 = results.get("t2", Reg.class);
-				return new MoveAssem(t1, new Mem(t2));
+				Mem m = results.get("m", Mem.class);
+				return new MoveAssem(t1, m);
 			}
 		};
 	}
 	
 	public static Tile moveIntoMem() {
-		Pattern pattern = move(mem(var("t1")), var("t2"));
+		Pattern pattern = move(mem("m"), var("t"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t1 = results.get("t1", Reg.class);
-				Reg t2 = results.get("t2", Reg.class);
-				return new MoveAssem(new Mem(t1), t2);
+				Mem m = results.get("m", Mem.class);
+				Reg t = results.get("t", Reg.class);
+				return new MoveAssem(m, t);
 			}
 		};
 	}
 	
-	public static Tile moveMemBaseAndIndex() {
-		Pattern pattern = move(
-				mem(add(var("t1"), mul(index("i"), var("t2")))), anyConstant("c"));
-		
-		return new Tile(pattern, MOVE_COST) {
-			@Override
-			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t1 = results.get("t1", Reg.class);
-				Reg t2 = results.get("t2", Reg.class);
-				Imm i = results.get("i", Imm.class);
-				Imm c = results.get("c", Imm.class);
-
-				return new MoveAssem(new Mem(t1, t2, i), c);
-			}
-		};
-	}
+//	public static Tile moveMemBaseAndIndex() {
+//		Pattern pattern = move(
+//				mem(add(var("t1"), mul(index("i"), var("t2")))), anyConstant("c"));
+//		
+//		return new Tile(pattern, MOVE_COST) {
+//			@Override
+//			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+//				Reg t1 = results.get("t1", Reg.class);
+//				Reg t2 = results.get("t2", Reg.class);
+//				Imm i = results.get("i", Imm.class);
+//				Imm c = results.get("c", Imm.class);
+//
+//				return new MoveAssem(new Mem(t1, t2, i), c);
+//			}
+//		};
+//	}
 	
 	public static Tile moveArg() {
 		Pattern pattern = move(var("t"), regex("arg", Constants.ARG_PREFIX + "[0-9]+"));

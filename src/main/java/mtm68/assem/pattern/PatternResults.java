@@ -7,6 +7,7 @@ import java.util.Map;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import mtm68.assem.operand.Imm;
+import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.Reg;
 import polyglot.util.InternalCompilerError;
 
@@ -33,10 +34,23 @@ public class PatternResults {
 			if(!(expr instanceof IRConst)) throw new InternalCompilerError("Cannot extract an immediate value out of " + expr.getClass());
 			
 			return (T) new Imm(((IRConst)expr).constant());
+		} else if(Mem.class.isAssignableFrom(clazz)) {
+			Reg base = getOrNull(name + "_t1", Reg.class);
+			Reg index = getOrNull(name + "_t2", Reg.class);
+			Imm scale = getOrNull(name + "_i", Imm.class);
+			Imm disp = getOrNull(name + "_d", Imm.class);
+			
+			return (T)new Mem(base, index, scale, disp);
 		}
 
 		throw new InternalCompilerError("Invalid class " + clazz + " for pattern extraction");
 	}
+
+	public <T extends PatternMatch> T getOrNull(String name, Class<T> clazz) {
+		if(!containsKey(name)) return null;
+		return get(name, clazz); 
+	}
+
 	
 	@SuppressWarnings("unchecked")
 	public <T extends IRExpr> T getExpr(String name) {

@@ -98,7 +98,7 @@ public class IRMem extends IRExpr_c {
 	@Override
 	public List<Tile> getTiles() {
 		return ArrayUtils.elems(
-				TileFactory.memAddTile(),
+//				TileFactory.memAddTile(),
 				TileFactory.memBasic());
 	}
 }

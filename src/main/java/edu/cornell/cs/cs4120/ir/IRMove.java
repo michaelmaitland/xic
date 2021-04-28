@@ -86,8 +86,8 @@ public class IRMove extends IRStmt {
 				TileFactory.moveArg(),
 				TileFactory.moveFromMem(),
 				TileFactory.moveIntoMem(),
-				TileFactory.moveConstIntoMem(),
-				TileFactory.moveMemBaseAndIndex());
+				TileFactory.moveConstIntoMem()
+			);
 	}
 	
 }
