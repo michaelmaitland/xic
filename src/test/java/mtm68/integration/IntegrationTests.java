@@ -242,6 +242,7 @@ public class IntegrationTests {
 			FileUtils.writeAssemToFile("unitTest.xi", assems);
 			
 			// Run linkxi.sh to generate executable
+			makeFileExecutable(pwd, assemPathStr);
 			ProcessBuilder link = getProcessBuilder(assemPathStr + "/linkxi.sh", assemPathStr + "/unitTest.s"); 
 			Process linkProc = link.start();
 					
