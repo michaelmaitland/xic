@@ -40,8 +40,8 @@ public class Patterns {
 		return new SmallConstantPattern(name);
 	}
 
-	public static BetterMemPattern mem(String name) {
-		return new BetterMemPattern(name);
+	public static MemPattern mem(String name) {
+		return new MemPattern(name);
 	}
 
 	public static MovePattern move(Pattern dest, Pattern src) {

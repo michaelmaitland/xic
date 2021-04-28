@@ -55,19 +55,6 @@ public class TileFactory {
 	// Mem
 	//--------------------------------------------------------------------------------
 	
-//	public static Tile memAddTile() {
-//		Pattern pattern = mem(add(var("t"), smallConstant("c")));
-//		
-//		return new Tile(pattern, MOVE_COST) {
-//			@Override
-//			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-//				Reg t = results.get("t", Reg.class);
-//				Imm c = results.get("c", Imm.class);
-//				return new MoveAssem(resultReg, new Mem(t, c));
-//			}
-//		};
-//	}
-
 	public static Tile memBasic() {
 		Pattern pattern = mem("t");
 		
@@ -149,23 +136,6 @@ public class TileFactory {
 		};
 	}
 	
-//	public static Tile moveMemBaseAndIndex() {
-//		Pattern pattern = move(
-//				mem(add(var("t1"), mul(index("i"), var("t2")))), anyConstant("c"));
-//		
-//		return new Tile(pattern, MOVE_COST) {
-//			@Override
-//			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-//				Reg t1 = results.get("t1", Reg.class);
-//				Reg t2 = results.get("t2", Reg.class);
-//				Imm i = results.get("i", Imm.class);
-//				Imm c = results.get("c", Imm.class);
-//
-//				return new MoveAssem(new Mem(t1, t2, i), c);
-//			}
-//		};
-//	}
-	
 	public static Tile moveArg() {
 		Pattern pattern = move(var("t"), regex("arg", Constants.ARG_PREFIX + "[0-9]+"));
 
@@ -209,8 +179,7 @@ public class TileFactory {
 	public static Tile cjumpBasic() {
 		Pattern pattern = cjump(var("t")); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t = results.get("t", Reg.class);
@@ -226,8 +195,7 @@ public class TileFactory {
 	public static Tile cjumpLessThan() {
 		Pattern pattern = cjump(op(OpType.LT, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -244,8 +212,7 @@ public class TileFactory {
 	public static Tile cjumpLessThanEqual() {
 		Pattern pattern = cjump(op(OpType.LEQ, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -262,8 +229,7 @@ public class TileFactory {
 	public static Tile cjumpNotEqual() {
 		Pattern pattern = cjump(op(OpType.NEQ, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -280,8 +246,7 @@ public class TileFactory {
 	public static Tile cjumpGreaterThan() {
 		Pattern pattern = cjump(op(OpType.GT, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -298,8 +263,7 @@ public class TileFactory {
 	public static Tile cjumpGreaterThanEqual() {
 		Pattern pattern = cjump(op(OpType.GEQ, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -316,8 +280,7 @@ public class TileFactory {
 	public static Tile cjumpIfZero() {
 		Pattern pattern = cjump(op(OpType.XOR, var("t1"), specificConstant("c", 1) )); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);

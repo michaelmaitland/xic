@@ -184,7 +184,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testPrintIfVarZero() {
-		generateAndAssertOutput("print_if_zero.xi", "true\nfalse");
+		generateAndAssertOutput("print_if_zero.xi", "true\n");
 	}
 	
 	private void generateAndAssertOutput(String filename, String expected){

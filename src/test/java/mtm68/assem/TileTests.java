@@ -112,6 +112,7 @@ public class TileTests {
 		tile(move(temp("t"), mem(temp("t1"))));
 		tile(move(temp("t"), mem(op(OpType.MUL, temp("t1"), constant(4L)))));
 		tile(move(temp("t"), mem(op(OpType.MUL, temp("t1"), constant(5L)))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), constant(LARGE_INT)))));
 		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), constant(3L)))));
 		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), constant(-3L)))));
 		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), temp("t2")))));
