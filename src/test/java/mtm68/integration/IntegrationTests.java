@@ -242,7 +242,6 @@ public class IntegrationTests {
 			FileUtils.writeAssemToFile("unitTest.xi", assems);
 			
 			// Run linkxi.sh to generate executable
-			makeFileExecutable(pwd, assemPathStr);
 			ProcessBuilder link = getProcessBuilder(assemPathStr + "/linkxi.sh", assemPathStr + "/unitTest.s"); 
 			Process linkProc = link.start();
 					
@@ -274,8 +273,8 @@ public class IntegrationTests {
 			
 			runProc.waitFor();
 			
-			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
-			//Files.delete(pwd.resolve("a.out"));
+			Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
+			Files.delete(pwd.resolve("a.out"));
 			
 			assertEquals(expected, assemOutput);
 		} catch (IOException | InterruptedException e) {
