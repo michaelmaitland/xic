@@ -170,28 +170,30 @@ public class IRBinOp extends IRExpr_c {
 	
 	@Override
 	public List<Tile> getTiles() {
-		return ArrayUtils.elems(
-				TileFactory.addBasic(),
-				TileFactory.addConstant(),
-				TileFactory.binopBasic(OpType.SUB, SubAssem::new),
-				TileFactory.binopBasic(OpType.AND, AndAssem::new),
-				TileFactory.binopBasic(OpType.MUL, IMulAssem::new),
-				TileFactory.binopBasic(OpType.NEQ, XorAssem::new),
-				TileFactory.binopBasic(OpType.XOR, XorAssem::new),
-				TileFactory.binopBasic(OpType.OR, OrAssem::new),
-				TileFactory.binopBasic(OpType.ARSHIFT, ARShiftAssem::new),
-				TileFactory.binopBasic(OpType.LSHIFT, LShiftAssem::new),
-				TileFactory.binopBasic(OpType.RSHIFT, RShiftAssem::new),
-				TileFactory.binopCompareBasic(OpType.EQ, CC.E),
-				TileFactory.binopCompareBasic(OpType.NEQ, CC.NE),
-				TileFactory.binopCompareBasic(OpType.GEQ, CC.GE),
-				TileFactory.binopCompareBasic(OpType.GT, CC.G),
-				TileFactory.binopCompareBasic(OpType.LT, CC.L),
-				TileFactory.binopCompareBasic(OpType.LEQ, CC.LE),
-				TileFactory.binopCompareBasic(OpType.ULT, CC.B),
-				TileFactory.binopDivOrMod(OpType.DIV),
-				TileFactory.binopDivOrMod(OpType.MOD),
-				TileFactory.binopHighMul()
+		return ArrayUtils.concatMulti(
+					ArrayUtils.elems(
+					TileFactory.addBasic(),
+					TileFactory.addConstant(),
+					TileFactory.binopCompareBasic(OpType.EQ, CC.E),
+					TileFactory.binopCompareBasic(OpType.NEQ, CC.NE),
+					TileFactory.binopCompareBasic(OpType.GEQ, CC.GE),
+					TileFactory.binopCompareBasic(OpType.GT, CC.G),
+					TileFactory.binopCompareBasic(OpType.LT, CC.L),
+					TileFactory.binopCompareBasic(OpType.LEQ, CC.LE),
+					TileFactory.binopCompareBasic(OpType.ULT, CC.B),
+					TileFactory.binopDivOrMod(OpType.DIV),
+					TileFactory.binopDivOrMod(OpType.MOD),
+					TileFactory.binopHighMul()
+					),
+					TileFactory.binopBasic(OpType.SUB, SubAssem::new),
+					TileFactory.binopBasic(OpType.AND, AndAssem::new),
+					TileFactory.binopBasic(OpType.MUL, IMulAssem::new),
+					TileFactory.binopBasic(OpType.NEQ, XorAssem::new),
+					TileFactory.binopBasic(OpType.XOR, XorAssem::new),
+					TileFactory.binopBasic(OpType.OR, OrAssem::new),
+					TileFactory.binopBasic(OpType.ARSHIFT, ARShiftAssem::new),
+					TileFactory.binopBasic(OpType.LSHIFT, LShiftAssem::new),
+					TileFactory.binopBasic(OpType.RSHIFT, RShiftAssem::new)
 				);
 	}
 }

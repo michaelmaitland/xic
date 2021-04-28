@@ -32,6 +32,7 @@ import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 import mtm68.assem.pattern.Pattern;
 import mtm68.assem.pattern.PatternResults;
+import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 
 public class TileFactory {
@@ -363,14 +364,13 @@ public class TileFactory {
 		};
 	}
 
-	public static Tile binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor) {
+	public static List<Tile> binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor) {
 		return binopBasic(opType, assemConstructor, BINOP_COST); 
 	}
 	
-	public static Tile binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor, float assemCost) {
-		Pattern pattern = op(opType, var("t1"), var("t2"));
-		
-		return new Tile(pattern, MOVE_COST + assemCost) {
+	public static List<Tile> binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor, float assemCost) {
+		Pattern regRegPattern = op(opType, var("t1"), var("t2"));
+		Tile regRegTile = new Tile(regRegPattern, MOVE_COST + assemCost) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -381,6 +381,32 @@ public class TileFactory {
 						);
 			}
 		};
+		
+		Pattern regConstPattern = op(opType, var("t1"), anyConstant("c"));
+		Tile regConstTile = new Tile(regConstPattern, MOVE_COST + assemCost) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Imm c = results.get("c", Imm.class);
+				return new SeqAssem(
+						new MoveAssem(resultReg, t1),
+						assemConstructor.apply(resultReg, c));
+			}
+		};
+		
+		Pattern regMemPattern = op(opType, var("t1"), mem("m"));
+		Tile regMemTile = new Tile(regMemPattern, assemCost) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Mem m = results.get("m", Mem.class);
+				return new SeqAssem(
+						new MoveAssem(resultReg, t1),
+						assemConstructor.apply(resultReg, m));
+			}
+		};
+		
+		return ArrayUtils.elems(regRegTile, regConstTile, regMemTile);
 	}
 
 	public static Tile binopCompareBasic(OpType opType, CC cc) {

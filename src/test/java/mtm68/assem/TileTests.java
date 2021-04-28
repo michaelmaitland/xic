@@ -357,6 +357,18 @@ public class TileTests {
 		
 		FuncDefnAssem tiled = assertInstanceOfAndReturn(FuncDefnAssem.class, tile(func));
 	}
+	
+	@Test
+	void tileBinOp() {
+		IRNode node = op(OpType.SUB, temp("t4"), temp("t5"));
+		tile(node);
+		
+		node = op(OpType.SUB, temp("t4"), constant(1L));
+		tile(node);
+		
+		node = op(OpType.SUB, temp("t4"), mem(op(OpType.ADD, temp("t1"), temp("t2"))));
+		tile(node);
+	}
 
 	private Assem tile(IRNode node, int numArgs) {
 		System.out.println("Before\n=========\n" + node);
