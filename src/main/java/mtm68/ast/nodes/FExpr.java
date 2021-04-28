@@ -6,10 +6,13 @@ import java.util.stream.Collectors;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
+import mtm68.util.FreshTempGenerator;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -76,7 +79,9 @@ public class FExpr extends Expr {
 								.collect(Collectors.toList());
 
 		IRCallStmt call = inf.IRCallStmt(name, irArgs);
-		IRESeq eseq = inf.IRESeq(call, inf.IRTemp(cv.retVal(0)));
+		IRTemp freshTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
+		IRMove moveIntoFresh = inf.IRMove(freshTemp, inf.IRTemp(cv.retVal(0)));
+		IRESeq eseq = inf.IRESeq(inf.IRSeq(call, moveIntoFresh), freshTemp);
 		return copyAndSetIRExpr(eseq);
 	}
 }

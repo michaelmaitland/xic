@@ -25,7 +25,7 @@ import mtm68.util.ArrayUtils;
 
 public class TrivialRegisterAllocator {
 	
-	private static final List<RealReg> SHUTTLE_REGS = Arrays.asList(R9, R10, R11);
+	private static final List<RealReg> SHUTTLE_REGS = Arrays.asList(R10, R11, R12);
 	
 	/**
 	 * Does register allocation for each function in the CompUnitAssem. Each
