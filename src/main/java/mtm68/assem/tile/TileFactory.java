@@ -10,7 +10,7 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.Assem;
-import mtm68.assem.CdqAssem;
+import mtm68.assem.CqoAssem;
 import mtm68.assem.CmpAssem;
 import mtm68.assem.IDivAssem;
 import mtm68.assem.JumpAssem;
@@ -338,7 +338,7 @@ public class TileFactory {
 
 				return new SeqAssem(
 						new MoveAssem(RealReg.RAX, t1),
-						new CdqAssem(),
+						new CqoAssem(),
 						new IDivAssem(t2),
 						new MoveAssem(resultReg, resultFrom)
 						);

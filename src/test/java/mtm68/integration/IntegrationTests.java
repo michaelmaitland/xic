@@ -202,7 +202,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testBinOpExplosion() {
-		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-84602230521");
+		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-846022305212-4-1");
 	}
 	
 	@Test

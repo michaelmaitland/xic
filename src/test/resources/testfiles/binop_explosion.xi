@@ -46,6 +46,10 @@ main(args : int[][]){
 	print(unparseInt(arr[z / 10])); // 2
 	print(unparseInt(arr[arr[1]])); // 1
 	
+	print(unparseInt(z % -6)); // 2
+	print(unparseInt(z / -5)); // -4
+	print(unparseInt(-20 / z)); // -1
+	
 }
 
 b2s(b: bool): int[] {

@@ -1,14 +1,14 @@
 package mtm68.assem;
 
-public class CdqAssem extends Assem {
+public class CqoAssem extends Assem {
 
-	public CdqAssem() {
+	public CqoAssem() {
 		super();
 	}
 	
 	@Override
 	public String toString() {
-		return "cdq";
+		return "cqo";
 	}
 
 }
