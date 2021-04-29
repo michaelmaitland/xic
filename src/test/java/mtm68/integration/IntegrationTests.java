@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
@@ -64,7 +64,13 @@ import mtm68.visit.TypeChecker;
 public class IntegrationTests {
 	private static final OSType OS = OSType.getOSType(System.getProperty("os.name").toLowerCase());
 	private static final int BUFFER_SIZE = 1024;
+	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
+	@BeforeEach
+	void setUpFileUtils() {
+		FileUtils.diagPath = Paths.get(ASSEM_PATH);
+		FileUtils.assemPath = Paths.get(ASSEM_PATH);
+	}
 //	@Test
 //	void testBasic() {
 //		Assem assem = new SeqAssem(new LabelAssem("_Imain_paai"));
@@ -225,11 +231,7 @@ public class IntegrationTests {
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
-			
-			String assemPathStr = "src/test/resources/runtime/release";
-
-			FileUtils.diagPath = Paths.get(assemPathStr);
-			FileUtils.assemPath = Paths.get(assemPathStr);
+						
 			FileUtils.writeToFile("unitTest.ir", irRoot); 
 			
 			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
@@ -271,13 +273,11 @@ public class IntegrationTests {
 		try {
 			assems.forEach(System.out::println);
 			Path pwd = Paths.get(System.getProperty("user.dir"));			
-		
-			String assemPathStr = "src/test/resources/runtime/release";
-			
+					
 			FileUtils.writeAssemToFile("unitTest.xi", assems);
 			
 			// Run linkxi.sh to generate executable
-			ProcessBuilder link = getProcessBuilder(assemPathStr + "/linkxi.sh", assemPathStr + "/unitTest.s"); 
+			ProcessBuilder link = getProcessBuilder(ASSEM_PATH + "/linkxi.sh", ASSEM_PATH + "/unitTest.s"); 
 			Process linkProc = link.start();
 					
 			linkProc.waitFor();
@@ -309,7 +309,7 @@ public class IntegrationTests {
 			runProc.waitFor();
 			
 			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
-			Files.delete(pwd.resolve("a.out"));
+			//Files.delete(pwd.resolve("a.out"));
 			
 			assertEquals(expected, assemOutput);
 		} catch (IOException | InterruptedException e) {
@@ -338,18 +338,19 @@ public class IntegrationTests {
 	private void generateAndAssertError(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
-			
+		
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			
 			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot, baos);
 			simulator.call("_Imain_paai", 0);
 				
 			fail("No error thrown");
+		} catch (Trap e) {
+			assertEquals(expected, e.getMessage());
+			
 		} catch (FileNotFoundException | SemanticException e) {
 			e.printStackTrace();
 			fail();
-		} catch (Trap e) {
-			assertEquals(expected, e.getMessage());
 		}
 	}
 
