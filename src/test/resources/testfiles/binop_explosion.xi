@@ -8,6 +8,7 @@ main(args : int[][]){
 	x:int = 5;
 	y:int = 3;
 	z:int = 20;
+	neg:int = -2;
 	
 	arr:int[] = {0, 1, 2}
 	
@@ -49,6 +50,13 @@ main(args : int[][]){
 	print(unparseInt(z % -6)); // 2
 	print(unparseInt(z / -5)); // -4
 	print(unparseInt(-20 / z)); // -1
+	print(unparseInt(-20 / -5)); // 4
+	print(unparseInt(neg * neg * neg)); // -8
+	print(unparseInt(-20 % 3)); // -2
+	
+	print(unparseInt(z + 5000000000)); //5000000020
+	print(unparseInt(2 * 5000000000 + 1000000000))
+	
 	
 }
 

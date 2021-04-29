@@ -202,7 +202,8 @@ public class IntegrationTests {
 	
 	@Test
 	void testBinOpExplosion() {
-		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-846022305212-4-1");
+		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-846022305212-4-14-8-2"
+				+ "500000002011000000000");
 	}
 	
 	@Test
@@ -223,6 +224,11 @@ public class IntegrationTests {
 	@Test
 	void testHighMult() {
 		generateAndAssertOutput("high_mult.xi", "0-104391018798566292957");
+	}
+	
+	@Test
+	void testRecRetSpace() {
+		generateAndAssertOutput("rec_retspace.xi", "c1: 4\nc2: 8\nc3: 12\nc4: 16\n");
 	}
 	
 	private void generateAndAssertOutput(String filename) {
