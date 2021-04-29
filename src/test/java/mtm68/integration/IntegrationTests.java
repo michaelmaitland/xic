@@ -210,6 +210,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("many_args.xi", "36\n20\n");
 	}
 	
+	@Test
+	void testInteresting() {
+		generateAndAssertOutput("interesting.xi", "15\n");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
