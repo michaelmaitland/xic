@@ -231,6 +231,14 @@ public class IntegrationTests {
 		generateAndAssertOutput("rec_retspace.xi", "c1: 4\nc2: 8\nc3: 12\nc4: 16\n");
 	}
 	
+	// Must be run manually to have meaning
+	@Test
+	void testReadFromMain() throws FileNotFoundException, SemanticException {
+		IRNode root = generateIRFromFile("read_from_mainargs.xi");
+		
+		runAndAssertAssem(generateAssem(root), "");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
