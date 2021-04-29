@@ -1,15 +1,8 @@
 package mtm68.assem;
 
-import static mtm68.ir.IRTestUtils.cjump;
-import static mtm68.ir.IRTestUtils.constant;
-import static mtm68.ir.IRTestUtils.jump;
-import static mtm68.ir.IRTestUtils.mem;
-import static mtm68.ir.IRTestUtils.move;
-import static mtm68.ir.IRTestUtils.op;
-import static mtm68.ir.IRTestUtils.ret;
-import static mtm68.ir.IRTestUtils.temp;
-import static mtm68.util.ArrayUtils.elems;
-import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
+import static mtm68.ir.IRTestUtils.*;
+import static mtm68.util.ArrayUtils.*;
+import static mtm68.util.TestUtils.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -111,6 +104,21 @@ public class TileTests {
 	void tileMul() {
 		IRNode mul = op(OpType.MUL, temp("t1"), constant(2L));
 		tile(mul);
+	}
+	
+	@Test
+	void tileBetterMem() {
+		tile(move(temp("t"), mem(constant(-3L))));
+		tile(move(temp("t"), mem(temp("t1"))));
+		tile(move(temp("t"), mem(op(OpType.MUL, temp("t1"), constant(4L)))));
+		tile(move(temp("t"), mem(op(OpType.MUL, temp("t1"), constant(5L)))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), constant(LARGE_INT)))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), constant(3L)))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), constant(-3L)))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), temp("t2")))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), op(OpType.ADD, temp("t2"), constant(-10L))))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), op(OpType.MUL, temp("t2"), constant(2L))))));
+		tile(move(temp("t"), mem(op(OpType.ADD, temp("t1"), op(OpType.ADD, constant(-5L), op(OpType.MUL, temp("t2"), constant(2L)))))));
 	}
 
 	@Test
@@ -348,6 +356,18 @@ public class TileTests {
 		IRFuncDefn func = new IRFuncDefn("f", body, 0);
 		
 		FuncDefnAssem tiled = assertInstanceOfAndReturn(FuncDefnAssem.class, tile(func));
+	}
+	
+	@Test
+	void tileBinOp() {
+		IRNode node = op(OpType.SUB, temp("t4"), temp("t5"));
+		tile(node);
+		
+		node = op(OpType.SUB, temp("t4"), constant(1L));
+		tile(node);
+		
+		node = op(OpType.SUB, temp("t4"), mem(op(OpType.ADD, temp("t1"), temp("t2"))));
+		tile(node);
 	}
 
 	private Assem tile(IRNode node, int numArgs) {

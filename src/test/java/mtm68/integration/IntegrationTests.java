@@ -22,7 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
@@ -62,12 +64,13 @@ import mtm68.visit.TypeChecker;
 public class IntegrationTests {
 	private static final OSType OS = OSType.getOSType(System.getProperty("os.name").toLowerCase());
 	private static final int BUFFER_SIZE = 1024;
+	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
-//	@Test
-//	void testBasic() {
-//		Assem assem = new SeqAssem(new LabelAssem("_Imain_paai"));
-//		runAndAssertAssem(assem, "Hello world!");
-//	}
+	@BeforeEach
+	void setUpFileUtils() {
+		FileUtils.diagPath = Paths.get(ASSEM_PATH);
+		FileUtils.assemPath = Paths.get(ASSEM_PATH);
+	}
 	
 	@Test
 	void testSimplePrint() {
@@ -130,7 +133,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testMultiReturn() {
-		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\n");
+		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\n28\n");
 	}
 	
 	@Test
@@ -184,24 +187,63 @@ public class IntegrationTests {
 	
 	@Test
 	void testPrintIfVarZero() {
-		generateAndAssertOutput("print_if_zero.xi", "true\nfalse");
+		generateAndAssertOutput("print_if_zero.xi", "true\n");
+	}
+	
+	@Test
+	void testBinary06() {
+		generateAndAssertOutput("binary06.xi");
+	}
+	
+	@Test
+	void testBinary12() {
+		generateAndAssertOutput("binary12.xi");
+	}
+	
+	@Test
+	void testBinOpExplosion() {
+		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-84602230521");
+	}
+	
+	@Test
+	void testManyArgs() {
+		generateAndAssertOutput("many_args.xi", "36\n20\n");
+	}
+	
+	@Test
+	void testInteresting() {
+		generateAndAssertOutput("interesting.xi", "15\n");
+	}
+	
+	private void generateAndAssertOutput(String filename) {
+		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
+		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
+		
+		StringBuilder expected = new StringBuilder();
+		 
+        try (Stream<String> stream = Files.lines(resultFile)) 
+        {
+            stream.forEach(s -> expected.append(s).append("\n"));
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        generateAndAssertOutput(filename, expected.toString());
 	}
 	
 	private void generateAndAssertOutput(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
-			
-			String assemPathStr = "src/test/resources/runtime/release";
-
-			FileUtils.diagPath = Paths.get(assemPathStr);
-			FileUtils.assemPath = Paths.get(assemPathStr);
+						
 			FileUtils.writeToFile("unitTest.ir", irRoot); 
 			
 			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
 			irRoot.printSExp(codeWriter);
 			codeWriter.flush();
 		
-//			assertIRSimulatorOutput(irRoot, expected);
+			assertIRSimulatorOutput(irRoot, expected);
 			
 			List<Assem> assem = generateAssem(irRoot);
 			runAndAssertAssem(assem, expected);
@@ -236,13 +278,11 @@ public class IntegrationTests {
 		try {
 			assems.forEach(System.out::println);
 			Path pwd = Paths.get(System.getProperty("user.dir"));			
-		
-			String assemPathStr = "src/test/resources/runtime/release";
-			
+					
 			FileUtils.writeAssemToFile("unitTest.xi", assems);
 			
 			// Run linkxi.sh to generate executable
-			ProcessBuilder link = getProcessBuilder(assemPathStr + "/linkxi.sh", assemPathStr + "/unitTest.s"); 
+			ProcessBuilder link = getProcessBuilder(ASSEM_PATH + "/linkxi.sh", ASSEM_PATH + "/unitTest.s"); 
 			Process linkProc = link.start();
 					
 			linkProc.waitFor();
@@ -273,8 +313,8 @@ public class IntegrationTests {
 			
 			runProc.waitFor();
 			
-			Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
-			Files.delete(pwd.resolve("a.out"));
+			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
+			//Files.delete(pwd.resolve("a.out"));
 			
 			assertEquals(expected, assemOutput);
 		} catch (IOException | InterruptedException e) {
@@ -303,18 +343,19 @@ public class IntegrationTests {
 	private void generateAndAssertError(String filename, String expected){
 		try {
 			IRNode irRoot = generateIRFromFile(filename);
-			
+		
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			
 			IRSimulator simulator = new IRSimulator((IRCompUnit) irRoot, baos);
 			simulator.call("_Imain_paai", 0);
 				
 			fail("No error thrown");
+		} catch (Trap e) {
+			assertEquals(expected, e.getMessage());
+			
 		} catch (FileNotFoundException | SemanticException e) {
 			e.printStackTrace();
 			fail();
-		} catch (Trap e) {
-			assertEquals(expected, e.getMessage());
 		}
 	}
 

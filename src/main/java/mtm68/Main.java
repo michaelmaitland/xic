@@ -27,7 +27,11 @@ import edu.cornell.cs.cs4120.ir.interpret.IRSimulator;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
+import mtm68.assem.Assem;
+import mtm68.assem.CompUnitAssem;
+import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
@@ -55,16 +59,16 @@ public class Main {
 	private boolean help = false;
 
 	@Option(name = "--lex", usage = "saves lexed tokens from source file to <filename>.lexed")
-	private boolean outputLex;
+	private boolean outputLex = false;
 	
 	@Option(name = "--parse", usage = "saves AST generated from source file to <filename>.parsed")
-	private boolean outputParse;
+	private boolean outputParse = false;
 	
 	@Option(name = "--typecheck", usage = "saves result of typechecking AST generated from source file to <filename>.typed")
-	private boolean outputTypeCheck;
+	private boolean outputTypeCheck = false;
 	
 	@Option(name = "--irgen", usage = "saves IR representation of AST generated from source file to <filename>.ir")
-	private boolean outputIR;
+	private boolean outputIR = false;
 	
 	@Option(name = "--irrun", usage = "generates and interprets IR code")
 	private boolean interpretIR;
@@ -76,13 +80,19 @@ public class Main {
 	private Path sourcePath = Paths.get(System.getProperty("user.dir"));
 
 	@Option(name = "-D", usage = "specify location for generated diagnostic files")
-	private Path dPath = Paths.get(System.getProperty("user.dir"));
+	private Path diagPath = Paths.get(System.getProperty("user.dir"));
+	
+	@Option(name = "-d", usage = "specify location for generated assem files")
+	private Path assemPath = Paths.get(System.getProperty("user.dir"));
 	
 	@Option(name = "-libpath", usage = "specify path to library interface files")
 	private Path libPath = Paths.get(System.getProperty("user.dir"));
 	
 	@Option(name = "-O", usage = "disable optimizations")
 	private boolean doNotOptimize;
+	
+	@Option(name = "-target", usage = "specify the OS for which to generate code")
+	private String osTarget;
 
 	@Argument
 	private List<String> sourceFiles = new ArrayList<>();
@@ -112,7 +122,8 @@ public class Main {
 			System.out.println(e.getMessage());
 		}
 		
-		FileUtils.diagPath = dPath;
+		FileUtils.diagPath = diagPath;
+		FileUtils.assemPath = assemPath;
 		Debug.DEBUG_ON = debug;
 
 		if (help || sourceFiles.isEmpty())
@@ -168,9 +179,21 @@ public class Main {
 				simulator.call("_Imain_paai", 0);
 				System.out.println("\n=========================================");
 			}
+			
+			List<Assem> assems = generateAssemFromIr(irRoot);
+			FileUtils.writeAssemToFile(programName, assems); 
 		}
 	}
 	
+	private List<Assem> generateAssemFromIr(IRNode irRoot) {
+		Tiler tiler = new Tiler(new IRNodeFactory_c());
+		IRNode tiled = tiler.visit(irRoot);
+				
+		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+		
+		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+	}
+
 	private boolean shouldOptimize() {
 		return !doNotOptimize;
 	}
@@ -234,7 +257,7 @@ public class Main {
 					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 
 					if(!typeChecker.hasError()) {
-						FileUtils.writeTypeCheckToFile(filename);
+						if(outputTypeCheck) FileUtils.writeTypeCheckToFile(filename);
 						validPrograms.put(filename, (Program)root);
 					} else {
 						writeErrorToFile(filename, typeChecker.getFirstError());
@@ -260,13 +283,17 @@ public class Main {
 		List<String> outfiles = new ArrayList<>();
 		if(outputTypeCheck) outfiles.add(".typed");
 		if(outputIR) outfiles.add(".ir");
+		outfiles.add(".s");
 		
 		outfiles = outfiles.stream()
 			.map(ext -> filename.replaceFirst("\\.(xi|ixi)", ext))
 			.collect(Collectors.toList());
 
 		for(String outfile : outfiles) {
-			Path outpath = dPath.resolve(outfile);
+			Path outpath = diagPath.resolve(outfile);
+			
+			if(outfile.endsWith(".s")) outpath = assemPath.resolve(outfile);
+			
 			String msg = error.getFileErrorMessage();
 			BufferedWriter writer;
 			try {
@@ -275,9 +302,11 @@ public class Main {
 				writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.out.println("Failed writing error to " + dPath.resolve(outfile) + " for " + filename);
+				System.out.println("Failed writing error to " + outpath + " for " + filename);
 			} 
 		}
+		
+		
 	}
 
 	/**

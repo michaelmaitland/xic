@@ -704,4 +704,26 @@ public class NodeToIRNodeConverter extends Visitor {
 		
 		return inf.IRSeq(stmts);
 	}
+	
+	public IRESeq convertNonCtrlFlowBoolean(Expr condition) {
+		String trueLabel = getFreshLabel();
+		String falseLabel = getFreshLabel();
+		String afterElse = getFreshLabel();
+		IRTemp resultTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
+		
+		List<IRStmt> stmts = ArrayUtils.elems(
+					getCtrlFlow(condition, trueLabel, falseLabel),
+					inf.IRLabel(trueLabel),
+					inf.IRMove(resultTemp, inf.IRConst(1L)),
+					inf.IRJump(inf.IRName(afterElse)),
+					inf.IRLabel(falseLabel),
+					inf.IRMove(resultTemp, inf.IRConst(0L))
+				);
+		
+		
+		stmts.add(inf.IRLabel(afterElse));
+		IRSeq seq = inf.IRSeq(stmts);
+		
+		return inf.IRESeq(seq, resultTemp);
+	}
 }

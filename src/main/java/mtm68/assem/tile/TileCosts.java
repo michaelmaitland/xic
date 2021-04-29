@@ -10,5 +10,7 @@ public class TileCosts {
 	public static final float DIV_COST = 1.0f;
 	public static final float MUL_COST = 1.0f;
 	public static final float CDQ_COST = 1.0f;
+	public static final float COMPARE_COST = 1.0f;
+	public static final float JUMP_COST = 1.0f;
 
 }

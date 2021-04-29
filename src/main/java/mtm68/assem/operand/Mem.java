@@ -5,9 +5,10 @@ import java.util.List;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.assem.HasReplaceableRegs;
 import mtm68.assem.ReplaceableReg;
+import mtm68.assem.pattern.PatternMatch;
 import mtm68.util.ArrayUtils;
 
-public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs {
+public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs, PatternMatch {
 	private Reg base;
 	private Reg index;
 	private int scale;
@@ -26,15 +27,15 @@ public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs {
 
 		this.base = base;
 		this.index = index;
-		this.scale = (int)scale.getValue();
-		this.disp = (int)disp.getValue();
+		this.scale = scale == null ? 0 : (int)scale.getValue();
+		this.disp = disp == null ? 0 : (int)disp.getValue();
 	}
 
 	public Mem(Reg base, Imm disp) {
 		assert32Bit(disp);
 
 		this.base = base;
-		this.disp = (int)disp.getValue();
+		this.disp = disp == null ? 0 : (int)disp.getValue();
 	}
 
 	public Mem(Reg base, Reg index, int scale) {
@@ -48,7 +49,7 @@ public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs {
 
 		this.base = base;
 		this.index = index;
-		this.scale = (int)scale.getValue();
+		this.scale = scale == null ? 0 : (int)scale.getValue();
 	}
 
 	public Mem(Reg base, Reg index) {
@@ -98,10 +99,12 @@ public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs {
 	}
 
 	private void assert32Bit(Imm imm) {
-		if(!imm.is32Bit()) throw new InternalCompilerError("Immediates in mem operand must be 32-bit");
+		if(imm != null && !imm.is32Bit()) throw new InternalCompilerError("Immediates in mem operand must be 32-bit");
 	}
 
 	private void assertValidScale(Imm imm) {
+		if(imm == null) return;
+
 		long value = imm.getValue();
 		boolean valid = value == 1L || value == 2L || value == 4L || value == 8L;
 		if(!valid) throw new InternalCompilerError("Scale must be either 1, 2, 4, or 8. Got: " + value);
@@ -111,15 +114,26 @@ public class Mem extends AssemOp implements Acc, Src, Dest, HasReplaceableRegs {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
-		sb.append(base);
+		if(base != null) sb.append(base);
 		
 		if(index != null) {
-			sb.append(" + ");
+			if(sb.length() > 1) sb.append(" + ");
 			if(scale != 0) sb.append(scale + " * ");
 			sb.append(index);
 		}
 		
-		if(disp != 0) sb.append(" + " + disp);
+		if(disp != 0) {
+			int posDisp = Math.max(disp, -disp);
+			if(sb.length() > 1) {
+				char sign = disp < 0 ? '-' : '+';
+				sb.append(' ');
+				sb.append(sign);
+				sb.append(' ');
+				sb.append(posDisp);
+			} else {
+				sb.append(disp);
+			}
+		}
 		
 		sb.append("]");
 		

@@ -74,7 +74,7 @@ public class IRTestUtils {
 	}
 
 	public static IRCallStmt call(String name, int numRets) {
-		return call(name, numRets);
+		return new IRCallStmt(new IRName(name), numRets);
 	}
 
 	public static IRCallStmt call(String name, int numRets, IRExpr...args) {

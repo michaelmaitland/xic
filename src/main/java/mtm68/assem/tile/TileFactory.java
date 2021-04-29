@@ -32,6 +32,7 @@ import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 import mtm68.assem.pattern.Pattern;
 import mtm68.assem.pattern.PatternResults;
+import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 
 public class TileFactory {
@@ -55,27 +56,14 @@ public class TileFactory {
 	// Mem
 	//--------------------------------------------------------------------------------
 	
-	public static Tile memAddTile() {
-		Pattern pattern = mem(add(var("t"), smallConstant("c")));
-		
-		return new Tile(pattern, MOVE_COST) {
-			@Override
-			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t = results.get("t", Reg.class);
-				Imm c = results.get("c", Imm.class);
-				return new MoveAssem(resultReg, new Mem(t, c));
-			}
-		};
-	}
-
 	public static Tile memBasic() {
-		Pattern pattern = mem(var("t"));
+		Pattern pattern = mem("t");
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t = results.get("t", Reg.class);
-				return new MoveAssem(resultReg, new Mem(t));
+				Mem t = results.get("t", Mem.class);
+				return new MoveAssem(resultReg, t);
 			}
 		};
 	}
@@ -111,57 +99,40 @@ public class TileFactory {
 	}
 	
 	public static Tile moveConstIntoMem() {
-		Pattern pattern = move(mem(var("t")), anyConstant("c"));
+		Pattern pattern = move(mem("m"), anyConstant("c"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t = results.get("t", Reg.class);
+				Mem m = results.get("m", Mem.class);
 				Imm c = results.get("c", Imm.class);
-				return new MoveAssem(new Mem(t), c);
+				return new MoveAssem(m, c);
 			}
 		};
 	}
 
 	public static Tile moveFromMem() {
-		Pattern pattern = move(temp("t1"), mem(var("t2")));
+		Pattern pattern = move(temp("t1"), mem("m"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
-				Reg t2 = results.get("t2", Reg.class);
-				return new MoveAssem(t1, new Mem(t2));
+				Mem m = results.get("m", Mem.class);
+				return new MoveAssem(t1, m);
 			}
 		};
 	}
 	
 	public static Tile moveIntoMem() {
-		Pattern pattern = move(mem(var("t1")), var("t2"));
+		Pattern pattern = move(mem("m"), var("t"));
 		
 		return new Tile(pattern, MOVE_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t1 = results.get("t1", Reg.class);
-				Reg t2 = results.get("t2", Reg.class);
-				return new MoveAssem(new Mem(t1), t2);
-			}
-		};
-	}
-	
-	public static Tile moveMemBaseAndIndex() {
-		Pattern pattern = move(
-				mem(add(var("t1"), mul(index("i"), var("t2")))), anyConstant("c"));
-		
-		return new Tile(pattern, MOVE_COST) {
-			@Override
-			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
-				Reg t1 = results.get("t1", Reg.class);
-				Reg t2 = results.get("t2", Reg.class);
-				Imm i = results.get("i", Imm.class);
-				Imm c = results.get("c", Imm.class);
-
-				return new MoveAssem(new Mem(t1, t2, i), c);
+				Mem m = results.get("m", Mem.class);
+				Reg t = results.get("t", Reg.class);
+				return new MoveAssem(m, t);
 			}
 		};
 	}
@@ -209,8 +180,7 @@ public class TileFactory {
 	public static Tile cjumpBasic() {
 		Pattern pattern = cjump(var("t")); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t = results.get("t", Reg.class);
@@ -226,8 +196,7 @@ public class TileFactory {
 	public static Tile cjumpLessThan() {
 		Pattern pattern = cjump(op(OpType.LT, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -244,8 +213,7 @@ public class TileFactory {
 	public static Tile cjumpLessThanEqual() {
 		Pattern pattern = cjump(op(OpType.LEQ, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -262,8 +230,7 @@ public class TileFactory {
 	public static Tile cjumpNotEqual() {
 		Pattern pattern = cjump(op(OpType.NEQ, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -280,8 +247,7 @@ public class TileFactory {
 	public static Tile cjumpGreaterThan() {
 		Pattern pattern = cjump(op(OpType.GT, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -298,8 +264,7 @@ public class TileFactory {
 	public static Tile cjumpGreaterThanEqual() {
 		Pattern pattern = cjump(op(OpType.GEQ, var("t1"), var("t2"))); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -316,8 +281,7 @@ public class TileFactory {
 	public static Tile cjumpIfZero() {
 		Pattern pattern = cjump(op(OpType.XOR, var("t1"), specificConstant("c", 1) )); 
 		
-		// TODO: Assign cost properly
-		return new Tile(pattern, 1.0f) {
+		return new Tile(pattern, COMPARE_COST + JUMP_COST) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -400,14 +364,13 @@ public class TileFactory {
 		};
 	}
 
-	public static Tile binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor) {
+	public static List<Tile> binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor) {
 		return binopBasic(opType, assemConstructor, BINOP_COST); 
 	}
 	
-	public static Tile binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor, float assemCost) {
-		Pattern pattern = op(opType, var("t1"), var("t2"));
-		
-		return new Tile(pattern, MOVE_COST + assemCost) {
+	public static List<Tile> binopBasic(OpType opType, BiFunction<Dest, Src, Assem> assemConstructor, float assemCost) {
+		Pattern regRegPattern = op(opType, var("t1"), var("t2"));
+		Tile regRegTile = new Tile(regRegPattern, MOVE_COST + assemCost) {
 			@Override
 			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
 				Reg t1 = results.get("t1", Reg.class);
@@ -418,6 +381,32 @@ public class TileFactory {
 						);
 			}
 		};
+		
+		Pattern regConstPattern = op(opType, var("t1"), anyConstant("c"));
+		Tile regConstTile = new Tile(regConstPattern, MOVE_COST + assemCost) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Imm c = results.get("c", Imm.class);
+				return new SeqAssem(
+						new MoveAssem(resultReg, t1),
+						assemConstructor.apply(resultReg, c));
+			}
+		};
+		
+		Pattern regMemPattern = op(opType, var("t1"), mem("m"));
+		Tile regMemTile = new Tile(regMemPattern, assemCost) {
+			@Override
+			public Assem getTiledAssem(Reg resultReg, PatternResults results) {
+				Reg t1 = results.get("t1", Reg.class);
+				Mem m = results.get("m", Mem.class);
+				return new SeqAssem(
+						new MoveAssem(resultReg, t1),
+						assemConstructor.apply(resultReg, m));
+			}
+		};
+		
+		return ArrayUtils.elems(regRegTile, regConstTile, regMemTile);
 	}
 
 	public static Tile binopCompareBasic(OpType opType, CC cc) {
