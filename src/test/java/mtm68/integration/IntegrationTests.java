@@ -71,11 +71,6 @@ public class IntegrationTests {
 		FileUtils.diagPath = Paths.get(ASSEM_PATH);
 		FileUtils.assemPath = Paths.get(ASSEM_PATH);
 	}
-//	@Test
-//	void testBasic() {
-//		Assem assem = new SeqAssem(new LabelAssem("_Imain_paai"));
-//		runAndAssertAssem(assem, "Hello world!");
-//	}
 	
 	@Test
 	void testSimplePrint() {
