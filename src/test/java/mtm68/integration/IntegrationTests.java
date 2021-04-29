@@ -138,7 +138,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testMultiReturn() {
-		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\n");
+		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\n28\n");
 	}
 	
 	@Test
@@ -208,6 +208,11 @@ public class IntegrationTests {
 	@Test
 	void testBinOpExplosion() {
 		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-84602230521");
+	}
+	
+	@Test
+	void testManyArgs() {
+		generateAndAssertOutput("many_args.xi", "36\n20\n");
 	}
 	
 	private void generateAndAssertOutput(String filename) {
