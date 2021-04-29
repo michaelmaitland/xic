@@ -220,6 +220,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("boolean_ops.xi", "101001010111000111000110001110");
 	}
 	
+	@Test
+	void testHighMult() {
+		generateAndAssertOutput("high_mult.xi", "0-104391018798566292957");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
