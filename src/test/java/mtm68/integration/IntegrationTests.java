@@ -199,6 +199,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("binary12.xi");
 	}
 	
+	@Test
+	void testBinOpExplosion() {
+		generateAndAssertOutput("binop_explosion.xi", "1100100101110182-12-84602230521");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
@@ -303,7 +308,7 @@ public class IntegrationTests {
 			
 			runProc.waitFor();
 			
-			Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
+			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
 			Files.delete(pwd.resolve("a.out"));
 			
 			assertEquals(expected, assemOutput);
