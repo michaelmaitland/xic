@@ -215,6 +215,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("interesting.xi", "15\n");
 	}
 	
+	@Test
+	void testBooleanOps() {
+		generateAndAssertOutput("boolean_ops.xi", "101001010111000111000110001110");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
