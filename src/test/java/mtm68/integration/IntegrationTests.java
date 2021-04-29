@@ -230,7 +230,7 @@ public class IntegrationTests {
 	void testRecRetSpace() {
 		generateAndAssertOutput("rec_retspace.xi", "c1: 4\nc2: 8\nc3: 12\nc4: 16\n");
 	}
-	
+	 
 	// Must be run manually to have meaning
 	@Test
 	void testReadFromMain() throws FileNotFoundException, SemanticException {

@@ -128,6 +128,12 @@ public class Main {
 
 		if (help || sourceFiles.isEmpty())
 			printHelpScreen(cmdParser);
+		
+		if(!osTarget.equals("linux")) {
+			System.out.println(osTarget + " is not supported as an OS target."
+					+ "\nThe following targets are supported: linux");
+			return;
+		}
 
 		SymbolTableManager symTableManager = new SymbolTableManager(libPath);
 		
