@@ -239,6 +239,11 @@ public class IntegrationTests {
 		runAndAssertAssem(generateAssem(root), "");
 	}
 	
+	@Test
+	void testCountIslands() {
+		generateAndAssertOutput("count_islands.xi", "Number of islands: 5\n");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
