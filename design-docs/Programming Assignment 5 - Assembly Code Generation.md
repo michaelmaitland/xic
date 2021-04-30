@@ -18,7 +18,7 @@ In this assignment we implemented tiling and register allocation. In accomplishi
 ## Specification
 
 The following are choices we made regarding specification:
-
+- For the -target command line option, if any option other than "linux" is provided, we terminite with exit code 0 and report the valid target option. This means that no compilation or writing to files is done if -target doesn't equal "linux".
 
 ## Design and Implementation 
 
