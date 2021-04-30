@@ -10,6 +10,12 @@ import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
 
+/**
+ * Represents an object that can have its registers replaced with real registers
+ * during register allocation. 
+ * 
+ * @author Scott
+ */
 public class ReplaceableReg {
 	
 	private String name;
