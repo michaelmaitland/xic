@@ -7,6 +7,11 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
+/**
+ * Pattern for IRBinop
+ * 
+ * @author Scott
+ */
 public class BinopPattern implements Pattern {
 	
 	private OpType opType;

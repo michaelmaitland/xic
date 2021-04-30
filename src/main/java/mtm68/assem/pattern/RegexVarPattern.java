@@ -5,6 +5,11 @@ import java.util.regex.Pattern;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 
+/**
+ * Pattern for IRTemp's with names that match the given regular expression.
+ * 
+ * @author Scott
+ */
 public class RegexVarPattern extends MatchablePattern {
 	
 	private String regex;

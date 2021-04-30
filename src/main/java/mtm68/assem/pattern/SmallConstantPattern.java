@@ -1,5 +1,10 @@
 package mtm68.assem.pattern;
 
+/**
+ * Pattern for matching any 32-bit constant
+ * 
+ * @author Scott
+ */
 public class SmallConstantPattern extends ConstantPattern {
 
 	public SmallConstantPattern(String name) {

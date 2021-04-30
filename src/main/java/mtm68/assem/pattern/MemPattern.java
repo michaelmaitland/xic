@@ -11,6 +11,12 @@ import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import mtm68.util.ArrayUtils;
 
+/**
+ * Pattern for IRMem. Tries tiling using all advanced addressing
+ * modes provided by the x86-64 architecture.
+ * 
+ * @author Scott
+ */
 public class MemPattern implements Pattern {
 	
 	private String name;

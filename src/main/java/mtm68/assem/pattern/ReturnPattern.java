@@ -7,6 +7,11 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRReturn;
 
+/**
+ * Pattern for IRReturn
+ * 
+ * @author Scott
+ */
 public class ReturnPattern implements Pattern{
 	
 	private List<IRExpr> rets;

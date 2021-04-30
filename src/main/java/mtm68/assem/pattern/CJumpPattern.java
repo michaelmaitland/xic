@@ -6,6 +6,12 @@ import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
+/**
+ * Pattern for IRCjump
+ * 
+ * @author Scott
+ *
+ */
 public class CJumpPattern implements Pattern {
 
 	private Pattern conditionPattern;

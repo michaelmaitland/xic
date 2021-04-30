@@ -35,6 +35,11 @@ import mtm68.assem.pattern.PatternResults;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 
+/**
+ * Factory class for constructing tiles.
+ * 
+ * @author Scott
+ */
 public class TileFactory {
 	
 	//--------------------------------------------------------------------------------
