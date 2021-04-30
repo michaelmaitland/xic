@@ -89,7 +89,6 @@ The key classes and packages we created or updated for this assignment are the f
         - PatternMatcher + tests
         - TrivialRegisterAllocator
         
-    **[Insert here anything else you did]**
  - We used our previous code for lexing, parsing, and typechecking. Fortunately, we have been on top of correcting our errors after each assignment so there were very few changes that needed to be made to this code.
  
 ## Testing
