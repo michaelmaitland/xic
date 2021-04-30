@@ -1,5 +1,10 @@
 package mtm68.util;
 
+/**
+ * For static final constant values. 
+ * 
+ * @author Scott
+ */
 public class Constants {
 	
 	public static final int WORD_SIZE = 8;
