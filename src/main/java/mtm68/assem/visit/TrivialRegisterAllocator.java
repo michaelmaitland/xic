@@ -73,13 +73,6 @@ public class TrivialRegisterAllocator {
 			size++;
 		}
 		
-		System.out.println("RegStackLocs\n==============");
-		
-		regToStackLocs.entrySet().stream()
-			.map(e -> e.getKey() + ": " + e.getValue())
-			.forEach(System.out::println);
-		
-		System.out.println();
 		return regToStackLocs;
 	}
 

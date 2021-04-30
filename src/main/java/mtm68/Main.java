@@ -92,7 +92,7 @@ public class Main {
 	private boolean doNotOptimize;
 	
 	@Option(name = "-target", usage = "specify the OS for which to generate code")
-	private String osTarget;
+	private String osTarget = "linux";
 
 	@Argument
 	private List<String> sourceFiles = new ArrayList<>();
