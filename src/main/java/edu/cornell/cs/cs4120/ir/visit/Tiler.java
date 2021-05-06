@@ -24,7 +24,7 @@ import mtm68.assem.SeqAssem;
 import mtm68.assem.op.AddAssem;
 import mtm68.assem.op.LeaAssem;
 import mtm68.assem.op.SubAssem;
-import mtm68.assem.operand.AbstractReg;
+import mtm68.assem.operand.FreshRegGenerator;
 import mtm68.assem.operand.Imm;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
@@ -34,8 +34,12 @@ import mtm68.assem.operand.Src;
 import mtm68.assem.tile.TileCosts;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
-import mtm68.util.FreshTempGenerator;
 
+/**
+ * IRVisitor that performs tiling using the optimal tiling algorithm.
+ * 
+ * @author Scott
+ */
 public class Tiler extends IRVisitor {
 
 	private boolean afterCallStmt;
@@ -138,10 +142,6 @@ public class Tiler extends IRVisitor {
 		return tiled;
 	}
 
-	public Reg getFreshAbstractReg() {
-		return new AbstractReg(FreshTempGenerator.getFreshTemp());
-	}
-
 	public IRNode tileCallStmt(IRCallStmt stmt) {
 		List<Assem> assems = empty();
 
@@ -158,7 +158,7 @@ public class Tiler extends IRVisitor {
 		}
 
 		// Push ret space pointer
-		Reg reg = getFreshAbstractReg();
+		Reg reg = FreshRegGenerator.getFreshAbstractReg();
 		assems.add(new LeaAssem(reg, new Mem(RealReg.RSP, retSpaceSize - Constants.WORD_SIZE)));
 		assems.add(new PushAssem(reg));
 		
@@ -216,6 +216,14 @@ public class Tiler extends IRVisitor {
 		this.retSpaceOff = retSpaceOff;
 	}
 
+	/**
+	 * Get assembly instructions used as the prologue of a function.
+	 * 
+	 * @param name
+	 * @param numArgs
+	 * @param l
+	 * @return
+	 */
 	public SeqAssem getPrologue(String name, int numArgs, int l) {
 		// In our stack frame we include a ret space pointer which isn't included
 		// when our main function is called. For alignment reasons, we have to treat
@@ -234,14 +242,18 @@ public class Tiler extends IRVisitor {
 				new PushAssem(RealReg.RBP),
 				new MoveAssem(RealReg.RBP, RealReg.RSP),
 				new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l))
-				);
+			);
 	}
 
+	/**
+	 * Get assembly instructions corresponding to the epilogue of a function.
+	 * @return
+	 */
 	public SeqAssem getEpilogue() {
 		return new SeqAssem(
 				new MoveAssem(RealReg.RSP, RealReg.RBP),
 				new PopAssem(RealReg.RBP),
 				new RetAssem()
-				);
+			);
 	}
 }

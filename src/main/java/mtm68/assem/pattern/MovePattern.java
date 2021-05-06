@@ -6,6 +6,11 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
+/**
+ * Pattern for IRMove.
+ * 
+ * @author Scott
+ */
 public class MovePattern implements Pattern {
 	
 	private Pattern destPattern;

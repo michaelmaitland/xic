@@ -3,6 +3,11 @@ package mtm68.assem.pattern;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
+/**
+ * Pattern for any IRExpr  
+ * 
+ * @author Scott
+ */
 public class VarPattern extends MatchablePattern {
 	
 	public VarPattern(String name) {

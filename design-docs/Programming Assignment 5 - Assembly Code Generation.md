@@ -18,7 +18,7 @@ In this assignment we implemented tiling and register allocation. In accomplishi
 ## Specification
 
 The following are choices we made regarding specification:
-
+- For the -target command line option, if any option other than "linux" is provided, we terminite with exit code 0 and report the valid target option. This means that no compilation or writing to files is done if -target doesn't equal "linux".
 
 ## Design and Implementation 
 
@@ -43,7 +43,18 @@ The key classes and packages we created or updated for this assignment are the f
 - mtm68.assem.visit.AssemToFileBuilder
     - This class converts a list of assembly to a text file containing the textual representation of the assembly so it can be linked against and executed.
 
-   **[INSERT PATTERN STUFF HERE]** 
+- mtm68.assem.pattern.Pattern
+    - This interface is the base from which we do our tiling. Patterns provide a declarative to specify tiles. In our tiling algorithm, we use pattern to determine if a specific tile will work on a subtree of the IR tree. Patterns can match things such as: 32-bit constants, any subtree, temps whose names match a specified regex, commutative binary operations, etc. Convenient constructors for each pattern class are provided in the Patterns factory class to be used by the TileFactory to construct tiles.  
+
+- mtm68.assem.tile.Tile
+    - This abstract class is used to specify a valid tile used in tiling. A tile is composed of three pieces: 
+        1. A pattern that's used to determine if the tile is valid on a given subtree.
+        2. A cost which is used to determine how expensive the tile is. 
+        3. A method for constructing the actual assembly code given the matched sub-expressions.  
+    - Tiles are created in the TileFactory and are returned in a list by each IRNode to be used by the Tiler to do optimal tiling.
+
+- mtm68.assem.tile.TileFactory
+    - This factory class is used to construct tiles. It uses the Patterns factory to construct declarative patterns and then produces tiles using the patterns and assigns each tile a cost.
 
 ### Code Design ###
 
@@ -53,8 +64,8 @@ The key classes and packages we created or updated for this assignment are the f
 
 - With respect to the actual conversion of abstract assembly to real assembly, we first tried to take an object oriented approach to replacing the registers by having each assembly instruction report out which abstract registers they used and then this class would report back to each instruction which registers to replace. We had trouble with this approach and opted for a more functional approach where each instruction would provide the function to set its registers and the allocator would set the registers as it wished. This second approach gave us much more flexibility and resulted in a more robust and simple solution.
 
+- For tiling, we wanted to have a robust and extendable system. To achieve this, we opted for a declarative approach to tiling. Each IRNode reports a list of Tiles that can be used to tile it. Each tile includes a pattern, cost, and method for constructing the assembly. The Tiler then performs tiling in a general way by trying all possible tiles for a given node, and picking the one that minimizes cost using memoization on subtrees that have already been tiled. The patterns turned into a mini-DSL, making the tile factory methods very readable. We believe this approach to tiling is elegant and less error-prone than a more imperative approach involving if statements, instanceof checks, and a lot of casting.
 
-**[INSERT PATTERN STUFF HERE]**
 
 ### Programming ###
 
@@ -78,7 +89,6 @@ The key classes and packages we created or updated for this assignment are the f
         - PatternMatcher + tests
         - TrivialRegisterAllocator
         
-    **[Insert here anything else you did]**
  - We used our previous code for lexing, parsing, and typechecking. Fortunately, we have been on top of correcting our errors after each assignment so there were very few changes that needed to be made to this code.
  
 ## Testing

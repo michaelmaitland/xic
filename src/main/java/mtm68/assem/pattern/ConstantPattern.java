@@ -3,6 +3,11 @@ package mtm68.assem.pattern;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRNode;
 
+/**
+ * Abstract class for matching various types of constants
+ * 
+ * @author Scott
+ */
 public abstract class ConstantPattern extends MatchablePattern {
 	
 	public ConstantPattern(String name) {
