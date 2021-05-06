@@ -133,7 +133,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testMultiReturn() {
-		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\n28\n");
+		generateAndAssertOutput("multi_return.xi", "(2, 3)\n(1, 2)\n1\nfirst second\nwow\n28\n");
 	}
 	
 	@Test

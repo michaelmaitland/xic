@@ -35,8 +35,10 @@ public class CFGBuilder {
 	private Map<String, Integer> labelMap; // label -> stmtIdx
 	private Map<String, Set<CFGNode>> waitingNodes; // label -> Set<node>
 	private CFGKind kind;
+	private CFGMode mode;
+	private String savedLabel;
 	
-	public CFGBuilder() {
+	public CFGBuilder(CFGMode mode) {
 		nodeIdx = 0;
 		stmtIdx = 0;
 		nodeMap = new HashMap<>();
@@ -44,6 +46,7 @@ public class CFGBuilder {
 		labelMap = new HashMap<>();
 		waitingNodes = new HashMap<>();
 		kind = CFGKind.RET;  
+		this.mode = mode;
 	}
 	
 	/**
@@ -51,6 +54,11 @@ public class CFGBuilder {
 	 * @param stmt
 	 */
 	public void visitStatement(IRStmt stmt) {
+		if(mode == CFGMode.BB) basicBlockAnalysis(stmt);
+		else if (mode == CFGMode.STMT) stmtAnalysis(stmt);
+	}
+	
+	private void basicBlockAnalysis(IRStmt stmt) {
 		if(isLabel(stmt)) {
 			createCFGNode(stmt);
 			storeLabelLoc(stmt);
@@ -66,6 +74,28 @@ public class CFGBuilder {
 		}
 		else if(isReturn(stmt)) {
 			kind = CFGKind.RET;
+		}
+		
+		stmtIdx++;
+	}
+
+	private void stmtAnalysis(IRStmt stmt) {
+		if(!(stmt instanceof IRJump)) {
+			if(isLabel(stmt)) {
+				savedLabel = ((IRLabel) stmt).name();
+				kind = CFGKind.LABEL;
+			}
+			else if (kind == CFGKind.LABEL) {
+				createCFGNode(stmt);
+				storeLabelLoc(stmt, savedLabel);
+			}
+			else{ 
+				createCFGNode(stmt);
+			}
+		}
+		
+		if(isJump(stmt)) {
+			if(currNode != null) addOutboundConnections(stmt);
 		}
 		
 		stmtIdx++;
@@ -101,6 +131,10 @@ public class CFGBuilder {
 
 	private void storeLabelLoc(IRStmt stmt) {
 		String label = ((IRLabel) stmt).name();
+		storeLabelLoc(stmt, label);
+	}
+	
+	private void storeLabelLoc(IRStmt stmt, String label) {
 		labelMap.put(label, stmtIdx);
 		currNode.addLabel(label);
 		resolveWaitingNodes(label);
@@ -112,9 +146,13 @@ public class CFGBuilder {
 		stmtMap.put(stmtIdx, node);
 		nodeIdx++;
 
-		addInboundConnections(node);
+		if(currNode != null && !(currNode.getStmt() instanceof IRCJump)) addInboundConnections(node);
 
-		kind = CFGKind.LABEL;
+		if(mode == CFGMode.BB) 
+			kind = CFGKind.LABEL;
+		else if(mode == CFGMode.STMT)
+			kind = CFGKind.DEF;
+			
 		currNode = node;
 	}
 	
@@ -172,6 +210,9 @@ public class CFGBuilder {
 	private void addInboundConnections(CFGNode node) {
 		switch(kind) {
 		case LABEL:
+			link(currNode, node);
+			break;
+		case DEF:
 			link(currNode, node);
 			break;
 		case JMP:
@@ -338,6 +379,12 @@ public class CFGBuilder {
 	public static enum CFGKind {
 		LABEL,
 		RET,
-		JMP
+		JMP,
+		DEF
+	}
+	
+	public static enum CFGMode{
+		BB,
+		STMT
 	}
 }

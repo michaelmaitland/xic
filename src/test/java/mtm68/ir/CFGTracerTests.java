@@ -19,6 +19,7 @@ import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import mtm68.ir.cfg.CFGBuilder;
 import mtm68.ir.cfg.CFGTracer;
+import mtm68.ir.cfg.CFGBuilder.CFGMode;
 
 public class CFGTracerTests {
 
@@ -42,7 +43,7 @@ public class CFGTracerTests {
 		stmts.forEach(System.out::print);
 		System.out.println();
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		
 		stmts.forEach(builder::visitStatement);
 
@@ -79,7 +80,7 @@ public class CFGTracerTests {
 				ret()
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 
 		CFGTracer tracer = new CFGTracer(builder.getNodes(), stmts);
@@ -97,7 +98,7 @@ public class CFGTracerTests {
 				label("l1")
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 
 		CFGTracer tracer = new CFGTracer(builder.getNodes(), stmts);
@@ -124,7 +125,7 @@ public class CFGTracerTests {
 				cjump("l0", "l1")
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 
 		CFGTracer tracer = new CFGTracer(builder.getNodes(), stmts);
@@ -151,7 +152,7 @@ public class CFGTracerTests {
 				label("l2")
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 
 		CFGTracer tracer = new CFGTracer(builder.getNodes(), stmts);
@@ -173,7 +174,7 @@ public class CFGTracerTests {
 				label("l2")
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 
 		CFGTracer tracer = new CFGTracer(builder.getNodes(), stmts);

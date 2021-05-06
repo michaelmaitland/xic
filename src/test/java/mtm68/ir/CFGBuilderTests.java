@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import mtm68.ir.cfg.CFGBuilder;
+import mtm68.ir.cfg.CFGBuilder.CFGMode;
 import mtm68.ir.cfg.CFGBuilder.CFGNode;
 
 public class CFGBuilderTests {
@@ -30,7 +31,7 @@ public class CFGBuilderTests {
 				ret()
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.STMT);
 		
 		stmts.forEach(builder::visitStatement);
 		printNodes(builder);
@@ -46,7 +47,7 @@ public class CFGBuilderTests {
 				label("l2")
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 		
 		List<CFGNode> nodes = builder.getNodes();
@@ -63,7 +64,7 @@ public class CFGBuilderTests {
 				label("l0")
 			);
 		
-		CFGBuilder builder = new CFGBuilder();
+		CFGBuilder builder = new CFGBuilder(CFGMode.BB);
 		stmts.forEach(builder::visitStatement);
 		
 		List<CFGNode> nodes = builder.getNodes();

@@ -5,6 +5,7 @@ import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import mtm68.ir.cfg.CFGBuilder;
+import mtm68.ir.cfg.CFGBuilder.CFGMode;
 
 /**
  * Visitor class that transforms the lowered code into canonical form
@@ -22,7 +23,7 @@ public class CFGVisitor extends IRVisitor {
 	
 	@Override
 	protected IRVisitor enter(IRNode parent, IRNode n) {
-		if(n instanceof IRSeq) builder = new CFGBuilder();
+		if(n instanceof IRSeq) builder = new CFGBuilder(CFGMode.BB);
 
 		return this;
 	}
