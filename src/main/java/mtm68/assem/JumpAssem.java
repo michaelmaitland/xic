@@ -16,6 +16,10 @@ public class JumpAssem extends Assem {
 		return type + " " + loc;
 	}
 	
+	public Loc getLoc() {
+		return loc;
+	}
+	
 	public enum JumpType{
 		JMP,
 		JE,

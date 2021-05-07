@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import mtm68.util.ArrayUtils;
 
@@ -138,9 +140,8 @@ public class Graph<T> {
 		
 		// TODO: Memoize
 		public Set<Node> adj() {
-			Set<Node> result = new HashSet<>(succ);
-			result.addAll(pred);
-			return result;
+			return Stream.concat(succ.stream(), pred.stream())
+					.collect(Collectors.toSet());
 		}
 		
 		public void addSucc(Node succ) {
