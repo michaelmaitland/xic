@@ -58,6 +58,7 @@ public class TrivialRegisterAllocator {
 		return insts.stream()
 					.map(Assem::getReplaceableRegs)
 					.flatMap(List::stream)
+					.filter(ReplaceableReg::isAbstract)
 					.map(ReplaceableReg::getName)
 					.collect(Collectors.toSet());
 	}
@@ -94,7 +95,9 @@ public class TrivialRegisterAllocator {
 		Assem newInst = inst.copy();
 
 		Map<String, RealReg> replaceToRealMap = new LinkedHashMap<>();
-		List<ReplaceableReg> replaceableRegs = newInst.getReplaceableRegs();
+		List<ReplaceableReg> replaceableRegs = newInst.getReplaceableRegs().stream()
+				.filter(ReplaceableReg::isAbstract)
+				.collect(Collectors.toList());
 		
 		Map<Boolean, List<ReplaceableReg>> partitioned = replaceableRegs.stream()
 			.collect(Collectors.partitioningBy(r -> r.getRegType() == RegType.WRITE));

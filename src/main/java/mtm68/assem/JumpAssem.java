@@ -20,6 +20,14 @@ public class JumpAssem extends Assem {
 		return loc;
 	}
 	
+	public JumpType getJumpType() {
+		return type;
+	}
+	
+	public boolean isUnconditional() {
+		return type == JumpType.JMP; 
+	}
+	
 	public enum JumpType{
 		JMP,
 		JE,

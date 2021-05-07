@@ -5,6 +5,7 @@ import static mtm68.assem.AssemTestUtils.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,8 @@ import mtm68.util.ArrayUtils;
 
 public class AssemCFGTests {
 	
+	private static Function<AssemData<String>, String> printer = o -> o.getAssem().toString();
+	
 	@Test
 	void testAssemConstructionSimple() throws IOException {
 		List<Assem> assems = ArrayUtils.elems(
@@ -34,7 +37,7 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG");
+		graph.show(new PrintWriter(System.out), "CFG", printer);
 	}
 
 	@Test
@@ -54,7 +57,52 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG");
+		graph.show(new PrintWriter(System.out), "CFG", printer);
+	}
+
+	@Test
+	void testAssemConstructionWithUnconditionalJump() throws IOException {
+		List<Assem> assems = ArrayUtils.elems(
+				new LabelAssem("f"),
+				mov(reg("t1"), reg("t2")),
+				jmp("f"),
+				mov(reg("t3"), reg("t2")),
+				new RetAssem()
+			);
+		
+		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
+		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
+		
+		graph.show(new PrintWriter(System.out), "CFG", printer);
+	}
+	
+	@Test
+	void testLabelInBetween() throws IOException {
+		List<Assem> assems = ArrayUtils.elems(
+				mov(reg("t1"), reg("t2")),
+				new LabelAssem("f"),
+				mov(reg("t3"), reg("t2"))
+			);
+		
+		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
+		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
+		
+		graph.show(new PrintWriter(System.out), "CFG", printer);
+	}
+
+	@Test
+	void testAfterRet() throws IOException {
+		List<Assem> assems = ArrayUtils.elems(
+				mov(reg("t1"), reg("t2")),
+				new RetAssem(),
+				mov(reg("t3"), reg("t2")),
+				mov(reg("t4"), reg("t2"))
+			);
+		
+		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
+		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
+		
+		graph.show(new PrintWriter(System.out), "CFG", printer);
 	}
 
 }

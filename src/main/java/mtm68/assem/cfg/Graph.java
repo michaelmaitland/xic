@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,8 +30,8 @@ public class Graph<T> {
 		return nodes;
 	}
 	
-	public Node createNode(T data, String prettyPrint) {
-		Node node = new Node(this, currNodeId++, prettyPrint);
+	public Node createNode(T data) {
+		Node node = new Node(this, currNodeId++, data.toString());
 		nodes.add(node);
 		dataMap.put(node, data);
 		return node;
@@ -50,16 +51,16 @@ public class Graph<T> {
 		to.addSucc(to);
 	}
 	
-	public void show(Writer writer, String name) throws IOException {
+	public void show(Writer writer, String name, Function<T, String> getNodeRep) throws IOException {
 		writer.append("digraph " + name + " {\n");
 		
 		for(Node curr : nodes) {
-			String currStr = quote(curr.prettyPrint); 
+			String currStr = quote(getNodeRep.apply(dataMap.get(curr))); 
 			for(Node succ : curr.succ()) {
 				writer.append('\t');
 				writer.append(currStr);
 				writer.append(" -> ");
-				writer.append(quote(succ.prettyPrint));
+				writer.append(quote(getNodeRep.apply(dataMap.get(succ))));
 				writer.append('\n');
 			}
 		}

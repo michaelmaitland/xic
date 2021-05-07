@@ -1,10 +1,13 @@
 package mtm68.assem;
 
 import java.util.List;
+import java.util.Set;
 
 import mtm68.assem.operand.Dest;
+import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 public abstract class OperAssem extends Assem {
 	protected String name;

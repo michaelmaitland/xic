@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import mtm68.assem.Assem;
 import mtm68.assem.JumpAssem;
 import mtm68.assem.LabelAssem;
+import mtm68.assem.RetAssem;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.assem.operand.Loc;
 import mtm68.util.ArrayUtils;
@@ -19,6 +20,8 @@ public class AssemCFGBuilder<T> {
 	private	Node prev;
 	private Node curr;
 	private boolean prevWasLabel = false;
+	private boolean prevWasUnconditionalJump = false;
+	private boolean prevWasRet = false;
 	private String lastLabel;
 	
 	private Map<Loc, Node> locationMap;
@@ -44,18 +47,21 @@ public class AssemCFGBuilder<T> {
 			}
 
 			AssemData<T> data = new AssemData<>(assem, flowDataConstructor.get());
-			curr = graph.createNode(data, assem.toString());
+			curr = graph.createNode(data);
 			
 			if(prevWasLabel) {
 				Loc loc = new Loc(lastLabel);
 				locationMap.put(loc, curr);
 				resolveWaitingJumps(loc);
 				prevWasLabel = false;
-			} else if(prev != null){
+			} 
+			if(prev != null && !prevWasUnconditionalJump && !prevWasRet){
 				graph.addEdge(prev, curr);
 			}
 			
 			prev = curr;
+			prevWasUnconditionalJump = false;
+			prevWasRet = graph.getDataForNode(prev).getAssem() instanceof RetAssem;
 		}
 		
 		if(waitingJumps.size() != 0) throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
@@ -65,6 +71,7 @@ public class AssemCFGBuilder<T> {
 	
 	private void handleJump(JumpAssem assem) {
 		Loc jumpTo = assem.getLoc();
+		prevWasUnconditionalJump = assem.isUnconditional();
 		
 		Node jumpTarget = locationMap.get(jumpTo);
 
@@ -108,7 +115,6 @@ public class AssemCFGBuilder<T> {
 	}
 
 	public static class AssemData<T> {
-		
 		private Assem assem;
 		private T flowData;
 		
@@ -127,6 +133,11 @@ public class AssemCFGBuilder<T> {
 		
 		public void setFlowData(T flowData) {
 			this.flowData = flowData;
+		}
+		
+		@Override
+		public String toString() {
+			return assem.toString();
 		}
 	}
 }
