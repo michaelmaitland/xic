@@ -82,6 +82,7 @@ public class CFGBuilder {
 	private void stmtAnalysis(IRStmt stmt) {
 		if(!(stmt instanceof IRJump)) {
 			if(isLabel(stmt)) {
+				assert(kind != CFGKind.LABEL); //Behavior not handled, but believed to be not possible
 				savedLabel = ((IRLabel) stmt).name();
 				kind = CFGKind.LABEL;
 			}
