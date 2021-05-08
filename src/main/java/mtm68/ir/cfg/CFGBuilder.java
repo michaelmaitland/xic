@@ -147,7 +147,7 @@ public class CFGBuilder {
 		stmtMap.put(stmtIdx, node);
 		nodeIdx++;
 
-		if(currNode != null && !(currNode.getStmt() instanceof IRCJump)) addInboundConnections(node);
+		if(currNode != null && !isNoFallThroughCJump()) addInboundConnections(node);
 
 		if(mode == CFGMode.BB) 
 			kind = CFGKind.LABEL;
@@ -155,6 +155,16 @@ public class CFGBuilder {
 			kind = CFGKind.DEF;
 			
 		currNode = node;
+	}
+	
+	private boolean isNoFallThroughCJump() {
+		if(currNode == null) return false;
+		IRStmt stmt = currNode.getStmt();
+		if(!(stmt instanceof IRCJump)) return false;
+		
+		IRCJump jump = (IRCJump)stmt;
+		
+		return jump.hasFalseLabel();
 	}
 	
 	private void addOutboundConnections(IRStmt stmt) {

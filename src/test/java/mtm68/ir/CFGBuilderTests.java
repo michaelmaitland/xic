@@ -36,6 +36,27 @@ public class CFGBuilderTests {
 		stmts.forEach(builder::visitStatement);
 		printNodes(builder);
 	}
+	
+	@Test
+	void interestingJumpsTest() {
+		List<IRStmt> stmts = elems(
+				label("l0"),
+				move("c", "b"),
+				jump("l2"),
+				label("l2"),
+				move("x", "y"),
+				cjump("l3", null),
+				move("y", "x"),
+				label("l3"),
+				move("z", "x"),
+				cjump("l2", "l3")
+			);
+		
+		CFGBuilder builder = new CFGBuilder(CFGMode.STMT);
+		
+		stmts.forEach(builder::visitStatement);
+		printNodes(builder);
+	}
 
 	@Test
 	void testRetNoOutgoingEdges() {
