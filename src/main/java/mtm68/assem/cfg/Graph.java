@@ -28,7 +28,7 @@ public class Graph<T> {
 		dataMap = new HashMap<>();
 		invDataMap = new HashMap<>();
 	}
-	
+
 	public List<Node> getNodes() {
 		return nodes;
 	}
@@ -168,6 +168,10 @@ public class Graph<T> {
 		public Set<Node> adj() {
 			return Stream.concat(succ.stream(), pred.stream())
 					.collect(Collectors.toSet());
+		}
+		
+		public int degree() {
+			return adj().size();
 		}
 		
 		public void addSucc(Node succ) {

@@ -59,17 +59,25 @@ public class Liveness {
 		}
 	}
 	
+	public Graph<AssemData<LiveData>> getLiveGraph() {
+		return graph;
+	}
+	
 	public Graph<String> getInterferenceGraph() {
 		Graph<String> interferenceGraph = new Graph<>();
 		
 		for(Node node : graph.getNodes()) {
 			AssemData<LiveData> data = graph.getDataForNode(node);
-
+			
 			Set<String> defined = regToStr(data.getAssem().def());
 			Set<String> liveOut = data.getFlowData().getLiveOut();
 			
 			for(String def : defined) {
+				createOrGetNode(interferenceGraph, def);
+
 				for(String out : liveOut) {
+					createOrGetNode(interferenceGraph, def);
+
 					if(out.equals(def)) continue;
 					link(interferenceGraph, def, out);
 				}
