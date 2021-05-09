@@ -12,18 +12,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 public class Graph<T> {
 	
 	private int currNodeId;
 	private List<Node> nodes;
 	private Map<Node, T> dataMap;
+	private Map<T, Node> invDataMap;
 	
 	public Graph() {
 		currNodeId = 0;
 
 		nodes = ArrayUtils.empty();
 		dataMap = new HashMap<>();
+		invDataMap = new HashMap<>();
 	}
 	
 	public List<Node> getNodes() {
@@ -34,11 +37,20 @@ public class Graph<T> {
 		Node node = new Node(this, currNodeId++, data.toString());
 		nodes.add(node);
 		dataMap.put(node, data);
+		invDataMap.put(data, node);
 		return node;
 	}
 	
 	public T getDataForNode(Node n) {
 		return dataMap.get(n);
+	}
+
+	public Node getNodeForData(T data) {
+		return invDataMap.get(data);
+	}
+
+	public boolean nodeExists(T data) {
+		return invDataMap.containsKey(data);
 	}
 	
 	public void addEdge(Node from, Node to) {
@@ -51,15 +63,28 @@ public class Graph<T> {
 		to.addSucc(to);
 	}
 	
-	public void show(Writer writer, String name, Function<T, String> getNodeRep) throws IOException {
-		writer.append("digraph " + name + " {\n");
+	public void show(Writer writer, String name, boolean directed, Function<T, String> getNodeRep) throws IOException {
+		writer.append(directed ? "digraph" : "graph");
+		writer.append(' ');
+		writer.append(name + " {\n");
+		
+		Set<Edge> seenEdges = SetUtils.empty();
 		
 		for(Node curr : nodes) {
 			String currStr = quote(getNodeRep.apply(dataMap.get(curr))); 
 			for(Node succ : curr.succ()) {
+				if(!directed) {
+					Edge forward = new Edge(curr, succ);
+					Edge backward = new Edge(succ, curr);
+					
+					if(seenEdges.contains(forward) || seenEdges.contains(backward)) continue;
+					
+					seenEdges.add(forward);
+					seenEdges.add(backward);
+				}
 				writer.append('\t');
 				writer.append(currStr);
-				writer.append(" -> ");
+				writer.append(directed ? " -> " : " -- ");
 				writer.append(quote(getNodeRep.apply(dataMap.get(succ))));
 				writer.append('\n');
 			}

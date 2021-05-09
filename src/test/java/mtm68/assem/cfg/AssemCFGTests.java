@@ -37,7 +37,7 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG", printer);
+		showOutput(graph);
 	}
 
 	@Test
@@ -57,7 +57,7 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG", printer);
+		showOutput(graph);
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG", printer);
+		showOutput(graph);
 	}
 	
 	@Test
@@ -87,7 +87,7 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG", printer);
+		showOutput(graph);
 	}
 
 	@Test
@@ -102,7 +102,11 @@ public class AssemCFGTests {
 		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
 		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
 		
-		graph.show(new PrintWriter(System.out), "CFG", printer);
+		showOutput(graph);
+	}
+	
+	private void showOutput(Graph<AssemData<String>> graph) throws IOException {
+		graph.show(new PrintWriter(System.out), "CFG", true, printer);
 	}
 
 }

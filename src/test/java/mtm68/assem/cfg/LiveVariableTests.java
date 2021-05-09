@@ -39,7 +39,9 @@ public class LiveVariableTests {
 		
 		liveness.performLiveVariableAnalysis(assems);
 		
-		liveness.show(new PrintWriter(System.out));
+		liveness.showLiveGraph(new PrintWriter(System.out));
+		System.out.println();
+		liveness.showInterferenceGraph(new PrintWriter(System.out));
 	}
 
 	@Test
@@ -68,7 +70,9 @@ public class LiveVariableTests {
 		
 		liveness.performLiveVariableAnalysis(assems);
 		
-		liveness.show(new PrintWriter(System.out));
+		liveness.showLiveGraph(new PrintWriter(System.out));
+		System.out.println();
+		liveness.showInterferenceGraph(new PrintWriter(System.out));
 	}
 	
 	@Test

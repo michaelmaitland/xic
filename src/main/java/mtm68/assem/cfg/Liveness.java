@@ -59,14 +59,55 @@ public class Liveness {
 		}
 	}
 	
+	public Graph<String> getInterferenceGraph() {
+		Graph<String> interferenceGraph = new Graph<>();
+		
+		for(Node node : graph.getNodes()) {
+			AssemData<LiveData> data = graph.getDataForNode(node);
+
+			Set<String> defined = regToStr(data.getAssem().def());
+			Set<String> liveOut = data.getFlowData().getLiveOut();
+			
+			for(String def : defined) {
+				for(String out : liveOut) {
+					if(out.equals(def)) continue;
+					link(interferenceGraph, def, out);
+				}
+			}
+		}
+
+		return interferenceGraph;
+	}
+	
+	
+	private void link(Graph<String> interferenceGraph, String t1, String t2) {
+		Node t1Node = createOrGetNode(interferenceGraph, t1);
+		Node t2Node = createOrGetNode(interferenceGraph, t2);
+
+		interferenceGraph.addEdge(t1Node, t2Node);
+		interferenceGraph.addEdge(t2Node, t1Node);
+	}
+
+	private Node createOrGetNode(Graph<String> interferenceGraph, String var) {
+		if(interferenceGraph.nodeExists(var)) {
+			return interferenceGraph.getNodeForData(var);
+		}
+		return interferenceGraph.createNode(var);
+	}
+	
 	private Set<String> regToStr(Set<Reg> regs){
 		return regs.stream()
 				.map(Reg::getId)
 				.collect(Collectors.toSet());
 	}
 	
-	public void show(Writer writer) throws IOException {
-		graph.show(writer, "Liveness", this::showLiveness);
+	public void showLiveGraph(Writer writer) throws IOException {
+		graph.show(writer, "Liveness", true, this::showLiveness);
+	}
+
+	public void showInterferenceGraph(Writer writer) throws IOException {
+		Graph<String> interferenceGraph = getInterferenceGraph();
+		interferenceGraph.show(writer, "Interference", false, s -> s);
 	}
 	
 	private String showLiveness(AssemData<LiveData> data) {
