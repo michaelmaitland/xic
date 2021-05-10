@@ -36,4 +36,12 @@ public class SetUtils {
 				.filter(two::contains)
 				.collect(Collectors.toSet());
 	}
+	
+	public static <T> Set<T> difference(Set<T> one, Set<T> two) {
+		return one.stream()
+				  .filter(e -> !two.contains(e))
+				  .collect(Collectors.toSet());
+	}
+
+
 }
