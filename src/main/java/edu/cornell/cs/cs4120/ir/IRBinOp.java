@@ -1,6 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
 import java.util.List;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
@@ -21,6 +22,7 @@ import mtm68.assem.op.XorAssem;
 import mtm68.assem.tile.Tile;
 import mtm68.assem.tile.TileFactory;
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a binary operation
@@ -195,5 +197,12 @@ public class IRBinOp extends IRExpr_c {
 					TileFactory.binopBasic(OpType.LSHIFT, LShiftAssem::new),
 					TileFactory.binopBasic(OpType.RSHIFT, RShiftAssem::new)
 				);
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		Set<IRExpr> exprs = SetUtils.union(left.getExprs(), right.getExprs());
+		exprs.add(this);
+		return exprs;
 	}
 }

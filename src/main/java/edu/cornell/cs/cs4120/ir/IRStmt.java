@@ -17,4 +17,5 @@ public abstract class IRStmt extends IRNode_c {
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
 	}
+
 }

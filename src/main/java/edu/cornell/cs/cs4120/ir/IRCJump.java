@@ -1,6 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
 import java.util.List;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
@@ -139,5 +140,10 @@ public class IRCJump extends IRStmt {
 				TileFactory.cjumpLessThan()
 //				//TileFactory.cjumpIfZero()
 				);
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		return cond.getExprs();
 	}
 }

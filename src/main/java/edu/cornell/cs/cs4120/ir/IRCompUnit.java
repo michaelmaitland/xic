@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
@@ -13,6 +14,7 @@ import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a compilation unit
@@ -142,5 +144,14 @@ public class IRCompUnit extends IRNode_c {
             funcAssems.add((FuncDefnAssem)func.getAssem());
         }
 		return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		Set<IRExpr> exprs = SetUtils.empty();
+		for(IRFuncDefn fun : functions.values()) {
+			exprs = SetUtils.union(exprs, fun.getExprs());
+		}
+		return exprs;
 	}
 }

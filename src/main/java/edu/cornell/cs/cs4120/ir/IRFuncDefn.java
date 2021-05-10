@@ -1,5 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.Set;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
@@ -105,5 +107,8 @@ public class IRFuncDefn extends IRNode_c {
 		return this.copyAndSetAssem(assem);
 	}
 
-	
+	@Override
+	public Set<IRExpr> getExprs() {
+		return body.getExprs();
+	}
 }

@@ -1,5 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.Set;
+
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
@@ -7,6 +9,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.tile.TileCosts;
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a temporary register
@@ -56,6 +59,11 @@ public class IRTemp extends IRExpr_c {
 		newTemp.setResultReg(new AbstractReg(name));
 		newTemp.tileCost = TileCosts.NO_COST;
 		return newTemp;
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		return SetUtils.elems(this);
 	}
 
 }

@@ -2,7 +2,10 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
@@ -113,5 +116,13 @@ public class IRCallStmt extends IRStmt {
 	@Override
 	public IRNode tile(Tiler t) {
 		return t.tileCallStmt(this);
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		return args.stream()
+				   .map(IRNode::getExprs)
+				   .flatMap(Collection::stream)
+				   .collect(Collectors.toSet());
 	}
 }

@@ -2,6 +2,7 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
@@ -69,5 +70,10 @@ public class IRExp extends IRStmt {
 		List<IRStmt> stmts = new ArrayList<>();
 		stmts.addAll(expr.getSideEffects());
 		return new IRSeq(stmts);
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		return expr.getExprs();
 	}
 }

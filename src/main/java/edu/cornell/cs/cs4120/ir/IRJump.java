@@ -1,5 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.Set;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -72,5 +74,10 @@ public class IRJump extends IRStmt {
 	public IRNode tile(Tiler t) {
 		IRName targetName = (IRName) target;
 		return copyAndSetAssem(new JumpAssem(JumpType.JMP, new Loc(targetName.name())));
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		return target.getExprs();
 	}
 }

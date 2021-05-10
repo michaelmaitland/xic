@@ -2,7 +2,10 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
@@ -102,5 +105,15 @@ public class IRCall extends IRExpr_c {
 	@Override
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		Set<IRExpr> exprs = args.stream()
+				   .map(IRNode::getExprs)
+				   .flatMap(Collection::stream)
+				   .collect(Collectors.toSet());
+		exprs.add(this);
+		return exprs;
 	}
 }

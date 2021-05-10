@@ -1,6 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
 import java.util.List;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
@@ -99,5 +100,12 @@ public class IRMem extends IRExpr_c {
 	public List<Tile> getTiles() {
 		return ArrayUtils.elems(
 				TileFactory.memBasic());
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		Set<IRExpr> exprs = expr.getExprs();
+		exprs.add(this);
+		return exprs;
 	}
 }

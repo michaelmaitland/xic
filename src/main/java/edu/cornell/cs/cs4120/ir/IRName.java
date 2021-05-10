@@ -1,11 +1,14 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.Set;
+
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.tile.TileCosts;
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for named memory address
@@ -54,4 +57,8 @@ public class IRName extends IRExpr_c {
 		return copyAndSetAssem(null, TileCosts.NO_COST);
 	}
 
+	@Override
+	public Set<IRExpr> getExprs() {
+		return SetUtils.elems(this);
+	}
 }

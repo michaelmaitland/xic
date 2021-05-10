@@ -1,6 +1,7 @@
 package edu.cornell.cs.cs4120.ir;
 
 import java.util.List;
+import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
@@ -65,4 +66,6 @@ public interface IRNode {
 	List<Tile> getTiles();
 	
 	float getTileCost();
+	
+	Set<IRExpr> getExprs();
 }

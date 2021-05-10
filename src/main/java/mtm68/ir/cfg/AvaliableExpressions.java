@@ -25,14 +25,10 @@ public class AvaliableExpressions {
 			
 			for(Node node : nodes) {
 				IRData<AvailableData> data = graph.getDataForNode(node);
-				IRStmt stmt = data.getIR();
 				AvailableData flowData = data.getFlowData();
 				
 				Set<IRExpr> inOld = flowData.getIn();
 				Set<IRExpr> outOld = flowData.getOut();
-				
-				Set<IRExpr> gen;
-				Set<IRExpr> kill;
 				
 				Set<IRExpr> in = in(node);
 				Set<IRExpr> out = out(node);
@@ -86,8 +82,8 @@ public class AvaliableExpressions {
 	 * exprs(if e)         = e and its subexprs
 	 */
 	 private Set<IRExpr> exprs(Node node) {
-		Set<IRExpr> exprs = SetUtils.empty();
-		return exprs;
+		 IRStmt ir = graph.getDataForNode(node).getIR();
+		 return ir.getExprs();
 	 }
 	 
 	
@@ -102,8 +98,9 @@ public class AvaliableExpressions {
 	 * kill(if e)         = {}
 	 */
 	 private Set<IRExpr> kill(Node node) {
-		Set<IRExpr> kill = SetUtils.empty();
-		return kill;
+		 IRStmt ir = graph.getDataForNode(node).getIR();
+		 //return ir.getKills();
+		 return null;
 	 }
 	
 	public static class AvailableData {

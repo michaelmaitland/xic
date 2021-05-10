@@ -1,11 +1,14 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.Set;
+
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for an expression evaluated under side effects
@@ -80,5 +83,12 @@ public class IRESeq extends IRExpr_c {
 	@Override
 	public IRNode constantFold(IRConstantFolder v) {
 		return this;
+	}
+
+	@Override
+	public Set<IRExpr> getExprs() {
+		Set<IRExpr> exprs = SetUtils.union(stmt.getExprs(), expr.getExprs());
+		exprs.add(this);
+		return exprs;
 	}
 }
