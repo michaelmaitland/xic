@@ -316,12 +316,13 @@ public class IntegrationTests {
 					
 			linkProc.waitFor();
 			
-			BufferedReader stdLinkOut = new BufferedReader(new InputStreamReader(linkProc.getInputStream()));
+			BufferedReader stdErrOut = new BufferedReader(new InputStreamReader(linkProc.getErrorStream()));
+//			BufferedReader stdLinkOut = new BufferedReader(new InputStreamReader(linkProc.getInputStream()));
 			String s = null;
 			
 			if(!Files.exists(pwd.resolve("a.out"))) {
 				System.out.println("linkxi.sh encounted the following error:\n");
-				while ((s = stdLinkOut.readLine()) != null) {
+				while ((s = stdErrOut.readLine()) != null) {
 				    System.out.println(s);
 				}
 				fail();
