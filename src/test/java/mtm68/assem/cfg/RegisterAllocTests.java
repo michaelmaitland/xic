@@ -31,17 +31,32 @@ public class RegisterAllocTests {
 	
 	@Test
 	void registerAlloc() {
-		RegisterAllocation regAlloc = new RegisterAllocation(COLORS);
-		
+		Set<RealReg> colors = SetUtils.elems(RealReg.R8);
+		RegisterAllocation regAlloc = new RegisterAllocation(colors);
 		
 		List<Assem> assems = ArrayUtils.elems(
 				mov(reg("t1"), reg("t2")),
 				mov(reg("t2"), reg("t3"))
 			);
 		
-		regAlloc.doRegisterAllocation(assems);
+		List<Assem> coloredAssems = regAlloc.doRegisterAllocation(assems);
+		printResults(assems, coloredAssems);
 		
-		System.out.println("Color map: " + regAlloc.getColorMap());
+//		System.out.println("Color map: " + regAlloc.getColorMap());
+	}
+	
+	private void printResults(List<Assem> original, List<Assem> colored) {
+		System.out.println("Original\n=========");
+		printAssems(original);
+		System.out.println();
+
+		System.out.println("Colored\n=========");
+		printAssems(colored);
+		System.out.println();
+	}
+	
+	private void printAssems(List<Assem> assems) {
+		assems.forEach(System.out::println);
 	}
 
 }

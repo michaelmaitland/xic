@@ -12,6 +12,7 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import mtm68.assem.Assem;
+import mtm68.assem.ReplaceableReg;
 import mtm68.assem.cfg.AssemCFGBuilder.AssemData;
 import mtm68.assem.cfg.Graph.Edge;
 import mtm68.assem.cfg.Graph.Node;
@@ -37,14 +38,14 @@ public class RegisterAllocation {
 	private Map<Node, List<Node>> adjList;
 	private Set<Node> spilledNodes;
 	private Set<Node> coloredNodes;
-	private Map<Node, String> colorMap;
+	private Map<String, String> colorMap;
 	
 	public RegisterAllocation(Set<RealReg> colors) {
 		this.colors = colors.stream()
 				.collect(Collectors.toMap(c -> c.getId(), c -> c));
 	}
 	
-	public void doRegisterAllocation(List<Assem> assems) {
+	public List<Assem> doRegisterAllocation(List<Assem> assems) {
 		init();
 		build(assems);
 		makeWorklists();
@@ -59,11 +60,13 @@ public class RegisterAllocation {
 		assignColors();
 		if(!spilledNodes.isEmpty()) {
 			List<Assem> newAssems = rewriteProgram();
-			doRegisterAllocation(newAssems);
+			return doRegisterAllocation(newAssems);
 		}
+		
+		return substitution(assems);
 	}
 	
-	public Map<Node, String> getColorMap() {
+	public Map<String, String> getColorMap() {
 		return colorMap;
 	}
 	
@@ -129,7 +132,8 @@ public class RegisterAllocation {
 			
 			for(Node adj : adjList.get(node)) {
 				if(coloredNodes.contains(adj)) {
-					okColors.remove(colorMap.get(adj));
+					String color = interferenceGraph.getDataForNode(adj);
+					okColors.remove(colorMap.get(color));
 				}
 			}
 			
@@ -138,13 +142,35 @@ public class RegisterAllocation {
 			} else {
 				coloredNodes.add(node);
 				String color = okColors.iterator().next();
-				colorMap.put(node, color);
+				
+				colorMap.put(interferenceGraph.getDataForNode(node), color);
 			}
 		}
 	}
 	
 	private List<Assem> rewriteProgram() {
 		return ArrayUtils.empty();
+	}
+	
+	private List<Assem> substitution(List<Assem> assems) {
+		List<Assem> result = ArrayUtils.empty();
+		
+		for(Assem assem : assems) {
+			Assem newAssem = assem.copy();
+			
+			List<ReplaceableReg> regs = newAssem.getReplaceableRegs();
+			
+			for(ReplaceableReg reg : regs) { 
+				if(!reg.isAbstract()) continue;
+
+				String color = colorMap.get(reg.getName());
+				reg.replace(colors.get(color));
+			}
+			
+			result.add(newAssem);
+		}
+
+		return result;
 	}
 	
 	private void addEdge(String t1, String t2) {
