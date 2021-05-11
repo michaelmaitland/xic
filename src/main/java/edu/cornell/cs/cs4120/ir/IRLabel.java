@@ -82,7 +82,12 @@ public class IRLabel extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
+	public Set<IRExpr> genAvailableExprs() {
 		return SetUtils.empty();
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return false;
 	}
 }

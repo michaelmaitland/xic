@@ -91,10 +91,17 @@ public class IRReturn extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
+	public Set<IRExpr> genAvailableExprs() {
 		return rets.stream()
-				   .map(IRNode::getExprs)
+				   .map(IRNode::genAvailableExprs)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return rets.stream()
+				.map(e -> e.containsExpr(expr))
+				.reduce(Boolean.FALSE, Boolean::logicalOr);
 	}
 }

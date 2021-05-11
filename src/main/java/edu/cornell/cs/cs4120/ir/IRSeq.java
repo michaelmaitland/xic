@@ -140,10 +140,17 @@ public class IRSeq extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
+	public Set<IRExpr> genAvailableExprs() {
 		return stmts.stream()
-				   .map(IRNode::getExprs)
+				   .map(IRNode::genAvailableExprs)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return stmts.stream()
+				.map(s -> s.containsExpr(expr))
+				.reduce(Boolean.FALSE, Boolean::logicalOr);
 	}
 }

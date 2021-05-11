@@ -103,9 +103,42 @@ public class IRMem extends IRExpr_c {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
-		Set<IRExpr> exprs = expr.getExprs();
+	public Set<IRExpr> genAvailableExprs() {
+		Set<IRExpr> exprs = expr.genAvailableExprs();
 		exprs.add(this);
 		return exprs;
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return this.equals(expr) || expr.containsExpr(expr);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((expr == null) ? 0 : expr.hashCode());
+		result = prime * result + ((memType == null) ? 0 : memType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IRMem other = (IRMem) obj;
+		if (expr == null) {
+			if (other.expr != null)
+				return false;
+		} else if (!expr.equals(other.expr))
+			return false;
+		if (memType != other.memType)
+			return false;
+		return true;
 	}
 }

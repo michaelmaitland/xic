@@ -10,7 +10,6 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.tile.Tile;
 import mtm68.assem.tile.TileFactory;
 import mtm68.util.ArrayUtils;
-import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a move statement
@@ -93,7 +92,12 @@ public class IRMove extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
-		return SetUtils.union(src.getExprs(), target.getExprs());
+	public Set<IRExpr> genAvailableExprs() {
+		return target.genAvailableExprs();
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return target.containsExpr(expr) || src.containsExpr(expr);
 	}
 }

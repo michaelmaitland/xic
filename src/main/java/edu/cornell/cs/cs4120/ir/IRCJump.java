@@ -143,7 +143,12 @@ public class IRCJump extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
-		return cond.getExprs();
+	public Set<IRExpr> genAvailableExprs() {
+		return cond.genAvailableExprs();
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return cond.containsExpr(expr);
 	}
 }

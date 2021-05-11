@@ -147,11 +147,18 @@ public class IRCompUnit extends IRNode_c {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
+	public Set<IRExpr> genAvailableExprs() {
 		Set<IRExpr> exprs = SetUtils.empty();
 		for(IRFuncDefn fun : functions.values()) {
-			exprs = SetUtils.union(exprs, fun.getExprs());
+			exprs = SetUtils.union(exprs, fun.genAvailableExprs());
 		}
 		return exprs;
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return functions.values().stream()
+				   .map(e -> e.containsExpr(expr))
+				   .reduce(Boolean.FALSE, Boolean::logicalOr);
 	}
 }

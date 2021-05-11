@@ -73,7 +73,12 @@ public class IRExp extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
-		return expr.getExprs();
+	public Set<IRExpr> genAvailableExprs() {
+		return expr.genAvailableExprs();
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return this.expr.containsExpr(expr);
 	}
 }

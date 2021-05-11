@@ -12,6 +12,7 @@ import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 
 /**
@@ -108,12 +109,17 @@ public class IRCall extends IRExpr_c {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
+	public Set<IRExpr> genAvailableExprs() {
 		Set<IRExpr> exprs = args.stream()
-				   .map(IRNode::getExprs)
+				   .map(IRNode::genAvailableExprs)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 		exprs.add(this);
 		return exprs;
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		throw new InternalCompilerError("containsExpr built to work on lowered IR. IRCall not part of lowered IR");
 	}
 }

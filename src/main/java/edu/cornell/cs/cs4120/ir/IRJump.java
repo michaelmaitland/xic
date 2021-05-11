@@ -77,7 +77,12 @@ public class IRJump extends IRStmt {
 	}
 
 	@Override
-	public Set<IRExpr> getExprs() {
-		return target.getExprs();
+	public Set<IRExpr> genAvailableExprs() {
+		return target.genAvailableExprs();
+	}
+
+	@Override
+	public boolean containsExpr(IRExpr expr) {
+		return target.containsExpr(expr);
 	}
 }
