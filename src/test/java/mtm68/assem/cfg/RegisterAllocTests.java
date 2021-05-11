@@ -6,6 +6,9 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import mtm68.assem.Assem;
+import mtm68.assem.CompUnitAssem;
+import mtm68.assem.FuncDefnAssem;
+import mtm68.assem.SeqAssem;
 import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 import mtm68.util.SetUtils;
@@ -36,10 +39,14 @@ public class RegisterAllocTests {
 		
 		List<Assem> assems = ArrayUtils.elems(
 				mov(reg("t1"), reg("t2")),
-				mov(reg("t2"), reg("t3"))
+				mov(reg("t2"), reg("t3")),
+				mov(reg("t1"), reg("t4"))
 			);
+
+		FuncDefnAssem func = new FuncDefnAssem("f", new SeqAssem(assems));
+		CompUnitAssem program = new CompUnitAssem("test", ArrayUtils.singleton(func));
 		
-		List<Assem> coloredAssems = regAlloc.doRegisterAllocation(assems);
+		List<Assem> coloredAssems = regAlloc.doRegisterAllocation(program);
 		printResults(assems, coloredAssems);
 		
 //		System.out.println("Color map: " + regAlloc.getColorMap());

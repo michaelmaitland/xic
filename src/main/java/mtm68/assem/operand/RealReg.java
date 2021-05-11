@@ -2,6 +2,7 @@ package mtm68.assem.operand;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import mtm68.util.ArrayUtils;
 
@@ -30,6 +31,10 @@ public class RealReg extends Reg{
 
 	public static final List<RealReg> getCalleeSaveReg() {
 		return ArrayUtils.elems(RBP, RSP, RBX, R12, R13, R14, R15);
+	}
+	
+	public static boolean isRealReg(String regId) {
+		return Stream.of(RealRegId.values()).anyMatch(r -> r.toString().equalsIgnoreCase(regId));
 	}
 
 	public RealReg(RealRegId regId) {

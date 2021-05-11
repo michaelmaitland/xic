@@ -12,19 +12,27 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import mtm68.assem.Assem;
+import mtm68.assem.CompUnitAssem;
+import mtm68.assem.FuncDefnAssem;
+import mtm68.assem.MoveAssem;
 import mtm68.assem.ReplaceableReg;
 import mtm68.assem.cfg.AssemCFGBuilder.AssemData;
 import mtm68.assem.cfg.Graph.Edge;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.assem.cfg.Liveness.LiveData;
+import mtm68.assem.operand.FreshRegGenerator;
+import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Reg;
 import mtm68.util.ArrayUtils;
+import mtm68.util.Constants;
 import mtm68.util.SetUtils;
 
 public class RegisterAllocation {
 	
 	private Map<String, RealReg> colors;
+	private Map<String, FunctionSpillData> funcData;
+	private Map<String, String> tempToFuncMap;
 	
 	private int k;
 	private Graph<String> interferenceGraph;
@@ -45,7 +53,31 @@ public class RegisterAllocation {
 				.collect(Collectors.toMap(c -> c.getId(), c -> c));
 	}
 	
-	public List<Assem> doRegisterAllocation(List<Assem> assems) {
+	public List<Assem> doRegisterAllocation(CompUnitAssem program) {
+		tempToFuncMap = new HashMap<>();
+		funcData = new HashMap<>();
+		
+		List<Assem> assems = ArrayUtils.empty();
+		for(FuncDefnAssem func : program.getFunctions()) {
+			String funcName = func.getName();
+			funcData.put(funcName, new FunctionSpillData());
+			
+			List<Assem> funcAssems = func.getAssem().getAssems();
+
+			funcAssems.stream()
+				.map(Assem::getReplaceableRegs)
+				.flatMap(List::stream)
+				.filter(ReplaceableReg::isAbstract)
+				.map(ReplaceableReg::getName)
+				.forEach(t -> tempToFuncMap.put(t, funcName));
+
+			assems.addAll(funcAssems);
+		}
+		
+		return doRegisterAllocation(assems);
+	}
+	
+	private List<Assem> doRegisterAllocation(List<Assem> assems) {
 		init();
 		build(assems);
 		makeWorklists();
@@ -59,7 +91,7 @@ public class RegisterAllocation {
 		
 		assignColors();
 		if(!spilledNodes.isEmpty()) {
-			List<Assem> newAssems = rewriteProgram();
+			List<Assem> newAssems = rewriteProgram(assems);
 			return doRegisterAllocation(newAssems);
 		}
 		
@@ -148,8 +180,73 @@ public class RegisterAllocation {
 		}
 	}
 	
-	private List<Assem> rewriteProgram() {
-		return ArrayUtils.empty();
+	private List<Assem> rewriteProgram(List<Assem> assems) {
+		System.out.println("Nodes spilled, rewriting.");
+		System.out.println();
+
+		System.out.println("Spilled Nodes\n=========");
+		spilledNodes.forEach(System.out::println);
+		System.out.println();
+
+		Map<String, Mem> memLocs = new HashMap<>();
+		for(Node spilled : spilledNodes) {
+			String temp = interferenceGraph.getDataForNode(spilled);
+			String func = tempToFuncMap.get(temp);
+
+			FunctionSpillData spillData = funcData.get(func);
+			spillData.addSpill(temp);
+			
+			memLocs.put(temp, spillData.getMemLocFor(temp));
+		}
+		
+		List<Assem> result = ArrayUtils.empty();
+		for(Assem assem : assems) {
+			Assem newAssem = assem.copy();
+
+			Map<String, ReplaceableReg> uses = newAssem.useReplaceable().stream()
+					.collect(Collectors.toMap(ReplaceableReg::getName, t -> t));
+
+			Map<String, ReplaceableReg> defs = newAssem.defReplaceable().stream()
+					.collect(Collectors.toMap(ReplaceableReg::getName, t -> t));
+			
+			
+			for(String use : uses.keySet()) {
+				if(!memLocs.containsKey(use)) continue;
+
+				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
+				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(use));
+				Mem stackLoc = memLocs.get(use);
+				
+				result.add(new MoveAssem(newTemp, stackLoc));
+				
+				uses.get(use).replace(newTemp);
+			}
+			
+			result.add(newAssem);
+
+
+			for(String def : defs.keySet()) {
+				if(!memLocs.containsKey(def)) continue;
+
+				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
+				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(def));
+				Mem stackLoc = memLocs.get(def);
+				
+				result.add(new MoveAssem(stackLoc, newTemp));
+				
+				defs.get(def).replace(newTemp);
+			}
+		}
+		
+		System.out.println("Original\n========");
+		assems.forEach(System.out::println);
+		System.out.println();
+		
+		System.out.println("New program\n=======");
+		result.forEach(System.out::println);
+		System.out.println();
+
+		return result;
 	}
 	
 	private List<Assem> substitution(List<Assem> assems) {
@@ -241,11 +338,28 @@ public class RegisterAllocation {
 	
 	private boolean precolored(Node node) {
 		String regId = interferenceGraph.getDataForNode(node);
-		return colors.containsKey(regId); 
+		return RealReg.isRealReg(regId);
 	}
 	
 	private int degree(Node n) {
 		return degreeMap.get(n);
 	}
-
+	
+	private static class FunctionSpillData {
+		private Map<String, Mem> memMap;
+		
+		public FunctionSpillData() {
+			memMap = new HashMap<>();
+		}
+		
+		public void addSpill(String temp) {
+			int size = memMap.size();
+			Mem mem = new Mem(RealReg.RBP, Constants.WORD_SIZE * -(size + 1));
+			memMap.put(temp, mem);
+		}
+		
+		public Mem getMemLocFor(String temp) {
+			return memMap.get(temp);
+		}
+	}
 }
