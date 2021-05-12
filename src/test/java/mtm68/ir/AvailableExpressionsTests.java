@@ -59,6 +59,18 @@ public class AvailableExpressionsTests {
 		perform(func);
 	}
 	
+	@Test
+	void testXGetsEKillTemp() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("x"), temp("y")),
+				move(temp("x"), constant(2))
+			);
+		
+		// Second node should contain both CONST 1 and CONST 2
+		perform(func);
+	}
+	
 
 	@Test
 	void testXGetsEKill() throws IOException {
@@ -114,6 +126,7 @@ public class AvailableExpressionsTests {
 	void testXGetsFGenEAndAllSubexprs() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("y"), temp("x")),
 				move(temp("t1"), constant(1)),
 				move(temp("t2"), mem(temp("t3"))),
 				move(temp("t4"), temp("t5")),
