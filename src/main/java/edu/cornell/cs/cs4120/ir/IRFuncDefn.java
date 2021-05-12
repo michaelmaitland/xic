@@ -4,6 +4,7 @@ import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -115,5 +116,12 @@ public class IRFuncDefn extends IRNode_c {
 	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return body.containsExpr(expr);
+	}
+	
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRFuncDefn copy = copy();
+		copy.setContainsMemSubexpr(body.isContainsMemSubexpr());
+		return copy;
 	}
 }

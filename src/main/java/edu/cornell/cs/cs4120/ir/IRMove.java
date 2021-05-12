@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -100,4 +101,13 @@ public class IRMove extends IRStmt {
 	public boolean containsExpr(IRExpr expr) {
 		return target.containsExpr(expr) || src.containsExpr(expr);
 	}
+
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMemSubexpr() || src.isContainsMemSubexpr();
+		
+		IRMove copy = copy();
+		copy.setContainsMemSubexpr(b);
+		return copy;
+	}	
 }

@@ -2,6 +2,7 @@ package edu.cornell.cs.cs4120.ir;
 
 import java.util.Set;
 
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
@@ -89,5 +90,12 @@ public class IRLabel extends IRStmt {
 	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return false;
+	}
+	
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRLabel copy = copy();
+		copy.setContainsMemSubexpr(false);
+		return copy;
 	}
 }

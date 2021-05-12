@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
@@ -152,5 +153,16 @@ public class IRSeq extends IRStmt {
 		return stmts.stream()
 				.map(s -> s.containsExpr(expr))
 				.reduce(Boolean.FALSE, Boolean::logicalOr);
+	}
+	
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = stmts.stream()
+					  .map(IRNode::isContainsMemSubexpr)
+					  .reduce(Boolean.FALSE, Boolean::logicalOr);
+		
+		IRSeq copy = copy();
+		copy.setContainsMemSubexpr(b);
+		return copy;
 	}
 }

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
@@ -140,5 +141,12 @@ public class IRMem extends IRExpr_c {
 		if (memType != other.memType)
 			return false;
 		return true;
+	}
+	
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRMem copy = copy();
+		copy.setContainsMemSubexpr(true);
+		return copy;
 	}
 }

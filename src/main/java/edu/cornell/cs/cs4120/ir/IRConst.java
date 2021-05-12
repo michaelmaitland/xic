@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.tile.Tile;
@@ -98,6 +99,13 @@ public class IRConst extends IRExpr_c {
 		if (value != other.value)
 			return false;
 		return true;
+	}
+
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRConst copy = copy();
+		copy.setContainsMemSubexpr(false);
+		return copy;
 	}
 
 }

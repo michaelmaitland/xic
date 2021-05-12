@@ -3,6 +3,7 @@ package edu.cornell.cs.cs4120.ir;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -92,4 +93,10 @@ public class IRName extends IRExpr_c {
 		return true;
 	}
 
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRName copy = copy();
+		copy.setContainsMemSubexpr(false);
+		return copy;
+	}
 }

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
@@ -121,5 +122,16 @@ public class IRCall extends IRExpr_c {
 	@Override
 	public boolean containsExpr(IRExpr expr) {
 		throw new InternalCompilerError("containsExpr built to work on lowered IR. IRCall not part of lowered IR");
+	}
+
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMemSubexpr() 
+					|| args.stream()
+						.map(IRNode::isContainsMemSubexpr)
+						.reduce(Boolean.FALSE, Boolean::logicalOr);
+		IRCall copy = copy();
+		copy.setContainsMemSubexpr(b);
+		return copy;
 	}
 }

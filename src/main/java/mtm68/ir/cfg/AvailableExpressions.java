@@ -1,5 +1,7 @@
 package mtm68.ir.cfg;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -8,21 +10,39 @@ import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRNode;
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
+import mtm68.ir.cfg.IRCFGBuilder.IRData;
+import mtm68.util.ArrayUtils;
 import mtm68.util.SetUtils;
 
-public class AvaliableExpressions {
+public class AvailableExpressions {
 
 	private Graph<IRData<AvailableData>> graph;
 	
-	public void performAvaliableExpressionsAnalysis(IRCompUnit ir) {
+	public void performAvaliableExpressionsAnalysis(IRCompUnit ir, IRNodeFactory f) {
+		// need data for kill
+		IRCompUnit visitedIr = (IRCompUnit)new IRContainsMemSubexprDecorator(f).visit(ir);
+
 		IRCFGBuilder<AvailableData> builder = new IRCFGBuilder<>();
-		graph = builder.buildCFG(ir, AvailableData::new);
+		
+		List<IRStmt> stmts = ArrayUtils.empty();
+		for(IRFuncDefn func : visitedIr.functions().values()) {
+			IRStmt body = func.body();
+			List<IRStmt> fstmts = ((IRSeq)body).stmts();
+			ArrayUtils.concat(stmts, fstmts);
+		}
+
+		graph = builder.buildIRCFG(stmts, AvailableData::new);
 		List<Node> nodes = graph.getNodes();
 		
 		boolean changes = true;
@@ -53,11 +73,23 @@ public class AvaliableExpressions {
 	 */
 	private Set<IRExpr> in(Node node) {
 		Set<IRExpr> in = SetUtils.empty();
+		boolean first = true;
 		for(Node pred : node.pred()) {
 			Set<IRExpr> predData = graph.getDataForNode(pred)
 											   .getFlowData()
 											   .getOut();
-			in = SetUtils.intersect(in, predData);
+			/*
+			* The first iteration, we need to set the base set 
+			* because intersect with empty set will always be empty
+			* and there is no good way to set the initial set
+			* as the empty set
+			*/
+			if(first) {
+				in = SetUtils.copy(predData);
+				first = false;
+			} else {
+				in = SetUtils.intersect(in, predData);
+			}
 		}
 		
 		return in;
@@ -165,12 +197,20 @@ public class AvaliableExpressions {
 
 	/**
 	 * The subset of IRExpr in l that could alias IRMem(e1).
+	 * 
+	 * Without performing alias analysis, we must consider all  
+	 * memory access as aliasing IRMem(e1).
+	 * 
 	 * @param ir of the form IRMove(IRMem e1, IRMem e2)
 	 */
 	private Set<IRExpr> killMemE1GetsMemE2(IRMove ir, Set<IRExpr> l) {
-		IRMem e1 = (IRMem)ir.target();
-		// TODO: this is wrong. need to add to kill all mem subexprs unless we do aliasing
-		return l.stream().filter(e -> e.containsExpr(e1)).collect(Collectors.toSet());
+		return l.stream()
+				.filter(IRNode::isContainsMemSubexpr)
+				.collect(Collectors.toSet());
+//		IRMem e1 = (IRMem)ir.target();
+//		return l.stream()
+//				.filter(e -> e.containsExpr(e1))
+//				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -209,15 +249,55 @@ public class AvaliableExpressions {
 		return ir instanceof IRCJump; 
 	}
 	
+	private String showAvailable(IRData<AvailableData> data) {
+		Set<IRExpr> liveIn = data.getFlowData().getIn();
+		Set<IRExpr> liveOut = data.getFlowData().getOut();
+		IRStmt ir = data.getIR();
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("In: ");
+		sb.append(setToString(liveIn));
+		sb.append("\\n");
+		
+		sb.append(ir.toString());
+		sb.append("\\n");
+
+		sb.append("Out: ");
+		sb.append(setToString(liveOut));
+
+		return sb.toString();
+	}
+	
+	private <T> String setToString(Set<T> set) {
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		
+		String elems = set.stream()
+			.map(Object::toString)
+			.collect(Collectors.joining(","));
+
+		sb.append(elems);
+
+		sb.append('}');
+		
+		return sb.toString();
+	}
+	public Graph<IRData<AvailableData>> getGraph() {
+		return graph;
+	}
+	
+	public void showGraph(Writer writer) throws IOException {
+		graph.show(writer, "AvaliableExpressions", true, this::showAvailable);
+	}
+
 	public static class AvailableData {
 		Set<IRExpr> in;
 		Set<IRExpr> out;
-		Node definingNode;
 		
-		public AvailableData(Node node) {
+		public AvailableData() {
 			in = SetUtils.empty();
 			out = SetUtils.empty();
-			this.definingNode = node;
 		}
 
 		public Set<IRExpr> getIn() {
@@ -234,14 +314,6 @@ public class AvaliableExpressions {
 
 		public void setOut(Set<IRExpr> out) {
 			this.out = out;
-		}
-
-		public Node getDefiningNode() {
-			return definingNode;
-		}
-
-		public void setDefiningNode(Node definingNode) {
-			this.definingNode = definingNode;
 		}
 	}
 }

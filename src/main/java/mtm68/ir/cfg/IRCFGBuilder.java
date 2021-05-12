@@ -144,4 +144,32 @@ public class IRCFGBuilder<T> {
 	private boolean isLabel(IRStmt stmt) {
 		return stmt instanceof IRLabel;
 	}
+	
+	public static class IRData<T> {
+
+		private IRStmt ir;
+		private T flowData;
+
+		public IRData(IRStmt ir, T flowData) {
+			this.ir= ir;
+			this.flowData = flowData;
+		}
+
+		public IRStmt getIR() {
+			return ir;
+		}
+
+		public T getFlowData() {
+			return flowData;
+		}
+
+		public void setFlowData(T flowData) {
+			this.flowData = flowData;
+		}
+
+		@Override
+		public String toString() {
+			return ir.toString();
+		}
+	}
 }

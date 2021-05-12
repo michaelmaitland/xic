@@ -55,7 +55,7 @@ public class Graph<T> {
 	
 	public void addEdge(Node from, Node to) {
 		from.addSucc(to);
-		to.addPred(to);
+		to.addPred(from);
 	}
 
 	public void removeEdge(Node from, Node to) {

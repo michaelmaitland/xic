@@ -8,6 +8,7 @@ import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
@@ -160,5 +161,16 @@ public class IRCompUnit extends IRNode_c {
 		return functions.values().stream()
 				   .map(e -> e.containsExpr(expr))
 				   .reduce(Boolean.FALSE, Boolean::logicalOr);
+	}
+
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = functions.values().stream()
+				   .map(IRNode::isContainsMemSubexpr)
+				   .reduce(Boolean.FALSE, Boolean::logicalOr);
+		
+		IRCompUnit copy = copy();
+		copy.setContainsMemSubexpr(b);
+		return copy;
 	}
 }
