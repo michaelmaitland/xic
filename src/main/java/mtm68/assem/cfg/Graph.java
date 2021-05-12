@@ -60,7 +60,7 @@ public class Graph<T> {
 
 	public void removeEdge(Node from, Node to) {
 		from.removeSucc(to);
-		to.addSucc(to);
+		to.removePred(from);
 	}
 	
 	public void show(Writer writer, String name, boolean directed, Function<T, String> getNodeRep) throws IOException {
