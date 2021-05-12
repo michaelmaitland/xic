@@ -140,10 +140,6 @@ public class FunctionInliner extends Visitor {
 		FunctionDefn fDefn = functionDefns.get(fexp.getId());
 		fDefn = (FunctionDefn) fDefn.renameVars(new HashMap<>());
 		
-		// Declare new bool to use as flag
-		// When encounter a "return" set flag to false
-		// Only write to return if flag is true
-		
 		List<Statement> stmts = new ArrayList<>();
 		
 		List<Expr> passedArgs = fexp.getArgs();

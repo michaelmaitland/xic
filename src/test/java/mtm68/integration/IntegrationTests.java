@@ -67,6 +67,8 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
+	private static final boolean FUNCTION_INLINE = true;
+	
 	@BeforeEach
 	void setUpFileUtils() {
 		FileUtils.diagPath = Paths.get(ASSEM_PATH);
@@ -245,6 +247,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("count_islands.xi", "Number of islands: 5\n");
 	}
 	
+	@Test
+	void testIdentity() {
+		generateAndAssertOutput("identity.xi", "");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
@@ -318,7 +325,6 @@ public class IntegrationTests {
 			linkProc.waitFor();
 			
 			BufferedReader stdErrOut = new BufferedReader(new InputStreamReader(linkProc.getErrorStream()));
-//			BufferedReader stdLinkOut = new BufferedReader(new InputStreamReader(linkProc.getInputStream()));
 			String s = null;
 			
 			if(!Files.exists(pwd.resolve("a.out"))) {
@@ -427,8 +433,10 @@ public class IntegrationTests {
 		
 		//AST OPTS
 		
-		FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
-		program = program.accept(fl);
+		if(FUNCTION_INLINE) {
+			FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
+			program = program.accept(fl);
+		}
 
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
