@@ -1,6 +1,6 @@
 package mtm68.util;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.ast.nodes.ArrayInit;
@@ -12,6 +12,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.types.Type;
 import mtm68.visit.Visitor;
 
@@ -51,6 +52,10 @@ public class NodeTestUtil {
 	
 	public static ArrayInit arrayWithElems(Expr... elems){
 		return new ArrayInit(ArrayUtils.elems(elems));
+	}
+	
+	public static SingleAssign sAssign(SimpleDecl decl, Expr e) {
+		return new SingleAssign(decl, e);
 	}
 	
 	public static void addLocs(Node n) {

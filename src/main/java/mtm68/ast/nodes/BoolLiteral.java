@@ -1,5 +1,7 @@
 package mtm68.ast.nodes;
 
+import java.util.Map;
+
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
@@ -34,5 +36,10 @@ public class BoolLiteral extends Literal<Boolean>{
 		long constVal = value ? 1L : 0L;
 		
 		return copyAndSetIRExpr(inf.IRConst(constVal));
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		return this;
 	}
 }

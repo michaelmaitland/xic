@@ -1,6 +1,8 @@
 package mtm68.ast.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
@@ -83,5 +85,20 @@ public class FExpr extends Expr {
 		IRMove moveIntoFresh = inf.IRMove(freshTemp, inf.IRTemp(cv.retVal(0)));
 		IRESeq eseq = inf.IRESeq(inf.IRSeq(call, moveIntoFresh), freshTemp);
 		return copyAndSetIRExpr(eseq);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		FExpr fexp = this.copy();
+		
+		List<Expr> newArgs = new ArrayList<>();
+		
+		for(Expr arg : args) {
+			newArgs.add((Expr)arg.renameVars(varMap));
+		}
+		
+		fexp.args = newArgs;
+		
+		return fexp;
 	}
 }

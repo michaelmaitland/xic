@@ -1,5 +1,7 @@
 package mtm68.ast.nodes;
 
+import java.util.Map;
+
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRExpr;
@@ -53,5 +55,13 @@ public class Not extends UnExpr {
 		IRExpr left = inf.IRConst(1);
 		IRBinOp op = inf.IRBinOp(OpType.XOR, left, expr.getIRExpr());
 		return copyAndSetIRExpr(op);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		Not not = this.copy();
+		not.expr = (Expr) expr.renameVars(varMap);
+		
+		return not;
 	}
 }

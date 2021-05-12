@@ -1,5 +1,7 @@
 package mtm68.ast.nodes;
 
+import java.util.Map;
+
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Types;
@@ -38,5 +40,10 @@ public class CharLiteral extends Literal<Character>{
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		return copyAndSetIRExpr(inf.IRConst(value));
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		return this;
 	}
 }

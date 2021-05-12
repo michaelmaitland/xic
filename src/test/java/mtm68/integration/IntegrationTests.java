@@ -58,6 +58,7 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
 import mtm68.visit.FunctionCollector;
+import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 
@@ -423,6 +424,11 @@ public class IntegrationTests {
 		ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 		
 		assertFalse("Found errors after typechecking", typeChecker.hasError());
+		
+		//AST OPTS
+		
+		FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
+		program = program.accept(fl);
 
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();

@@ -1,6 +1,7 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -123,5 +124,17 @@ public class If extends Statement {
 		IRSeq seq = inf.IRSeq(stmts);
 
 		return copyAndSetIRStmt(seq);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		If newIf = this.copy();
+		
+		newIf.condition = (Expr) condition.renameVars(varMap);
+		newIf.ifBranch = (Statement) ifBranch.renameVars(varMap);
+		newIf.elseBranch.ifPresent(
+				e -> newIf.elseBranch = Optional.of((Statement) e.renameVars(varMap)));
+		
+		return newIf;
 	}
 }

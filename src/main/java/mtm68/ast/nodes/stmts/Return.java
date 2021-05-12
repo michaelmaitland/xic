@@ -1,6 +1,8 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRExpr;
@@ -69,5 +71,20 @@ public class Return extends Statement {
 								   .collect(Collectors.toList());
 		
 		return copyAndSetIRStmt(inf.IRReturn(rets));
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		Return newRet = this.copy();
+		
+		List<Expr> newRets = new ArrayList<>();
+		
+		for(Expr ret : retList) {
+			newRets.add((Expr)ret.renameVars(varMap));
+		}
+		
+		newRet.retList = newRets;
+		
+		return newRet;
 	}
 }
