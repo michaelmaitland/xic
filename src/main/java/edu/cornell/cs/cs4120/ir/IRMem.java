@@ -112,7 +112,7 @@ public class IRMem extends IRExpr_c {
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
-		return this.equals(expr) || expr.containsExpr(expr);
+		return this.equals(expr) || this.expr.containsExpr(expr);
 	}
 
 	@Override

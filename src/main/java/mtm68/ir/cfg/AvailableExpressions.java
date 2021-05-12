@@ -115,6 +115,7 @@ public class AvailableExpressions {
 	 * 
 	 * For example,
 	 * exprs(x <- e) 	   = e and all subexpressions or e
+	 * exprs([e1] <- e2)    = {}
 	 * exprs([e1] <- [e2]) = [e2], [e1] and subexpressions
 	 * exprs(x <- f(es))   = forall e in es, e and its subexprs
 	 * exprs(if e)         = e and its subexprs
@@ -161,6 +162,7 @@ public class AvailableExpressions {
 	 * 
 	 * For example,
 	 * kill(x <- e)       = all exprs containing x
+	 * kill([e1] <- e2)   = all mem exprs
 	 * kill([e1] <- [e2]) = all exprs [e'] that can alias [e1]
 	 * kill(x <- f(es))   = exprs containing x and expressions [e'] 
 	 * 					    that could be changed by function call to f
@@ -171,6 +173,9 @@ public class AvailableExpressions {
 
 		if (hasXGetsEForm(ir)) {
 			return killXGetsE((IRMove)ir, l);
+
+		} else if (hasMemEGetsEForm(ir)) {
+			return killMemEGetsE((IRMove)ir, l);
 
 		} else if(hasMemE1GetsMemE2Form(ir)) {
 			return killMemE1GetsMemE2((IRMove)ir, l);
@@ -186,6 +191,7 @@ public class AvailableExpressions {
 		}
 	}
 
+	
 	/**
 	 * The subset of IRExpr in l that contains t.
 	 * @param ir of the form IRMove(IRTemp t, IRExpr)
@@ -204,7 +210,7 @@ public class AvailableExpressions {
 	 * @param ir of the form IRMove(IRMem e1, IRMem e2)
 	 */
 	private Set<IRExpr> killMemE1GetsMemE2(IRMove ir, Set<IRExpr> l) {
-		return l.stream()
+return l.stream()
 				.filter(IRNode::isContainsMemSubexpr)
 				.collect(Collectors.toSet());
 //		IRMem e1 = (IRMem)ir.target();
@@ -222,6 +228,17 @@ public class AvailableExpressions {
 		// TODO: this is wrong. need to add to kill all mem subexprs unless we do aliasing
 		return l.stream().filter(e -> e.containsExpr(temp)).collect(Collectors.toSet());
 	}
+	
+	/**
+	 * The subset of IRExpr in l of form M[x] forall x.
+	 * @param ir of the form IRMove(IRMem e1, IRExpr e) where e not an IRMem
+	 */
+	private Set<IRExpr> killMemEGetsE(IRMove ir, Set<IRExpr> l) {
+		return l.stream()
+				.filter(IRNode::isContainsMemSubexpr)
+				.collect(Collectors.toSet());
+	}
+
 
 	private Set<IRExpr> killIfE(IRCJump ir, Set<IRExpr> l) {
 		return SetUtils.empty();
@@ -231,6 +248,13 @@ public class AvailableExpressions {
 		return ir instanceof IRMove 
 				&& ((IRMove)ir).target() instanceof IRTemp
 				&& ((IRMove)ir).source() instanceof IRExpr;
+	}
+
+	private boolean hasMemEGetsEForm(IRStmt ir) {
+		return ir instanceof IRMove
+			&& ((IRMove)ir).target() instanceof IRMem
+			&& ((IRMove)ir).source() instanceof IRExpr
+			&& !(((IRMove)ir).source() instanceof IRMem);
 	}
 
 	private boolean hasMemE1GetsMemE2Form(IRStmt ir) {
