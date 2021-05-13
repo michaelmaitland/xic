@@ -116,6 +116,24 @@ public class IRMem extends IRExpr_c {
 	}
 
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		if(this.equals(toReplace)) return replaceWith;
+
+		IRExpr newExpr = (IRExpr)expr.replaceExpr(toReplace, replaceWith);
+
+		IRMem copy = copy();
+		copy.expr = newExpr;
+		return copy;
+	}
+	
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRMem copy = copy();
+		copy.setContainsMemSubexpr(true);
+		return copy;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -141,12 +159,5 @@ public class IRMem extends IRExpr_c {
 		if (memType != other.memType)
 			return false;
 		return true;
-	}
-	
-	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		IRMem copy = copy();
-		copy.setContainsMemSubexpr(true);
-		return copy;
 	}
 }

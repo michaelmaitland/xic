@@ -13,7 +13,6 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
@@ -25,11 +24,12 @@ import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.util.ArrayUtils;
 import mtm68.util.SetUtils;
 
-public class AvailableExpressions {
+public class AvailableExprs {
 
 	private Graph<IRData<AvailableData>> graph;
 	
 	public void performAvaliableExpressionsAnalysis(IRCompUnit ir, IRNodeFactory f) {
+
 		// need data for kill
 		IRCompUnit visitedIr = (IRCompUnit)new IRContainsMemSubexprDecorator(f).visit(ir);
 
@@ -53,14 +53,19 @@ public class AvailableExpressions {
 				IRData<AvailableData> data = graph.getDataForNode(node);
 				AvailableData flowData = data.getFlowData();
 				
-				Set<IRExpr> inOld = flowData.getIn();
-				Set<IRExpr> outOld = flowData.getOut();
 				
-				Set<IRExpr> in = in(node);
-				Set<IRExpr> out = out(node);
+				Set<AvailableExpr> inOld = flowData.getIn();
+				Set<AvailableExpr> outOld = flowData.getOut();
+				
+				Set<AvailableExpr> exprs = exprs(node);
+				Set<AvailableExpr> in = in(node);
+				Set<AvailableExpr> out = out(node, exprs);
 				
 				flowData.setIn(in);
 				flowData.setOut(out);
+				flowData.setExprs(exprs.stream()
+									   .map(AvailableExpr::getExpr)
+									   .collect(Collectors.toSet()));
 				
 				changes = changes || (!inOld.equals(in) || !outOld.equals(out));
 			}
@@ -71,11 +76,11 @@ public class AvailableExpressions {
 	 * The set of available expressions on edges entering node n.
 	 * in[n] = expressions available on all edges into n
 	 */
-	private Set<IRExpr> in(Node node) {
-		Set<IRExpr> in = SetUtils.empty();
+	private Set<AvailableExpr> in(Node node) {
+		Set<AvailableExpr> in = SetUtils.empty();
 		boolean first = true;
 		for(Node pred : node.pred()) {
-			Set<IRExpr> predData = graph.getDataForNode(pred)
+			Set<AvailableExpr> predData = graph.getDataForNode(pred)
 											   .getFlowData()
 											   .getOut();
 			/*
@@ -99,10 +104,9 @@ public class AvailableExpressions {
 	 * The set of available expressions on edges leaving node n.
 	 * out[n] = in[n] U exprs(n) - kill(n)
 	 */
-	 private Set<IRExpr> out(Node n) {
-		Set<IRExpr> in = in(n);
-		Set<IRExpr> exprs = exprs(n);
-		Set<IRExpr> kill = kill(n, in);
+	 private Set<AvailableExpr> out(Node n, Set<AvailableExpr> exprs) {
+		Set<AvailableExpr> in = in(n);
+		Set<AvailableExpr> kill = kill(n, in);
 		
 		return SetUtils.difference(
 			       SetUtils.union(in, exprs), 
@@ -120,41 +124,53 @@ public class AvailableExpressions {
 	 * exprs(x <- f(es))   = forall e in es, e and its subexprs
 	 * exprs(if e)         = e and its subexprs
 	 */
-	private Set<IRExpr> exprs(Node node) {
+	private Set<AvailableExpr> exprs(Node node) {
 		IRStmt ir = graph.getDataForNode(node).getIR();
 
 		if (hasXGetsEForm(ir)) {
-			return exprsXGetsE((IRMove)ir);
+			return exprsXGetsE((IRMove)ir, node);
 
 		} else if(hasMemE1GetsMemE2Form(ir)) {
-			return exprsMemE1GetsMemE2((IRMove)ir);
+			return exprsMemE1GetsMemE2((IRMove)ir, node);
 
 		} else if(hasXGetsFForm(ir)) {
-			return exprsXGetsF((IRMove)ir);
+			return exprsXGetsF((IRMove)ir, node);
 
 		} else if(hasIfEForm(ir)) {
-			return exprsIfE((IRCJump)ir);
+			return exprsIfE((IRCJump)ir, node);
 
 		} else {
 			return SetUtils.empty();
 		}
 	}
 
-	private Set<IRExpr> exprsXGetsE(IRMove mov) {
-		return mov.source().genAvailableExprs();
+	private Set<AvailableExpr> exprsXGetsE(IRMove mov, Node d) {
+		return mov.source().genAvailableExprs()
+			       .stream()
+				   .map(e -> new AvailableExpr(e, d))
+				   .collect(Collectors.toSet());
 	}
 
-	private Set<IRExpr> exprsMemE1GetsMemE2(IRMove mov) {
-		return SetUtils.union(mov.source().genAvailableExprs(), mov.target().genAvailableExprs());
+	private Set<AvailableExpr> exprsMemE1GetsMemE2(IRMove mov, Node d) {
+		return SetUtils.union(mov.source().genAvailableExprs(), mov.target().genAvailableExprs())
+			       .stream()
+				   .map(e -> new AvailableExpr(e, d))
+				   .collect(Collectors.toSet());
 	}
 
-	private Set<IRExpr> exprsXGetsF(IRMove ir) {
+	private Set<AvailableExpr> exprsXGetsF(IRMove ir, Node d) {
 		IRCallStmt call = (IRCallStmt) ir.source();
-		return call.genAvailableExprs();
+		return call.genAvailableExprs()
+			       .stream()
+		           .map(e -> new AvailableExpr(e, d))
+		           .collect(Collectors.toSet());
 	}
 
-	private Set<IRExpr> exprsIfE(IRCJump jmp) {
-		return jmp.cond().genAvailableExprs();
+	private Set<AvailableExpr> exprsIfE(IRCJump jmp, Node d) {
+		return jmp.cond().genAvailableExprs()
+			       .stream()
+		           .map(e -> new AvailableExpr(e, d))
+		           .collect(Collectors.toSet());
 	}
 	
 	/**
@@ -168,7 +184,7 @@ public class AvailableExpressions {
 	 * 					    that could be changed by function call to f
 	 * kill(if e)         = {}
 	 */
-	private Set<IRExpr> kill(Node node, Set<IRExpr> l) {
+	private Set<AvailableExpr> kill(Node node, Set<AvailableExpr> l) {
 		IRStmt ir = graph.getDataForNode(node).getIR();
 
 		if (hasXGetsEForm(ir)) {
@@ -196,9 +212,11 @@ public class AvailableExpressions {
 	 * The subset of IRExpr in l that contains t.
 	 * @param ir of the form IRMove(IRTemp t, IRExpr)
 	 */
-	private Set<IRExpr> killXGetsE(IRMove ir, Set<IRExpr> l) {
+	private Set<AvailableExpr> killXGetsE(IRMove ir, Set<AvailableExpr> l) {
 		IRTemp temp = (IRTemp)ir.target();
-		return l.stream().filter(e -> e.containsExpr(temp)).collect(Collectors.toSet());
+		return l.stream()
+				.filter(e -> e.getExpr().containsExpr(temp))
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -209,9 +227,9 @@ public class AvailableExpressions {
 	 * 
 	 * @param ir of the form IRMove(IRMem e1, IRMem e2)
 	 */
-	private Set<IRExpr> killMemE1GetsMemE2(IRMove ir, Set<IRExpr> l) {
-return l.stream()
-				.filter(IRNode::isContainsMemSubexpr)
+	private Set<AvailableExpr> killMemE1GetsMemE2(IRMove ir, Set<AvailableExpr> l) {
+		return l.stream()
+				.filter(e -> e.getExpr().isContainsMemSubexpr())
 				.collect(Collectors.toSet());
 //		IRMem e1 = (IRMem)ir.target();
 //		return l.stream()
@@ -223,24 +241,29 @@ return l.stream()
 	 * The subset of IRExpr in l that contains x and any arguments IRMem(e')
 	 * @param ir of the form IRMove(IRMem e1, IRCallStmt c)
 	 */
-	private Set<IRExpr> killXGetsF(IRMove ir, Set<IRExpr> l) {
+	private Set<AvailableExpr> killXGetsF(IRMove ir, Set<AvailableExpr> l) {
 		IRTemp temp = (IRTemp)ir.target();
 		// TODO: this is wrong. need to add to kill all mem subexprs unless we do aliasing
-		return l.stream().filter(e -> e.containsExpr(temp)).collect(Collectors.toSet());
+		return l.stream()
+				.filter(e -> e.getExpr().containsExpr(temp))
+				.collect(Collectors.toSet());
 	}
 	
 	/**
 	 * The subset of IRExpr in l of form M[x] forall x.
 	 * @param ir of the form IRMove(IRMem e1, IRExpr e) where e not an IRMem
 	 */
-	private Set<IRExpr> killMemEGetsE(IRMove ir, Set<IRExpr> l) {
+	private Set<AvailableExpr> killMemEGetsE(IRMove ir, Set<AvailableExpr> l) {
 		return l.stream()
-				.filter(IRNode::isContainsMemSubexpr)
+				.filter(e -> e.getExpr().isContainsMemSubexpr())
 				.collect(Collectors.toSet());
 	}
 
-
-	private Set<IRExpr> killIfE(IRCJump ir, Set<IRExpr> l) {
+	/**
+	 * The empty set.
+	 * @param ir of the form IRCJump(IRExpr e, l1, l2)
+	 */
+	private Set<AvailableExpr> killIfE(IRCJump ir, Set<AvailableExpr> l) {
 		return SetUtils.empty();
 	}
 
@@ -274,24 +297,25 @@ return l.stream()
 	}
 	
 	private String showAvailable(IRData<AvailableData> data) {
-		Set<IRExpr> liveIn = data.getFlowData().getIn();
-		Set<IRExpr> liveOut = data.getFlowData().getOut();
+		Set<AvailableExpr> in = data.getFlowData().getIn();
+		Set<AvailableExpr> out = data.getFlowData().getOut();
 		IRStmt ir = data.getIR();
 
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("In: ");
-		sb.append(setToString(liveIn));
+		sb.append(setToString(in));
 		sb.append("\\n");
 		
 		sb.append(ir.toString());
 		sb.append("\\n");
 
 		sb.append("Out: ");
-		sb.append(setToString(liveOut));
+		sb.append(setToString(out));
 
 		return sb.toString();
 	}
+	
 	
 	private <T> String setToString(Set<T> set) {
 		StringBuilder sb = new StringBuilder();
@@ -307,6 +331,7 @@ return l.stream()
 		
 		return sb.toString();
 	}
+
 	public Graph<IRData<AvailableData>> getGraph() {
 		return graph;
 	}
@@ -315,29 +340,86 @@ return l.stream()
 		graph.show(writer, "AvaliableExpressions", true, this::showAvailable);
 	}
 
+	
 	public static class AvailableData {
-		Set<IRExpr> in;
-		Set<IRExpr> out;
+		Set<AvailableExpr> in;
+		Set<AvailableExpr> out;
+		Set<IRExpr> exprs;
 		
 		public AvailableData() {
 			in = SetUtils.empty();
 			out = SetUtils.empty();
+			exprs = SetUtils.empty();
 		}
 
-		public Set<IRExpr> getIn() {
+		public Set<AvailableExpr> getIn() {
 			return in;
 		}
 
-		public void setIn(Set<IRExpr> in) {
+		public void setIn(Set<AvailableExpr> in) {
 			this.in = in;
 		}
 
-		public Set<IRExpr> getOut() {
+		public Set<AvailableExpr> getOut() {
 			return out;
 		}
 
-		public void setOut(Set<IRExpr> out) {
+		public void setOut(Set<AvailableExpr> out) {
 			this.out = out;
+		}
+
+		public Set<IRExpr> getExprs() {
+			return exprs;
+		}
+
+		public void setExprs(Set<IRExpr> exprs) {
+			this.exprs = exprs;
+		}
+	}
+
+	public static class AvailableExpr {
+		IRExpr expr;
+		Node definer;
+		boolean didTransformDefiner;
+		
+		public AvailableExpr(IRExpr expr, Node definer) {
+			this.expr = expr;
+			this.definer = definer;
+			this.didTransformDefiner = false;
+		}
+		
+		public IRExpr getExpr() {
+			return expr;
+		}
+		public void setExpr(IRExpr expr) {
+			this.expr = expr;
+		}
+		public Node getDefiner() {
+			return definer;
+		}
+		public void setDefiner(Node definer) {
+			this.definer = definer;
+		}
+		
+		public boolean isDidTransformDefiner() {
+			return didTransformDefiner;
+		}
+
+		public void setDidTransformDefiner(boolean didTransformDefiner) {
+			this.didTransformDefiner = didTransformDefiner;
+		}
+
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("Expr: ");
+			sb.append(expr.toString());
+
+			sb.append(", DefNode: ");
+			sb.append(expr.toString());
+			sb.append(definer.getNodeId());
+			
+			return sb.toString();
 		}
 	}
 }

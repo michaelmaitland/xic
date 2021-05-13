@@ -100,6 +100,11 @@ public class IRESeq extends IRExpr_c {
 	}
 
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		throw new InternalCompilerError("containsExpr built to work on lowered IR. IRCall not part of lowered IR");
+	}
+	
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = stmt.isContainsMemSubexpr() || expr.isContainsMemSubexpr();
 		
@@ -107,5 +112,4 @@ public class IRESeq extends IRExpr_c {
 		copy.setContainsMemSubexpr(b);
 		return copy;
 	}
-	
 }

@@ -156,6 +156,18 @@ public class IRSeq extends IRStmt {
 	}
 	
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		
+		List<IRStmt> newStmts = stmts.stream()
+									 .map(s -> (IRStmt)s.replaceExpr(toReplace, replaceWith))
+									 .collect(Collectors.toList());
+		
+		IRSeq copy = copy();
+		copy.stmts = newStmts;
+		return copy;
+	}
+
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = stmts.stream()
 					  .map(IRNode::isContainsMemSubexpr)

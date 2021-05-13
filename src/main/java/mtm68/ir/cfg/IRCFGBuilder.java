@@ -159,6 +159,10 @@ public class IRCFGBuilder<T> {
 			return ir;
 		}
 
+		public void setIR(IRStmt ir) {
+			this.ir = ir;
+		}
+
 		public T getFlowData() {
 			return flowData;
 		}

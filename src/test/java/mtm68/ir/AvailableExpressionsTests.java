@@ -30,7 +30,7 @@ import mtm68.assem.SetccAssem.CC;
 import mtm68.assem.cfg.Liveness;
 import mtm68.assem.op.AddAssem;
 import mtm68.assem.operand.RealReg;
-import mtm68.ir.cfg.AvailableExpressions;
+import mtm68.ir.cfg.AvailableExprs;
 import mtm68.util.ArrayUtils;
 import mtm68.util.SetUtils;
 
@@ -177,7 +177,7 @@ public class AvailableExpressionsTests {
 		funcs.put("f", func);
 		IRCompUnit comp = new IRCompUnit("test.xi", funcs);
 
-		AvailableExpressions ae = new AvailableExpressions();
+		AvailableExprs ae = new AvailableExprs();
 		ae.performAvaliableExpressionsAnalysis(comp, new IRNodeFactory_c());
 		
 		ae.getGraph();

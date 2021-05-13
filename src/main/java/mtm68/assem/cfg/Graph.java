@@ -210,7 +210,10 @@ public class Graph<T> {
 			return goesTo(n) || comesFrom(n);
 		}
 		
-		
+		public int getNodeId() {
+			return nodeId;
+		}
+
 		@Override
 		public String toString() {
 			return prettyPrint;

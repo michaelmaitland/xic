@@ -103,11 +103,23 @@ public class IRMove extends IRStmt {
 	}
 
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+
+		IRExpr newSrc = (IRExpr)src.replaceExpr(toReplace, replaceWith);
+		IRExpr newTarget = (IRExpr)target.replaceExpr(toReplace, replaceWith);
+		
+		IRMove copy = copy();
+		copy.src = newSrc;
+		copy.target = newTarget;
+		return copy;
+	}	
+
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = target.isContainsMemSubexpr() || src.isContainsMemSubexpr();
 		
 		IRMove copy = copy();
 		copy.setContainsMemSubexpr(b);
 		return copy;
-	}	
+	}
 }

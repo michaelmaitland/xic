@@ -88,6 +88,15 @@ public class IRJump extends IRStmt {
 	}
 
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newExpr = (IRExpr)target.replaceExpr(toReplace, replaceWith);
+
+		IRJump copy = copy();
+		copy.target = newExpr;
+		return copy;
+	}
+
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRJump copy = copy();
 		copy.setContainsMemSubexpr(target.isContainsMemSubexpr());

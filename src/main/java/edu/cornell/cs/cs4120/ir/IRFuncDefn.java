@@ -124,4 +124,12 @@ public class IRFuncDefn extends IRNode_c {
 		copy.setContainsMemSubexpr(body.isContainsMemSubexpr());
 		return copy;
 	}
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRStmt newBody = (IRStmt)body.replaceExpr(toReplace, replaceWith);
+		
+		IRFuncDefn copy = copy();
+		copy.body = newBody;
+		return copy;
+	}	
 }

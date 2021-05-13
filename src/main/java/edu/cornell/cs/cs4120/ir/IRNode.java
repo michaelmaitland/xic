@@ -72,10 +72,11 @@ public interface IRNode {
 	
 	boolean containsExpr(IRExpr expr);
 
+	IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith);
+
 	public boolean isContainsMemSubexpr();
 
 	void setContainsMemSubexpr(boolean containsMemSubexpr);
 
 	IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr);
-
 }

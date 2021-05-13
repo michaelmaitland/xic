@@ -91,7 +91,12 @@ public class IRLabel extends IRStmt {
 	public boolean containsExpr(IRExpr expr) {
 		return false;
 	}
-	
+
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		return this;
+	}
+
 	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRLabel copy = copy();

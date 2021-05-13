@@ -152,7 +152,16 @@ public class IRCJump extends IRStmt {
 	public boolean containsExpr(IRExpr expr) {
 		return cond.containsExpr(expr);
 	}
-	
+
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newCond = (IRExpr)cond.replaceExpr(toReplace, replaceWith);
+		
+		IRCJump copy = copy();
+		copy.cond = newCond;
+		return copy;
+	}
+
 	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRCJump copy = copy();

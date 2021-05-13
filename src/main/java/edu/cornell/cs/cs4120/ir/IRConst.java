@@ -73,10 +73,23 @@ public class IRConst extends IRExpr_c {
 	public Set<IRExpr> genAvailableExprs() {
 		return SetUtils.elems(this);
 	}
-
+	
 	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return this.equals(expr);
+	}
+
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		if(this.equals(toReplace)) return replaceWith;
+		else return this;
+	}
+
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRConst copy = copy();
+		copy.setContainsMemSubexpr(false);
+		return copy;
 	}
 
 	@Override
@@ -100,12 +113,4 @@ public class IRConst extends IRExpr_c {
 			return false;
 		return true;
 	}
-
-	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		IRConst copy = copy();
-		copy.setContainsMemSubexpr(false);
-		return copy;
-	}
-
 }

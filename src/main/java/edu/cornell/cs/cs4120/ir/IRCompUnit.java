@@ -12,6 +12,7 @@ import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
@@ -161,6 +162,11 @@ public class IRCompUnit extends IRNode_c {
 		return functions.values().stream()
 				   .map(e -> e.containsExpr(expr))
 				   .reduce(Boolean.FALSE, Boolean::logicalOr);
+	}
+	
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		throw new InternalCompilerError("not replace IRCompUnit");
 	}
 
 	@Override

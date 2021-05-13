@@ -107,6 +107,16 @@ public class IRReturn extends IRStmt {
 	}
 	
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		List<IRExpr> newRets = rets.stream()
+								   .map(e -> (IRExpr)e.replaceExpr(toReplace, replaceWith))
+								   .collect(Collectors.toList());
+		IRReturn copy = copy();
+		copy.rets = newRets;
+		return copy;
+	}
+
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = rets.stream()
 					  .map(IRNode::isContainsMemSubexpr)

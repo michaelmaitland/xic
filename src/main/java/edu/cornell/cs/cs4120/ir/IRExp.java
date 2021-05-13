@@ -82,7 +82,16 @@ public class IRExp extends IRStmt {
 	public boolean containsExpr(IRExpr expr) {
 		return this.expr.containsExpr(expr);
 	}
-	
+
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newExpr = (IRExpr)expr.replaceExpr(toReplace, replaceWith);
+
+		IRExp copy = copy();
+		copy.expr = newExpr;
+		return copy;
+	}
+		
 	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRExp copy = copy();

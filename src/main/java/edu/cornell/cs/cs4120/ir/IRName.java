@@ -68,6 +68,19 @@ public class IRName extends IRExpr_c {
 		return this.equals(expr);
 	}
 
+		@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		if(this.equals(toReplace)) return replaceWith;
+		else return this;
+	}
+
+	@Override
+	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRName copy = copy();
+		copy.setContainsMemSubexpr(false);
+		return copy;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -91,12 +104,5 @@ public class IRName extends IRExpr_c {
 		} else if (!name.equals(other.name))
 			return false;
 		return true;
-	}
-
-	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		IRName copy = copy();
-		copy.setContainsMemSubexpr(false);
-		return copy;
 	}
 }

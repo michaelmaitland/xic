@@ -136,6 +136,19 @@ public class IRCallStmt extends IRStmt {
 	}
 
 	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newTarget = (IRExpr)target.replaceExpr(toReplace, replaceWith);
+		List<IRExpr> newArgs = args.stream()
+								   .map(e -> (IRExpr)e.replaceExpr(toReplace, replaceWith))
+								   .collect(Collectors.toList());
+		
+		IRCallStmt copy = copy();
+		copy.args = newArgs;
+		copy.target = newTarget;
+		return copy;
+	}
+
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = target.isContainsMemSubexpr() 
 					|| args.stream()

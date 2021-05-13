@@ -125,6 +125,11 @@ public class IRCall extends IRExpr_c {
 	}
 
 	@Override
+	public IRExpr replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		throw new InternalCompilerError("containsExpr built to work on lowered IR. IRCall not part of lowered IR");
+	}
+
+	@Override
 	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = target.isContainsMemSubexpr() 
 					|| args.stream()
