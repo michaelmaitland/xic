@@ -1,7 +1,13 @@
 package mtm68.ir;
 
-import static mtm68.ir.IRTestUtils.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static mtm68.ir.IRTestUtils.call;
+import static mtm68.ir.IRTestUtils.cjump;
+import static mtm68.ir.IRTestUtils.constant;
+import static mtm68.ir.IRTestUtils.label;
+import static mtm68.ir.IRTestUtils.mem;
+import static mtm68.ir.IRTestUtils.move;
+import static mtm68.ir.IRTestUtils.op;
+import static mtm68.ir.IRTestUtils.temp;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,39 +17,24 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.*;
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
-import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
-import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import mtm68.assem.Assem;
-import mtm68.assem.CmpAssem;
-import mtm68.assem.CqoAssem;
-import mtm68.assem.IDivAssem;
-import mtm68.assem.JumpAssem.JumpType;
-import mtm68.assem.MulAssem;
-import mtm68.assem.RetAssem;
-import mtm68.assem.SetccAssem;
-import mtm68.assem.SetccAssem.CC;
-import mtm68.assem.cfg.Liveness;
-import mtm68.assem.op.AddAssem;
-import mtm68.assem.operand.RealReg;
 import mtm68.ir.cfg.AvailableExprs;
 import mtm68.util.ArrayUtils;
-import mtm68.util.SetUtils;
 
-public class AvailableExpressionsTests {
+public class AvailableExprTests {
 	
 	@Test
-	void test2XGetEs() throws IOException {
+	void constsAndTempDontGen() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
 				move(temp("t1"), constant(1)),
-				move(temp("t2"), constant(2))
+				move(temp("t2"), temp("t3"))
 			);
-		
 		perform(func);
 	}
 
@@ -51,11 +42,23 @@ public class AvailableExpressionsTests {
 	void testXGetsESameTemp() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("t1"), constant(1)),
-				move(temp("t1"), constant(2))
+				move(temp("t1"), op(ADD, constant(1), constant(2))),
+				move(temp("t1"), op(ADD, constant(3), constant(4)))
 			);
 		
-		// Second node should contain both CONST 1 and CONST 2
+		// Second node should contain both binops
+		perform(func);
+	}
+	
+	@Test
+	void testXGetsESameTempSubexpr() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("t1"), op(ADD, op(ADD, constant(1), constant(2)), constant(3))),
+				move(temp("t1"), op(ADD, constant(4), constant(5)))
+			);
+		
+		// Second node should contain both binops and nested binop
 		perform(func);
 	}
 	
@@ -63,59 +66,44 @@ public class AvailableExpressionsTests {
 	void testXGetsEKillTemp() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("x"), temp("y")),
-				move(temp("x"), constant(2))
+				move(temp("x"), op(ADD, temp("y"), constant(1))),
+				move(temp("y"), constant(2))
 			);
 		
-		// Second node should contain both CONST 1 and CONST 2
+		// Second node out should have killed the add because it contains y
 		perform(func);
 	}
 	
-
-	@Test
-	void testXGetsEKill() throws IOException {
-		
-		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("t2"), op(OpType.ADD, temp("t1"), constant(1))),
-				move(temp("t1"), constant(2))
-			);
-		
-		// Second node should contain CONST 1 and CONST 2
-		// because it killed the BINOP and TEMP 1
-		perform(func);
-	}
-	
-	@Test
-	void testXGetsEKillNested() throws IOException {
-		
-		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("t2"), temp("t1")),
-				move(temp("t1"), constant(2))
-			);
-		
-		// Second node should contain both CONST 1 and CONST 2
-		perform(func);
-	}
-
 	@Test
 	void testMemOnlyOnLeftKillsAllMem() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("t1"), constant(1)),
 				move(mem(temp("t1")), mem(temp("t2"))),
-				move(mem(temp("t2")), constant(3))
+				move(mem(temp("t3")), constant(3))
 			);
 		
-		// Third node out should have no mem
+		// Third node out should kill both mems from the zeroth node
 		perform(func);
 	}
 	
 	@Test
-	void testMemE1GetsMemE2() throws IOException {
+	void testMemOnlyOnRightDoesNotKill() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("t1"), constant(1)),
-				move(mem(temp("t1")), mem(temp("t2")))
+				move(mem(temp("t3")), op(ADD, constant(1), constant(2))),
+				move(temp("t1"), mem(temp("t2")))
+			);
+		
+		// second node out should not kill the mem from n0
+		perform(func);
+	}
+	
+	@Test
+	void testMemE1GetsMemE2Out() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("t1"), op(ADD, constant(1), constant(1))),
+				move(mem(temp("t2")), mem(temp("t3")))
 			);
 		
 		// Second node out should have [e1], [e2], and all subexprs
@@ -123,14 +111,33 @@ public class AvailableExpressionsTests {
 	}
 	
 	@Test
-	void testXGetsFGenEAndAllSubexprs() throws IOException {
+	void testMemE1GetsMemE2OutSubexpr() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
-				move(temp("y"), temp("x")),
 				move(temp("t1"), constant(1)),
-				move(temp("t2"), mem(temp("t3"))),
-				move(temp("t4"), temp("t5")),
+				move(mem(op(ADD, temp("t2"), temp("t3"))), mem(op(ADD, constant(1), temp("t4"))))
+			);
+		
+		// Second node out should have [e1], [e2], and all subexprs
+		perform(func);
+	}
+	
+	@Test
+	void testXGetsFGenEArgsAreTemps() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
 				call("f", 1, temp("t2"), temp("4")),
+				move(temp("x"), temp("_RET0"))
+			);
+		
+		perform(func);
+	}
+	
+	@Test
+	void testXGetsFGenEArgsAreBinop() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				call("f", 1, op(ADD, temp("t2"), temp("4"))),
 				move(temp("x"), temp("_RET0"))
 			);
 		
@@ -141,7 +148,7 @@ public class AvailableExpressionsTests {
 	void testIf() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
-				cjump(op(OpType.EQ, constant(1), constant(2)), "l1", "l2"),
+				cjump(op(EQ, constant(1), constant(2)), "l1", "l2"),
 				label("l1"),
 				move(temp("t1"), constant(1)),
 				label("l2"),
@@ -159,7 +166,7 @@ public class AvailableExpressionsTests {
 		List<IRStmt> func = ArrayUtils.elems(
 				move(temp("t2"), temp("t1")),
 				move(temp("t1"), temp("t3")),
-				cjump(op(OpType.EQ, constant(1), constant(2)), "l1", "l2"),
+				cjump(op(EQ, constant(1), constant(2)), "l1", "l2"),
 				label("l1"),
 				move(temp("t1"), constant(1)),
 				label("l2"),

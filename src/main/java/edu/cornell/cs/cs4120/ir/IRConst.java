@@ -71,7 +71,7 @@ public class IRConst extends IRExpr_c {
 
 	@Override
 	public Set<IRExpr> genAvailableExprs() {
-		return SetUtils.elems(this);
+		return SetUtils.empty();
 	}
 	
 	@Override

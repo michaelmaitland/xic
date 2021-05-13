@@ -30,18 +30,12 @@ public class AvailableExprs {
 	
 	public void performAvaliableExpressionsAnalysis(IRCompUnit ir, IRNodeFactory f) {
 
-		// need data for kill
+		// need this data for kill
 		IRCompUnit visitedIr = (IRCompUnit)new IRContainsMemSubexprDecorator(f).visit(ir);
+		// need formated as flat list
+		List<IRStmt> stmts = convertProgToList(visitedIr); 
 
 		IRCFGBuilder<AvailableData> builder = new IRCFGBuilder<>();
-		
-		List<IRStmt> stmts = ArrayUtils.empty();
-		for(IRFuncDefn func : visitedIr.functions().values()) {
-			IRStmt body = func.body();
-			List<IRStmt> fstmts = ((IRSeq)body).stmts();
-			ArrayUtils.concat(stmts, fstmts);
-		}
-
 		graph = builder.buildIRCFG(stmts, AvailableData::new);
 		List<Node> nodes = graph.getNodes();
 		
@@ -72,6 +66,17 @@ public class AvailableExprs {
 		}
 	}
 	
+	private List<IRStmt> convertProgToList(IRCompUnit visitedIr) {
+		List<IRStmt> stmts = ArrayUtils.empty();
+		for(IRFuncDefn func : visitedIr.functions().values()) {
+			IRStmt body = func.body();
+			List<IRStmt> fstmts = ((IRSeq)body).stmts();
+			ArrayUtils.concat(stmts, fstmts);
+		}
+
+		return stmts;
+	}
+
 	/**
 	 * The set of available expressions on edges entering node n.
 	 * in[n] = expressions available on all edges into n
@@ -118,9 +123,8 @@ public class AvailableExprs {
 	 * Expressions evaluated by a node.
 	 * 
 	 * For example,
-	 * exprs(x <- e) 	   = e and all subexpressions or e
-	 * exprs([e1] <- e2)    = {}
-	 * exprs([e1] <- [e2]) = [e2], [e1] and subexpressions
+	 * exprs(x <- e) 	   = e and all subexprs of e
+	 * exprs([e1] <- e2)   = [e1], e2 and subexps of [e1] and e2
 	 * exprs(x <- f(es))   = forall e in es, e and its subexprs
 	 * exprs(if e)         = e and its subexprs
 	 */
@@ -130,11 +134,11 @@ public class AvailableExprs {
 		if (hasXGetsEForm(ir)) {
 			return exprsXGetsE((IRMove)ir, node);
 
-		} else if(hasMemE1GetsMemE2Form(ir)) {
-			return exprsMemE1GetsMemE2((IRMove)ir, node);
+		} else if(hasMemE1GetsE2Form(ir)) {
+			return exprsMemE1GetsE2((IRMove)ir, node);
 
 		} else if(hasXGetsFForm(ir)) {
-			return exprsXGetsF((IRMove)ir, node);
+			return exprsXGetsF((IRCallStmt)ir, node);
 
 		} else if(hasIfEForm(ir)) {
 			return exprsIfE((IRCJump)ir, node);
@@ -151,15 +155,14 @@ public class AvailableExprs {
 				   .collect(Collectors.toSet());
 	}
 
-	private Set<AvailableExpr> exprsMemE1GetsMemE2(IRMove mov, Node d) {
+	private Set<AvailableExpr> exprsMemE1GetsE2(IRMove mov, Node d) {
 		return SetUtils.union(mov.source().genAvailableExprs(), mov.target().genAvailableExprs())
 			       .stream()
 				   .map(e -> new AvailableExpr(e, d))
 				   .collect(Collectors.toSet());
 	}
 
-	private Set<AvailableExpr> exprsXGetsF(IRMove ir, Node d) {
-		IRCallStmt call = (IRCallStmt) ir.source();
+	private Set<AvailableExpr> exprsXGetsF(IRCallStmt call, Node d) {
 		return call.genAvailableExprs()
 			       .stream()
 		           .map(e -> new AvailableExpr(e, d))
@@ -179,7 +182,7 @@ public class AvailableExprs {
 	 * For example,
 	 * kill(x <- e)       = all exprs containing x
 	 * kill([e1] <- e2)   = all mem exprs
-	 * kill([e1] <- [e2]) = all exprs [e'] that can alias [e1]
+	 * kill([e1] <- [e2]) = all exprs [e'] that can alias [e1] (we don't do alias analysis so we're killing all mem exprs)
 	 * kill(x <- f(es))   = exprs containing x and expressions [e'] 
 	 * 					    that could be changed by function call to f
 	 * kill(if e)         = {}
@@ -190,14 +193,11 @@ public class AvailableExprs {
 		if (hasXGetsEForm(ir)) {
 			return killXGetsE((IRMove)ir, l);
 
-		} else if (hasMemEGetsEForm(ir)) {
-			return killMemEGetsE((IRMove)ir, l);
-
-		} else if(hasMemE1GetsMemE2Form(ir)) {
-			return killMemE1GetsMemE2((IRMove)ir, l);
+		} else if (hasMemE1GetsE2Form(ir)) {
+			return killMemE1GetsE2((IRMove)ir, l);
 
 		} else if(hasXGetsFForm(ir)) {
-			return killXGetsF((IRMove)ir, l);
+			return killXGetsF((IRCallStmt)ir, l);
 
 		} else if(hasIfEForm(ir)) {
 			return killIfE((IRCJump)ir,l);
@@ -227,7 +227,7 @@ public class AvailableExprs {
 	 * 
 	 * @param ir of the form IRMove(IRMem e1, IRMem e2)
 	 */
-	private Set<AvailableExpr> killMemE1GetsMemE2(IRMove ir, Set<AvailableExpr> l) {
+	private Set<AvailableExpr> killMemE1GetsE2(IRMove ir, Set<AvailableExpr> l) {
 		return l.stream()
 				.filter(e -> e.getExpr().isContainsMemSubexpr())
 				.collect(Collectors.toSet());
@@ -238,27 +238,17 @@ public class AvailableExprs {
 	}
 
 	/**
-	 * The subset of IRExpr in l that contains x and any arguments IRMem(e')
-	 * @param ir of the form IRMove(IRMem e1, IRCallStmt c)
+	 * The subset of IRExpr in l that contains any arguments IRMem(e')
+	 * The x <- f(e) kills x by the subsequent IRStmt that moves RET_i into
+	 * a temp.
+	 * @param ir of the form IRCallStmt c. 
 	 */
-	private Set<AvailableExpr> killXGetsF(IRMove ir, Set<AvailableExpr> l) {
-		IRTemp temp = (IRTemp)ir.target();
-		// TODO: this is wrong. need to add to kill all mem subexprs unless we do aliasing
-		return l.stream()
-				.filter(e -> e.getExpr().containsExpr(temp))
-				.collect(Collectors.toSet());
-	}
-	
-	/**
-	 * The subset of IRExpr in l of form M[x] forall x.
-	 * @param ir of the form IRMove(IRMem e1, IRExpr e) where e not an IRMem
-	 */
-	private Set<AvailableExpr> killMemEGetsE(IRMove ir, Set<AvailableExpr> l) {
+	private Set<AvailableExpr> killXGetsF(IRCallStmt ir, Set<AvailableExpr> l) {
 		return l.stream()
 				.filter(e -> e.getExpr().isContainsMemSubexpr())
 				.collect(Collectors.toSet());
 	}
-
+	
 	/**
 	 * The empty set.
 	 * @param ir of the form IRCJump(IRExpr e, l1, l2)
@@ -273,29 +263,28 @@ public class AvailableExprs {
 				&& ((IRMove)ir).source() instanceof IRExpr;
 	}
 
-	private boolean hasMemEGetsEForm(IRStmt ir) {
+	private boolean hasMemE1GetsE2Form(IRStmt ir) {
 		return ir instanceof IRMove
 			&& ((IRMove)ir).target() instanceof IRMem
-			&& ((IRMove)ir).source() instanceof IRExpr
-			&& !(((IRMove)ir).source() instanceof IRMem);
-	}
-
-	private boolean hasMemE1GetsMemE2Form(IRStmt ir) {
-		return ir instanceof IRMove 
-				&& ((IRMove)ir).target() instanceof IRMem 
-				&& ((IRMove)ir).source() instanceof IRMem;
+			&& ((IRMove)ir).source() instanceof IRExpr;
 	}
 
 	private boolean hasXGetsFForm(IRStmt ir) {
-		return ir instanceof IRMove 
-			&& ((IRMove)ir).target() instanceof IRTemp
-			&& ((IRMove)ir).source() instanceof IRCallStmt;
+		return ir instanceof IRCallStmt;
 	}
 
 	private boolean hasIfEForm(IRStmt ir) {
 		return ir instanceof IRCJump; 
 	}
 	
+	public Graph<IRData<AvailableData>> getGraph() {
+		return graph;
+	}
+	
+	public void showGraph(Writer writer) throws IOException {
+		graph.show(writer, "AvailableExpressions", true, this::showAvailable);
+	}
+
 	private String showAvailable(IRData<AvailableData> data) {
 		Set<AvailableExpr> in = data.getFlowData().getIn();
 		Set<AvailableExpr> out = data.getFlowData().getOut();
@@ -316,7 +305,6 @@ public class AvailableExprs {
 		return sb.toString();
 	}
 	
-	
 	private <T> String setToString(Set<T> set) {
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
@@ -331,15 +319,6 @@ public class AvailableExprs {
 		
 		return sb.toString();
 	}
-
-	public Graph<IRData<AvailableData>> getGraph() {
-		return graph;
-	}
-	
-	public void showGraph(Writer writer) throws IOException {
-		graph.show(writer, "AvaliableExpressions", true, this::showAvailable);
-	}
-
 	
 	public static class AvailableData {
 		Set<AvailableExpr> in;
@@ -402,14 +381,47 @@ public class AvailableExprs {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("Expr: ");
+			sb.append("[Expr: ");
 			sb.append(expr.toString());
 
 			sb.append(", DefNode: ");
-			sb.append(expr.toString());
 			sb.append(definer.getNodeId());
+
+			sb.append("]");
 			
 			return sb.toString();
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((definer == null) ? 0 : definer.hashCode());
+			result = prime * result + ((expr == null) ? 0 : expr.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			AvailableExpr other = (AvailableExpr) obj;
+			if (definer == null) {
+				if (other.definer != null)
+					return false;
+			} else if (!definer.equals(other.definer))
+				return false;
+			if (expr == null) {
+				if (other.expr != null)
+					return false;
+			} else if (!expr.equals(other.expr))
+				return false;
+			return true;
+		}
+		
 	}
 }
