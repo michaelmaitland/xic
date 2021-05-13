@@ -1,6 +1,8 @@
 package mtm68.ast.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -113,5 +115,17 @@ public class FunctionDecl extends Node {
 		return true;
 	}
 	
-	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		FunctionDecl decl = this.copy();
+		
+		List<SimpleDecl> newArgs = new ArrayList<>();
+		
+		for(SimpleDecl arg : args)
+			newArgs.add((SimpleDecl) arg.renameVars(varMap));
+		
+		decl.args = newArgs;
+		
+		return decl;
+	}
 }

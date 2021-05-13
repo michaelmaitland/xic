@@ -1,6 +1,8 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,10 @@ public class Block extends Statement {
 
 	public Optional<Return> getReturnStmt() {
 		return returnStmt;
+	}
+	
+	public void setReturnStmt(Optional<Return> returnStmt) {
+		this.returnStmt = returnStmt;
 	}
 	
 	@Override
@@ -108,5 +114,23 @@ public class Block extends Statement {
 								.map(Statement::getIRStmt)
 								.collect(Collectors.toList()));
 		return copyAndSetIRStmt(seq);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		Block block = this.copy();
+		
+		List<Statement> newStmts = new ArrayList<>();
+		
+		for(Statement stmt : stmts) {
+			newStmts.add((Statement) stmt.renameVars(varMap));
+		}
+		
+		block.stmts = newStmts;
+		
+		block.returnStmt.ifPresent(
+				r -> block.returnStmt = Optional.of((Return) r.renameVars(varMap)));
+		
+		return block;
 	}
 }

@@ -2,12 +2,14 @@ package mtm68.ast.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.FunctionCollector;
+import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -48,6 +50,12 @@ public abstract class Node implements HasLocation, Cloneable {
 	public abstract Node typeCheck(TypeChecker tc);
 
 	public abstract Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf);
+	
+	public Node functionInline(FunctionInliner fl) {
+		return this;
+	}
+	
+	public abstract Node renameVars(Map<String, String> varMap);
 
 	/**
 	 * Accepts a visitor

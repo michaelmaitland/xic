@@ -1,6 +1,7 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
@@ -12,6 +13,7 @@ import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
+import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -77,5 +79,17 @@ public class ProcedureCall extends Statement {
 		IRCallStmt call = inf.IRCallStmt(name, irArgs);
 
 		return copyAndSetIRStmt(call);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		ProcedureCall proc = this.copy();
+		proc.fexp = (FExpr) fexp.renameVars(varMap);
+		return proc;
+	}
+	
+	@Override
+	public Node functionInline(FunctionInliner fl) {
+		return fl.transformProcedure(this);
 	}
 }

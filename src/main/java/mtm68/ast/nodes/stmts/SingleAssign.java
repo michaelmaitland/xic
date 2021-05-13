@@ -1,5 +1,7 @@
 package mtm68.ast.nodes.stmts;
 
+import java.util.Map;
+
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -9,11 +11,13 @@ import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.types.HasType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
+import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -110,5 +114,20 @@ public class SingleAssign extends Assign {
 			cv.boundsCheck(tempArr, tempIndex),
 		    inf.IRMove(offsetIntoArr, rhs.getIRExpr())
 		);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		SingleAssign sa = this.copy();
+		
+		sa.lhs = lhs.renameVars(varMap);
+		sa.rhs = (Expr) rhs.renameVars(varMap);
+		
+		return sa;
+	}
+	
+	@Override
+	public Node functionInline(FunctionInliner fl) {
+		return fl.transformSingleAssign(this);
 	}
 }

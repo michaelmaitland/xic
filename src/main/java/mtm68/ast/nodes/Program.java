@@ -91,4 +91,9 @@ public class Program extends Node implements Root {
 		/** Not part of IR rep */
 		return newProgram;
 	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		return this;
+	}
 }

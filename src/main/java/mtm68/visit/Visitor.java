@@ -8,5 +8,5 @@ public abstract class Visitor {
 		return this;
 	}
 	
-	public abstract Node leave(Node n, Node old);
+	public abstract Node leave(Node parent, Node n);
 }

@@ -1,5 +1,7 @@
 package mtm68.ast.nodes;
 
+import java.util.Map;
+
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
@@ -81,5 +83,15 @@ public class FunctionDefn extends Node {
 		FunctionDefn copy = copy();
 		copy.setIRFuncDefn(defn);
 		return copy;
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		FunctionDefn defn = this.copy();
+		
+		defn.functionDecl = (FunctionDecl) functionDecl.renameVars(varMap);
+		defn.body = (Block) body.renameVars(varMap);
+		
+		return defn;
 	}
 }

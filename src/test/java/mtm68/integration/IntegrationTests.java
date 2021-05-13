@@ -58,6 +58,7 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
 import mtm68.visit.FunctionCollector;
+import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 
@@ -65,6 +66,8 @@ public class IntegrationTests {
 	private static final OSType OS = OSType.getOSType(System.getProperty("os.name").toLowerCase());
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
+	
+	private static final boolean FUNCTION_INLINE = true;
 	
 	@BeforeEach
 	void setUpFileUtils() {
@@ -244,6 +247,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("count_islands.xi", "Number of islands: 5\n");
 	}
 	
+	@Test
+	void testIdentity() {
+		generateAndAssertOutput("identity.xi", "");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
@@ -317,7 +325,6 @@ public class IntegrationTests {
 			linkProc.waitFor();
 			
 			BufferedReader stdErrOut = new BufferedReader(new InputStreamReader(linkProc.getErrorStream()));
-//			BufferedReader stdLinkOut = new BufferedReader(new InputStreamReader(linkProc.getInputStream()));
 			String s = null;
 			
 			if(!Files.exists(pwd.resolve("a.out"))) {
@@ -423,6 +430,13 @@ public class IntegrationTests {
 		ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 		
 		assertFalse("Found errors after typechecking", typeChecker.hasError());
+		
+		//AST OPTS
+		
+		if(FUNCTION_INLINE) {
+			FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
+			program = program.accept(fl);
+		}
 
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();

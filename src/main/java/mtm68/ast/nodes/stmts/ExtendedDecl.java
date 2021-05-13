@@ -1,6 +1,7 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRExpr;
@@ -86,5 +87,10 @@ public class ExtendedDecl extends Decl {
 
 		IRSeq seq = cv.allocateExtendedDeclArray(getId(), indices);
 		return copyAndSetIRStmt(seq);
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
+		return this;
 	}
 }

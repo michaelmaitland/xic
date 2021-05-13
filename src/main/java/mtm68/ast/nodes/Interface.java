@@ -1,6 +1,7 @@
 package mtm68.ast.nodes;
 
 import java.util.List;
+import java.util.Map;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -61,6 +62,11 @@ public class Interface extends Node implements Root {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory inf) {
 		/* There is no IR Node for an interface */
+		return this;
+	}
+	
+	@Override
+	public Node renameVars(Map<String, String> varMap) {
 		return this;
 	}
 }
