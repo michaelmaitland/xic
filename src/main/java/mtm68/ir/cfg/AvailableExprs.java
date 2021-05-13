@@ -380,12 +380,10 @@ public class AvailableExprs {
 	public static class AvailableExpr {
 		IRExpr expr;
 		Node definer;
-		boolean didTransformDefiner;
 		
 		public AvailableExpr(IRExpr expr, Node definer) {
 			this.expr = expr;
 			this.definer = definer;
-			this.didTransformDefiner = false;
 		}
 		
 		public IRExpr getExpr() {
@@ -401,14 +399,6 @@ public class AvailableExprs {
 			this.definer = definer;
 		}
 		
-		public boolean isDidTransformDefiner() {
-			return didTransformDefiner;
-		}
-
-		public void setDidTransformDefiner(boolean didTransformDefiner) {
-			this.didTransformDefiner = didTransformDefiner;
-		}
-
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 
