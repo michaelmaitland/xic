@@ -134,7 +134,7 @@ public class AvailableExprTests {
 	}
 	
 	@Test
-	void testXGetsFGenEArgsAreBinop() throws IOException {
+	void testXGetsFGenEArgIsBinop() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
 				call("f", 1, op(ADD, temp("t2"), temp("4"))),
@@ -145,7 +145,30 @@ public class AvailableExprTests {
 	}
 	
 	@Test
-	void testIf() throws IOException {
+	void testXGetsFGenEArgsWithNestedSubexpr() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				call("f", 1, op(ADD, op(ADD,constant(1),temp("t2")), temp("4"))),
+				move(temp("x"), temp("_RET0"))
+			);
+		
+		perform(func);
+	}
+	
+	
+	@Test
+	void testXGetsFGenEMultiArg() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				call("f", 1, op(ADD, temp("t2"), temp("t4")), op(ADD, temp("t3"), temp("t5"))),
+				move(temp("x"), temp("_RET0"))
+			);
+		
+		perform(func);
+	}
+	
+	@Test
+	void testIfGenE() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
 				cjump(op(EQ, constant(1), constant(2)), "l1", "l2"),
