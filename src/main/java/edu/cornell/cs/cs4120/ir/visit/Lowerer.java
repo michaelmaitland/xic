@@ -17,6 +17,7 @@ import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.ir.IRUtils;
 import mtm68.util.FreshTempGenerator;
 
 public class Lowerer extends IRVisitor {
@@ -44,12 +45,7 @@ public class Lowerer extends IRVisitor {
 	}
 	
 	public List<IRStmt> flattenSeq(List<IRStmt> stmts) {
-		List<IRStmt> newSeq = new ArrayList<>();
-		for(IRStmt stmt : stmts) {
-			if(stmt instanceof IRSeq) newSeq.addAll(flattenSeq(((IRSeq)stmt).stmts()));
-			else newSeq.add(stmt);		
-		}
-		return newSeq;
+		return IRUtils.flattenSeq(stmts);
 	}
 	
 	public IRSeq transformCall(IRExpr func, int numRets, List<IRExpr> args) {

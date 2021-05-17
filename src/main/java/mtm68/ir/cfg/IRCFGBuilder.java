@@ -13,6 +13,7 @@ import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRStmt;
+import edu.cornell.cs.cs4120.ir.IRUtils;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.util.ArrayUtils;
@@ -39,6 +40,10 @@ public class IRCFGBuilder<T> {
 		stmtIdxToNode = new HashMap<>();
 	}
 	
+	/**
+	 * Converts the CFG back to IR as long as there were no
+	 * new nodes added to the graph after a call to buildIRCFG returned
+	 */
 	public List<IRStmt> convertBackToIR() {
 		List<IRStmt> rebuilt = ArrayUtils.empty();
 		int i = 0;
@@ -54,7 +59,7 @@ public class IRCFGBuilder<T> {
 			IRStmt newStmt = data.getIR();
 			rebuilt.add(newStmt);
 		}
-		return rebuilt;
+		return IRUtils.flattenSeq(rebuilt);
 	}
 
 	public Graph<IRData<T>> buildIRCFG(List<IRStmt> stmts, Supplier<T> flowDataConstructor) {
