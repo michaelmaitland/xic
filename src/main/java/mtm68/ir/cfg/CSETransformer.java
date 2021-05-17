@@ -79,7 +79,10 @@ public class CSETransformer {
 				data.setIR(newNodeIr);
 			}
 		}
-		return null;
+		IRFuncDefn copy = ir.copy();
+		IRSeq seq = f.IRSeq(ae.getBuilder().convertBackToIR());
+		copy.setBody(seq);
+		return copy;
 	}
 	
 	private String getFreshTemp() {

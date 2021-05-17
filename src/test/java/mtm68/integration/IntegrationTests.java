@@ -49,6 +49,7 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
+import mtm68.ir.cfg.CSETransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
@@ -446,6 +447,7 @@ public class IntegrationTests {
 		IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
 		CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
 		UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
+		CSETransformer cseTransformer = new CSETransformer();
 		
 		program = irConverter.performConvertToIR(program);
 		program.getIrCompUnit().appendFunc(irConverter.allocLayer());
@@ -454,6 +456,7 @@ public class IntegrationTests {
 		irRoot = constFolder.visit(irRoot);
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
+		irRoot = cseTransformer.doCSE((IRCompUnit)irRoot, nodeFactory);
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();

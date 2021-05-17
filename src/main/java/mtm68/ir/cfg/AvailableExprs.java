@@ -25,6 +25,7 @@ import mtm68.util.SetUtils;
 public class AvailableExprs {
 
 	private Graph<IRData<AvailableData>> graph;
+	private IRCFGBuilder<AvailableData> builder;
 	
 	public void performAvaliableExpressionsAnalysis(IRFuncDefn ir, IRNodeFactory f) {
 
@@ -34,7 +35,7 @@ public class AvailableExprs {
 		IRStmt body = visitedIr.body();
 	    List<IRStmt> stmts = ((IRSeq)body).stmts();
 
-		IRCFGBuilder<AvailableData> builder = new IRCFGBuilder<>();
+		builder = new IRCFGBuilder<>();
 		graph = builder.buildIRCFG(stmts, AvailableData::new);
 		List<Node> nodes = graph.getNodes();
 		
@@ -271,6 +272,10 @@ public class AvailableExprs {
 	
 	public void showGraph(Writer writer) throws IOException {
 		graph.show(writer, "AvailableExpressions", true, this::showAvailable);
+	}
+	
+	public IRCFGBuilder<AvailableData> getBuilder() {
+		return builder;
 	}
 
 	private String showAvailable(IRData<AvailableData> data) {

@@ -29,14 +29,37 @@ public class IRCFGBuilder<T> {
 	
 	private Map<String, Node> locationMap;
 	private Map<String, List<Node>> waitingJumps;
+	private Map<Integer, Node> stmtIdxToNode;
+	private List<IRStmt> originalStmts;
 	
 	public IRCFGBuilder() {
 		graph = new Graph<>();
 		locationMap = new HashMap<>();
 		waitingJumps = new HashMap<>();
+		stmtIdxToNode = new HashMap<>();
 	}
 	
+	public List<IRStmt> convertBackToIR() {
+		List<IRStmt> rebuilt = ArrayUtils.empty();
+		int i = 0;
+		for(IRStmt stmt : originalStmts) {
+			if (stmt instanceof IRLabel || stmt instanceof IRJump || stmt instanceof IRCJump) {
+				rebuilt.add(stmt);
+				continue;
+			} 
+			
+			Node n = stmtIdxToNode.get(i);
+			i++;
+			IRData<T> data = graph.getDataForNode(n);
+			IRStmt newStmt = data.getIR();
+			rebuilt.add(newStmt);
+		}
+		return rebuilt;
+	}
+
 	public Graph<IRData<T>> buildIRCFG(List<IRStmt> stmts, Supplier<T> flowDataConstructor) {
+		this.originalStmts = stmts;
+		int i = 0;
 		for(IRStmt stmt : stmts) {
 					
 			if(isLabel(stmt)) {
@@ -47,6 +70,7 @@ public class IRCFGBuilder<T> {
 			if(!(stmt instanceof IRJump)) {
 				IRData<T> data = new IRData<>(stmt, flowDataConstructor.get());
 				curr = graph.createNode(data);
+				stmtIdxToNode.put(i++, curr);
 				
 				if(prev != null && !prevWasJump && !prevWasRet){
 					graph.addEdge(prev, curr);
@@ -149,10 +173,16 @@ public class IRCFGBuilder<T> {
 
 		private IRStmt ir;
 		private T flowData;
+		private int stmtIdx;
 
 		public IRData(IRStmt ir, T flowData) {
+			this(ir, flowData, -1);
+		}
+		
+		public IRData(IRStmt ir, T flowData, int stmtIdx) {
 			this.ir= ir;
 			this.flowData = flowData;
+			this.stmtIdx = stmtIdx;
 		}
 
 		public IRStmt getIR() {
@@ -169,6 +199,14 @@ public class IRCFGBuilder<T> {
 
 		public void setFlowData(T flowData) {
 			this.flowData = flowData;
+		}
+
+		public int getStmtIdx() {
+			return stmtIdx;
+		}
+
+		public void setStmtIdx(int stmtIdx) {
+			this.stmtIdx = stmtIdx;
 		}
 
 		@Override

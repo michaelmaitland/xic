@@ -42,8 +42,16 @@ public class IRFuncDefn extends IRNode_c {
     public String label() {
         return "FUNC " + name;
     }
+    
+    public IRStmt getBody() {
+		return body;
+	}
 
-    @Override
+	public void setBody(IRStmt body) {
+		this.body = body;
+	}
+
+	@Override
     public IRNode visitChildren(IRVisitor v) {
         IRStmt stmt = (IRStmt) v.visit(this, body);
 
