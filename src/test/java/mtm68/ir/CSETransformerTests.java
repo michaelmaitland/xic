@@ -12,19 +12,21 @@ import static mtm68.ir.IRTestUtils.op;
 import static mtm68.ir.IRTestUtils.temp;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
-import mtm68.ir.cfg.AvailableExprs;
+import mtm68.ir.cfg.CSETransformer;
 import mtm68.util.ArrayUtils;
 
-public class AvailableExprTests {
+public class CSETransformerTests {
 	
 	@Test
 	void constsAndTempDontGen() throws IOException {
@@ -201,12 +203,12 @@ public class AvailableExprTests {
 	private void perform(List<IRStmt> stmts) throws IOException {
 		IRSeq seq = new IRSeq(stmts);
 		IRFuncDefn func = new IRFuncDefn("f", seq, 0);
+		Map<String, IRFuncDefn> funcs = new HashMap<>();
+		funcs.put("f", func);
+		IRCompUnit comp = new IRCompUnit("test.xi", funcs);
 
-		AvailableExprs ae = new AvailableExprs();
-		ae.performAvaliableExpressionsAnalysis(func, new IRNodeFactory_c());
+		CSETransformer c = new CSETransformer();
+		c.doCSE(comp, new IRNodeFactory_c());
 		
-		ae.getGraph();
-
-		ae.showGraph(new PrintWriter(System.out));
 	}
 }

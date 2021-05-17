@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
-import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMem;
@@ -21,19 +20,19 @@ import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
-import mtm68.util.ArrayUtils;
 import mtm68.util.SetUtils;
 
 public class AvailableExprs {
 
 	private Graph<IRData<AvailableData>> graph;
 	
-	public void performAvaliableExpressionsAnalysis(IRCompUnit ir, IRNodeFactory f) {
+	public void performAvaliableExpressionsAnalysis(IRFuncDefn ir, IRNodeFactory f) {
 
 		// need this data for kill
-		IRCompUnit visitedIr = (IRCompUnit)new IRContainsMemSubexprDecorator(f).visit(ir);
+		IRFuncDefn visitedIr = (IRFuncDefn)new IRContainsMemSubexprDecorator(f).visit(ir);
 		// need formated as flat list
-		List<IRStmt> stmts = convertProgToList(visitedIr); 
+		IRStmt body = visitedIr.body();
+	    List<IRStmt> stmts = ((IRSeq)body).stmts();
 
 		IRCFGBuilder<AvailableData> builder = new IRCFGBuilder<>();
 		graph = builder.buildIRCFG(stmts, AvailableData::new);
@@ -66,17 +65,6 @@ public class AvailableExprs {
 		}
 	}
 	
-	private List<IRStmt> convertProgToList(IRCompUnit visitedIr) {
-		List<IRStmt> stmts = ArrayUtils.empty();
-		for(IRFuncDefn func : visitedIr.functions().values()) {
-			IRStmt body = func.body();
-			List<IRStmt> fstmts = ((IRSeq)body).stmts();
-			ArrayUtils.concat(stmts, fstmts);
-		}
-
-		return stmts;
-	}
-
 	/**
 	 * The set of available expressions on edges entering node n.
 	 * in[n] = expressions available on all edges into n

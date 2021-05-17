@@ -22,10 +22,10 @@ import mtm68.util.SetUtils;
  * An intermediate representation for a compilation unit
  */
 public class IRCompUnit extends IRNode_c {
-    private final String name;
-    private final Map<String, IRFuncDefn> functions;
-    private final List<String> ctors;
-    private final Map<String, IRData> dataMap;
+    private String name;
+    private Map<String, IRFuncDefn> functions;
+    private List<String> ctors;
+    private Map<String, IRData> dataMap;
 
     public IRCompUnit(String name) {
         this(name, new LinkedHashMap<>(), new ArrayList<>(), new LinkedHashMap<>());
@@ -178,5 +178,9 @@ public class IRCompUnit extends IRNode_c {
 		IRCompUnit copy = copy();
 		copy.setContainsMemSubexpr(b);
 		return copy;
+	}
+
+	public void setFunctions(Map<String, IRFuncDefn> newFuncs) {
+		this.functions = newFuncs;
 	}
 }

@@ -1,9 +1,12 @@
 package mtm68.ir.cfg;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
@@ -33,8 +36,20 @@ public class CSETransformer {
 	 *   s : t <- w
 	 * 
 	 */
-	public void doCSE(IRCompUnit ir, IRNodeFactory f) {
+	public IRCompUnit doCSE(IRCompUnit ir, IRNodeFactory f) {
 		
+		Map<String, IRFuncDefn> newFuncs = new HashMap<>();
+		for(String k : ir.functions().keySet()) {
+			IRFuncDefn func = ir.functions().get(k);
+			IRFuncDefn newFunc = doCSE(func, f);
+			newFuncs.put(k, newFunc);
+		}
+		ir.copy();
+		ir.setFunctions(newFuncs);
+		return ir;
+	}
+	
+	private IRFuncDefn doCSE(IRFuncDefn ir, IRNodeFactory f) {
 		AvailableExprs ae = new AvailableExprs();
 		ae.performAvaliableExpressionsAnalysis(ir, f);
 		Graph<IRData<AvailableData>> graph = ae.getGraph();
@@ -64,6 +79,7 @@ public class CSETransformer {
 				data.setIR(newNodeIr);
 			}
 		}
+		return null;
 	}
 	
 	private String getFreshTemp() {
