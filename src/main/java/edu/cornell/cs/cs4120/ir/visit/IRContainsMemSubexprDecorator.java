@@ -11,7 +11,7 @@ public class IRContainsMemSubexprDecorator extends IRVisitor {
 	
 	@Override
 	public IRNode leave(IRNode parent, IRNode n, IRNode n_, IRVisitor v_) {		
-		return n_.decorateContainsMemSubexpr(this);
+		return n_.decorateContainsMutableMemSubexpr(this);
 	}
 
 }

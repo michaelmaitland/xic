@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
@@ -332,6 +333,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	public IRMem getOffsetIntoArr(IRExpr arr, IRExpr index) {
+		return getOffsetIntoArr(arr, index, false);
+	}
+	
+	public IRMem getOffsetIntoArr(IRExpr arr, IRExpr index, boolean isImmutable) {
 		/*
 		 * index is going to be at mem address: (mem addr of arr) + (WORD_SIZE * index).
 		 * We can us the temp's here because it will be executed after
@@ -339,7 +344,11 @@ public class NodeToIRNodeConverter extends Visitor {
 		 */
 		IRExpr e = inf.IRBinOp(OpType.MUL, inf.IRConst(getWordSize()), index);
 		IRExpr e2 = inf.IRBinOp(OpType.ADD, arr, e); 
-		return  inf.IRMem(e2);
+		if(isImmutable) {
+			return  inf.IRMem(e2, MemType.IMMUTABLE);
+		} else {
+			return  inf.IRMem(e2);
+		}
 	}
 
 	public IRESeq allocateAndInitArray(List<IRExpr> items) {
@@ -354,7 +363,7 @@ public class NodeToIRNodeConverter extends Visitor {
         IRCallStmt allocStmt = inf.IRCallStmt(malloc, ArrayUtils.singleton(sizeOfArrAndLen));
         seq.add(allocStmt);
 		seq.add(inf.IRMove(arrBase, inf.IRTemp(retVal(0))));
-		seq.add(inf.IRMove(inf.IRMem(arrBase), inf.IRConst(items.size())));
+		seq.add(inf.IRMove(inf.IRMem(arrBase, MemType.IMMUTABLE), inf.IRConst(items.size())));
         
         // put items in their index
         for(int i=0; i < items.size(); i++) {

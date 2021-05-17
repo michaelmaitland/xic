@@ -130,13 +130,13 @@ public class IRCall extends IRExpr_c {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMemSubexpr() 
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMutableMemSubexpr() 
 					|| args.stream()
-						.map(IRNode::isContainsMemSubexpr)
+						.map(IRNode::isContainsMutableMemSubexpr)
 						.reduce(Boolean.FALSE, Boolean::logicalOr);
 		IRCall copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 }

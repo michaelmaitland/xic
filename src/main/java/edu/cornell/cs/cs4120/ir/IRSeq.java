@@ -168,13 +168,13 @@ public class IRSeq extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = stmts.stream()
-					  .map(IRNode::isContainsMemSubexpr)
+					  .map(IRNode::isContainsMutableMemSubexpr)
 					  .reduce(Boolean.FALSE, Boolean::logicalOr);
 		
 		IRSeq copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 }

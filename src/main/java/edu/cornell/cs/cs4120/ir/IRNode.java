@@ -74,9 +74,9 @@ public interface IRNode {
 
 	IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith);
 
-	public boolean isContainsMemSubexpr();
+	public boolean isContainsMutableMemSubexpr();
 
-	void setContainsMemSubexpr(boolean containsMemSubexpr);
+	void setContainsMutableMemSubexpr(boolean containsMemSubexpr);
 
-	IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr);
+	IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr);
 }

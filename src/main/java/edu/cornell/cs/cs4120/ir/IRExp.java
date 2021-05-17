@@ -93,9 +93,9 @@ public class IRExp extends IRStmt {
 	}
 		
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRExp copy = copy();
-		copy.setContainsMemSubexpr(expr.isContainsMemSubexpr());
+		copy.setContainsMutableMemSubexpr(expr.isContainsMutableMemSubexpr());
 		return copy;
 	}
 }

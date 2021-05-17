@@ -98,9 +98,9 @@ public class IRLabel extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRLabel copy = copy();
-		copy.setContainsMemSubexpr(false);
+		copy.setContainsMutableMemSubexpr(false);
 		return copy;
 	}
 }

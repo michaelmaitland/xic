@@ -212,11 +212,11 @@ public class IRBinOp extends IRExpr_c {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = left.isContainsMemSubexpr() || right .isContainsMemSubexpr();
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = left.isContainsMutableMemSubexpr() || right .isContainsMutableMemSubexpr();
 		
 		IRBinOp copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 	

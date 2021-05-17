@@ -163,9 +163,9 @@ public class IRCJump extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRCJump copy = copy();
-		copy.setContainsMemSubexpr(cond.isContainsMemSubexpr());
+		copy.setContainsMutableMemSubexpr(cond.isContainsMutableMemSubexpr());
 		return copy;
 	}
 }

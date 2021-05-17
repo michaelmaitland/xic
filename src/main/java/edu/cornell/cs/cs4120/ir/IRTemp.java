@@ -79,9 +79,9 @@ public class IRTemp extends IRExpr_c {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRTemp copy = copy();
-		copy.setContainsMemSubexpr(false);
+		copy.setContainsMutableMemSubexpr(false);
 		return copy;
 	}
 	

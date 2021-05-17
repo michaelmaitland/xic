@@ -127,9 +127,9 @@ public class IRMem extends IRExpr_c {
 	}
 	
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRMem copy = copy();
-		copy.setContainsMemSubexpr(true);
+		copy.setContainsMutableMemSubexpr(memType.equals(MemType.IMMUTABLE));
 		return copy;
 	}
 

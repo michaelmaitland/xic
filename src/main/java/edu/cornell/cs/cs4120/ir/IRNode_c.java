@@ -34,17 +34,17 @@ public abstract class IRNode_c implements IRNode, Cloneable {
 
 	protected Assem assem;
 	protected float tileCost = Float.MAX_VALUE;
-	protected boolean containsMemSubexpr;
+	protected boolean containsMutableMemSubexpr;
 	
 	
 	@Override
-	public boolean isContainsMemSubexpr() {
-		return containsMemSubexpr;
+	public boolean isContainsMutableMemSubexpr() {
+		return containsMutableMemSubexpr;
 	}
 
 	@Override
-	public void setContainsMemSubexpr(boolean containsMemSubexpr) {
-		this.containsMemSubexpr = containsMemSubexpr;
+	public void setContainsMutableMemSubexpr(boolean containsMemSubexpr) {
+		this.containsMutableMemSubexpr = containsMemSubexpr;
 	}
 
 	@Override

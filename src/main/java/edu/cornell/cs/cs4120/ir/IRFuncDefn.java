@@ -119,9 +119,9 @@ public class IRFuncDefn extends IRNode_c {
 	}
 	
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRFuncDefn copy = copy();
-		copy.setContainsMemSubexpr(body.isContainsMemSubexpr());
+		copy.setContainsMutableMemSubexpr(body.isContainsMutableMemSubexpr());
 		return copy;
 	}
 	@Override

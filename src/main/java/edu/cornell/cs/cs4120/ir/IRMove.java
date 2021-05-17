@@ -115,11 +115,11 @@ public class IRMove extends IRStmt {
 	}	
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMemSubexpr() || src.isContainsMemSubexpr();
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMutableMemSubexpr() || src.isContainsMutableMemSubexpr();
 		
 		IRMove copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 }

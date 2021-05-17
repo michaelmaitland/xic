@@ -86,9 +86,9 @@ public class IRConst extends IRExpr_c {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRConst copy = copy();
-		copy.setContainsMemSubexpr(false);
+		copy.setContainsMutableMemSubexpr(false);
 		return copy;
 	}
 

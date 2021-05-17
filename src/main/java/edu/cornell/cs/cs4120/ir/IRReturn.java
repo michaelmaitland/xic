@@ -117,13 +117,13 @@ public class IRReturn extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = rets.stream()
-					  .map(IRNode::isContainsMemSubexpr)
+					  .map(IRNode::isContainsMutableMemSubexpr)
 					  .reduce(Boolean.FALSE, Boolean::logicalOr);
 		
 		IRReturn copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 }

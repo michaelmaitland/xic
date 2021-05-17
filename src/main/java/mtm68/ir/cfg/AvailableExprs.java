@@ -217,7 +217,7 @@ public class AvailableExprs {
 	 */
 	private Set<AvailableExpr> killMemE1GetsE2(IRMove ir, Set<AvailableExpr> l) {
 		return l.stream()
-				.filter(e -> e.getExpr().isContainsMemSubexpr())
+				.filter(e -> e.getExpr().isContainsMutableMemSubexpr())
 				.collect(Collectors.toSet());
 //		IRMem e1 = (IRMem)ir.target();
 //		return l.stream()
@@ -233,7 +233,7 @@ public class AvailableExprs {
 	 */
 	private Set<AvailableExpr> killXGetsF(IRCallStmt ir, Set<AvailableExpr> l) {
 		return l.stream()
-				.filter(e -> e.getExpr().isContainsMemSubexpr())
+				.filter(e -> e.getExpr().isContainsMutableMemSubexpr())
 				.collect(Collectors.toSet());
 	}
 	
