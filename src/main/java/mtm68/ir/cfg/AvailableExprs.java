@@ -389,7 +389,6 @@ public class AvailableExprs {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((definer == null) ? 0 : definer.hashCode());
 			result = prime * result + ((expr == null) ? 0 : expr.hashCode());
 			return result;
 		}
@@ -403,11 +402,6 @@ public class AvailableExprs {
 			if (getClass() != obj.getClass())
 				return false;
 			AvailableExpr other = (AvailableExpr) obj;
-			if (definer == null) {
-				if (other.definer != null)
-					return false;
-			} else if (!definer.equals(other.definer))
-				return false;
 			if (expr == null) {
 				if (other.expr != null)
 					return false;
@@ -415,6 +409,5 @@ public class AvailableExprs {
 				return false;
 			return true;
 		}
-		
 	}
 }

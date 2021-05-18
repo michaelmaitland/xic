@@ -134,6 +134,38 @@ public class CSETransformerTests {
 	}
 	
 	@Test
+	void testXGetsEReuseMulti() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("x"), op(ADD, temp("y"), constant(1))),
+				move(temp("z"), op(ADD, temp("y"), constant(1))),
+				move(temp("w"), op(ADD, temp("y"), constant(1)))
+			);
+		
+		List<IRStmt> res = perform(func);
+		assertEquals(5, res.size());
+		IRMove m1 = assertInstanceOfAndReturn(IRMove.class, res.get(0));
+		assertInstanceOf(IRTemp.class, m1.target());
+		assertInstanceOf(IRBinOp.class, m1.source());
+
+		IRMove m2 = assertInstanceOfAndReturn(IRMove.class, res.get(1));
+		assertInstanceOf(IRTemp.class, m2.target());
+		assertInstanceOf(IRTemp.class, m2.source());
+		
+		IRMove m3 = assertInstanceOfAndReturn(IRMove.class, res.get(2));
+		assertInstanceOf(IRTemp.class, m3.target());
+		assertInstanceOf(IRTemp.class, m3.source());
+		
+		IRMove m4 = assertInstanceOfAndReturn(IRMove.class, res.get(3));
+		assertInstanceOf(IRTemp.class, m4.target());
+		assertInstanceOf(IRTemp.class, m4.source());
+		
+		IRMove m5 = assertInstanceOfAndReturn(IRMove.class, res.get(4));
+		assertInstanceOf(IRTemp.class, m5.target());
+		assertInstanceOf(IRTemp.class, m5.source());
+	}
+	
+	@Test
 	void testXGetsEReuse() throws IOException {
 		
 		List<IRStmt> func = ArrayUtils.elems(
