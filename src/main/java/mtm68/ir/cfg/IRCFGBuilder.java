@@ -46,15 +46,14 @@ public class IRCFGBuilder<T> {
 	 */
 	public List<IRStmt> convertBackToIR() {
 		List<IRStmt> rebuilt = ArrayUtils.empty();
-		int i = 0;
-		for(IRStmt stmt : originalStmts) {
+		for(int i = 0; i < originalStmts.size(); i++) {
+			IRStmt stmt = originalStmts.get(i);
 			if (stmt instanceof IRLabel || stmt instanceof IRJump || stmt instanceof IRCJump) {
 				rebuilt.add(stmt);
 				continue;
 			} 
 			
 			Node n = stmtIdxToNode.get(i);
-			i++;
 			IRData<T> data = graph.getDataForNode(n);
 			IRStmt newStmt = data.getIR();
 			rebuilt.add(newStmt);
@@ -64,9 +63,8 @@ public class IRCFGBuilder<T> {
 
 	public Graph<IRData<T>> buildIRCFG(List<IRStmt> stmts, Supplier<T> flowDataConstructor) {
 		this.originalStmts = stmts;
-		int i = 0;
-		for(IRStmt stmt : stmts) {
-					
+		for(int i = 0; i < stmts.size(); i++) {
+			IRStmt stmt = stmts.get(i);
 			if(isLabel(stmt)) {
 				handleLabel((IRLabel)stmt);
 				continue;
@@ -75,7 +73,7 @@ public class IRCFGBuilder<T> {
 			if(!(stmt instanceof IRJump)) {
 				IRData<T> data = new IRData<>(stmt, flowDataConstructor.get());
 				curr = graph.createNode(data);
-				stmtIdxToNode.put(i++, curr);
+				stmtIdxToNode.put(i, curr);
 				
 				if(prev != null && !prevWasJump && !prevWasRet){
 					graph.addEdge(prev, curr);
