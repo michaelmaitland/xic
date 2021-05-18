@@ -202,8 +202,8 @@ public class AvailableExprTests {
 		IRSeq seq = new IRSeq(stmts);
 		IRFuncDefn func = new IRFuncDefn("f", seq, 0);
 
-		AvailableExprs ae = new AvailableExprs();
-		ae.performAvaliableExpressionsAnalysis(func, new IRNodeFactory_c());
+		AvailableExprs ae = new AvailableExprs(func, new IRNodeFactory_c());
+		ae.performAvaliableExpressionsAnalysis();
 		
 		ae.getGraph();
 

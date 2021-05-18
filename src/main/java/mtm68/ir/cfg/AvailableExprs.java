@@ -27,7 +27,16 @@ public class AvailableExprs {
 	private Graph<IRData<AvailableData>> graph;
 	private IRCFGBuilder<AvailableData> builder;
 	
-	public void performAvaliableExpressionsAnalysis(IRFuncDefn ir, IRNodeFactory f) {
+	private IRFuncDefn ir;
+	private IRNodeFactory f;
+
+	public AvailableExprs(IRFuncDefn ir, IRNodeFactory f) {
+		builder = new IRCFGBuilder<>();
+		this.ir = ir;
+		this.f = f;
+	}
+	
+	public void performAvaliableExpressionsAnalysis() {
 
 		// need this data for kill
 		IRFuncDefn visitedIr = (IRFuncDefn)new IRContainsMemSubexprDecorator(f).visit(ir);
@@ -35,7 +44,6 @@ public class AvailableExprs {
 		IRStmt body = visitedIr.body();
 	    List<IRStmt> stmts = ((IRSeq)body).stmts();
 
-		builder = new IRCFGBuilder<>();
 		graph = builder.buildIRCFG(stmts, AvailableData::new);
 		List<Node> nodes = graph.getNodes();
 		
@@ -140,29 +148,29 @@ public class AvailableExprs {
 	private Set<AvailableExpr> exprsXGetsE(IRMove mov, Node d) {
 		return mov.source().genAvailableExprs()
 			       .stream()
-				   .map(e -> new AvailableExpr(e, d))
+			       .map(e -> new AvailableExpr(e, d))
 				   .collect(Collectors.toSet());
 	}
 
 	private Set<AvailableExpr> exprsMemE1GetsE2(IRMove mov, Node d) {
 		return SetUtils.union(mov.source().genAvailableExprs(), mov.target().genAvailableExprs())
 			       .stream()
-				   .map(e -> new AvailableExpr(e, d))
-				   .collect(Collectors.toSet());
+			       .map(e -> new AvailableExpr(e, d))
+			       .collect(Collectors.toSet());
 	}
 
 	private Set<AvailableExpr> exprsXGetsF(IRCallStmt call, Node d) {
 		return call.genAvailableExprs()
 			       .stream()
-		           .map(e -> new AvailableExpr(e, d))
-		           .collect(Collectors.toSet());
+			       .map(e -> new AvailableExpr(e, d))
+			       .collect(Collectors.toSet());
 	}
 
 	private Set<AvailableExpr> exprsIfE(IRCJump jmp, Node d) {
 		return jmp.cond().genAvailableExprs()
 			       .stream()
-		           .map(e -> new AvailableExpr(e, d))
-		           .collect(Collectors.toSet());
+			       .map(e -> new AvailableExpr(e, d))
+			       .collect(Collectors.toSet());
 	}
 	
 	/**
@@ -389,6 +397,7 @@ public class AvailableExprs {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + ((definer == null) ? 0 : definer.hashCode());
 			result = prime * result + ((expr == null) ? 0 : expr.hashCode());
 			return result;
 		}
@@ -402,6 +411,11 @@ public class AvailableExprs {
 			if (getClass() != obj.getClass())
 				return false;
 			AvailableExpr other = (AvailableExpr) obj;
+			if (definer == null) {
+				if (other.definer != null)
+					return false;
+			} else if (!definer.equals(other.definer))
+				return false;
 			if (expr == null) {
 				if (other.expr != null)
 					return false;
@@ -409,5 +423,6 @@ public class AvailableExprs {
 				return false;
 			return true;
 		}
+		
 	}
 }
