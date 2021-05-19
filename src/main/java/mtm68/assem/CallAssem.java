@@ -1,5 +1,6 @@
 package mtm68.assem;
 
+import java.util.List;
 import java.util.Set;
 
 import mtm68.assem.operand.RealReg;
@@ -31,7 +32,8 @@ public class CallAssem extends Assem {
 	
 	@Override
 	public Set<Reg> use() {
-		return SetUtils.fromList(RealReg.getArgRegs().subList(0, numArgs));
+		List<RealReg> argRegs = RealReg.getArgRegs();
+		return SetUtils.fromList(argRegs.subList(0, Math.min(numArgs, argRegs.size())));
 	}
 	
 	@Override

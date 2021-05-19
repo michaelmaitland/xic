@@ -224,39 +224,40 @@ public class RegisterAllocation {
 		for(Assem assem : assems) {
 			Assem newAssem = assem.copy();
 
-			Map<String, ReplaceableReg> uses = newAssem.useReplaceable().stream()
+			Set<ReplaceableReg> uses = newAssem.useReplaceable().stream()
 					.filter(ReplaceableReg::isAbstract)
-					.collect(Collectors.toMap(ReplaceableReg::getName, t -> t));
+					.collect(Collectors.toSet());
 
-			Map<String, ReplaceableReg> defs = newAssem.defReplaceable().stream()
+			Set<ReplaceableReg> defs = newAssem.defReplaceable().stream()
 					.filter(ReplaceableReg::isAbstract)
-					.collect(Collectors.toMap(ReplaceableReg::getName, t -> t));
+					.collect(Collectors.toSet());
 			
-			for(String use : uses.keySet()) {
-				if(!memLocs.containsKey(use)) continue;
+			for(ReplaceableReg use : uses) {
+				String useName = use.getName();
+				if(!memLocs.containsKey(useName)) continue;
 
 				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
-				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(use));
-				Mem stackLoc = memLocs.get(use);
+				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(useName));
+				Mem stackLoc = memLocs.get(useName);
 				
 				result.add(new MoveAssem(newTemp, stackLoc));
 				
-				uses.get(use).replace(newTemp);
+				use.replace(newTemp);
 			}
 			
 			result.add(newAssem);
 
-
-			for(String def : defs.keySet()) {
-				if(!memLocs.containsKey(def)) continue;
+			for(ReplaceableReg def : defs) {
+				String defName = def.getName();
+				if(!memLocs.containsKey(defName)) continue;
 
 				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
-				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(def));
-				Mem stackLoc = memLocs.get(def);
+				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(defName));
+				Mem stackLoc = memLocs.get(defName);
 				
 				result.add(new MoveAssem(stackLoc, newTemp));
 				
-				defs.get(def).replace(newTemp);
+				def.replace(newTemp);
 			}
 		}
 		

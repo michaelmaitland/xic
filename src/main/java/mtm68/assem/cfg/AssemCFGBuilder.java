@@ -44,7 +44,19 @@ public class AssemCFGBuilder<T> {
 			}
 
 			if(isJump(assem)) {
-				handleJump((JumpAssem)assem);
+				JumpAssem jump = (JumpAssem)assem;
+				handleJump(jump);
+				
+				// A label followed by an unconditional jump should
+				// be connected to the unconditional jumps target
+				if(jump.isUnconditional() && prevWasLabel) {
+					Node jumpTarget = locationMap.get(jump.getLoc());
+					
+					if(jumpTarget == null) throw new InternalCompilerError("Jump target is null");
+
+					handleAfterLabel(jumpTarget);
+				}
+				
 				continue;
 			}
 
@@ -52,13 +64,7 @@ public class AssemCFGBuilder<T> {
 			curr = graph.createNode(data);
 			
 			if(prevWasLabel) {
-				for(String label : lastLabels) {
-					Loc loc = new Loc(label);
-					locationMap.put(loc, curr);
-					resolveWaitingJumps(loc);
-				}
-				prevWasLabel = false;
-				lastLabels.clear();
+				handleAfterLabel(curr);
 			} 
 			if(prev != null && !prevWasUnconditionalJump && !prevWasRet){
 				graph.addEdge(prev, curr);
@@ -72,6 +78,16 @@ public class AssemCFGBuilder<T> {
 		if(waitingJumps.size() != 0) throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
 		
 		return graph;
+	}
+	
+	private void handleAfterLabel(Node nodeAtLoc) {
+		for(String label : lastLabels) {
+			Loc loc = new Loc(label);
+			locationMap.put(loc, nodeAtLoc);
+			resolveWaitingJumps(loc);
+		}
+		prevWasLabel = false;
+		lastLabels.clear();
 	}
 	
 	private void handleJump(JumpAssem assem) {
