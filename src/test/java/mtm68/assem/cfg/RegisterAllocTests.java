@@ -34,31 +34,32 @@ public class RegisterAllocTests {
 	
 	@Test
 	void registerAlloc() {
-		Set<RealReg> colors = SetUtils.elems(RealReg.R8);
+		Set<RealReg> colors = SetUtils.elems(RealReg.R12);
 		RegisterAllocation regAlloc = new RegisterAllocation(colors);
 		
 		List<Assem> assems = ArrayUtils.elems(
 				mov(reg("t1"), reg("t2")),
 				mov(reg("t2"), reg("t3")),
-				mov(reg("t1"), reg("t4"))
+				mov(reg("t1"), reg("t4")),
+				ret()
 			);
 
-		FuncDefnAssem func = new FuncDefnAssem("f", new SeqAssem(assems));
+		FuncDefnAssem func = new FuncDefnAssem("f", 0, new SeqAssem(assems));
 		CompUnitAssem program = new CompUnitAssem("test", ArrayUtils.singleton(func));
 		
-		List<Assem> coloredAssems = regAlloc.doRegisterAllocation(program);
-		printResults(assems, coloredAssems);
+		CompUnitAssem newProgram = regAlloc.doRegisterAllocation(program);
+		printResults(assems, newProgram);
 		
 //		System.out.println("Color map: " + regAlloc.getColorMap());
 	}
 	
-	private void printResults(List<Assem> original, List<Assem> colored) {
+	private void printResults(List<Assem> original, CompUnitAssem coloredProgram) {
 		System.out.println("Original\n=========");
 		printAssems(original);
 		System.out.println();
 
 		System.out.println("Colored\n=========");
-		printAssems(colored);
+		printAssems(coloredProgram.getFunctions().get(0).getFlattenedAssem().getAssems());
 		System.out.println();
 	}
 	

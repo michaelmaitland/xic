@@ -504,8 +504,8 @@ public class TrivialRegisterAllocatorTests {
 				new SubAssem(RAX, abstrReg("t1"))
 				);
 		
-		FuncDefnAssem f = new FuncDefnAssem("f", seqF);
-		FuncDefnAssem g = new FuncDefnAssem("g", seqG);
+		FuncDefnAssem f = new FuncDefnAssem("f", 0, seqF);
+		FuncDefnAssem g = new FuncDefnAssem("g", 0, seqG);
 		List<FuncDefnAssem> funcs = ArrayUtils.elems(f, g);
 		List<Assem> insts = allocateMultipleFuncs(funcs);
 		
@@ -566,7 +566,10 @@ public class TrivialRegisterAllocatorTests {
 	
 	private void assertAllRealReg(List<Assem> insts) {
 		for(Assem inst : insts) {
-			assertEquals(0, inst.getReplaceableRegs().size());
+			long numAbstractRegs = inst.getReplaceableRegs().stream()
+					.filter(ReplaceableReg::isAbstract)
+					.count();
+			assertEquals(0, numAbstractRegs);
 		}
 	}
 
@@ -580,7 +583,7 @@ public class TrivialRegisterAllocatorTests {
 
 	private List<Assem> allocateSingleFunc(Assem...assems) {
 		SeqAssem seq = new SeqAssem(assems);
-		FuncDefnAssem func = new FuncDefnAssem("f", seq);
+		FuncDefnAssem func = new FuncDefnAssem("f", 0, seq);
 		
 		List<FuncDefnAssem> funcs = new ArrayList<>();
 		funcs.add(func);

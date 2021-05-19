@@ -30,6 +30,10 @@ public class AssemTestUtils {
 	public static LabelAssem label(String name) {
 		return new LabelAssem(name);
 	}
+	
+	public static RetAssem ret() {
+		return new RetAssem();
+	}
 
 	public static Mem mem(Reg base) {
 		return new Mem(base);

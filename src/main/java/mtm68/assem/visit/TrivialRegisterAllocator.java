@@ -43,9 +43,14 @@ public class TrivialRegisterAllocator {
 	}
 
 	private List<Assem> allocateForFunc(FuncDefnAssem func) {
-		List<Assem> insts = func.getAssem().getAssems();
+		List<Assem> insts = func.getBodyAssem().getAssems();
 		Map<String, Mem> regsToLoc = assignAbstrRegsToStackLocations(insts);
-		return assignAbstrRegsToRealRegs(insts, regsToLoc);
+		List<Assem> newBody = assignAbstrRegsToRealRegs(insts, regsToLoc);
+
+		FuncDefnAssem newFunc = func.copy(); 
+		newFunc.setBodyAssem(new SeqAssem(newBody));
+		newFunc.setNumSpilledTemps(regsToLoc.size());
+		return newFunc.getFlattenedAssem().getAssems();
 	}
 
 	private Map<String, Mem> assignAbstrRegsToStackLocations(List<Assem> insts) {

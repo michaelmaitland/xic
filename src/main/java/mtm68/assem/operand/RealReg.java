@@ -36,6 +36,10 @@ public class RealReg extends Reg{
 	public static boolean isRealReg(String regId) {
 		return Stream.of(RealRegId.values()).anyMatch(r -> r.toString().equalsIgnoreCase(regId));
 	}
+	
+	public static boolean isCalleeSaved(RealReg reg) {
+		return getCalleeSaveReg().contains(reg);
+	}
 
 	public RealReg(RealRegId regId) {
 		this.id = regId.toString();

@@ -16,6 +16,7 @@ import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
 import mtm68.assem.MoveAssem;
 import mtm68.assem.ReplaceableReg;
+import mtm68.assem.SeqAssem;
 import mtm68.assem.cfg.AssemCFGBuilder.AssemData;
 import mtm68.assem.cfg.Graph.Edge;
 import mtm68.assem.cfg.Graph.Node;
@@ -53,16 +54,16 @@ public class RegisterAllocation {
 				.collect(Collectors.toMap(c -> c.getId(), c -> c));
 	}
 	
-	public List<Assem> doRegisterAllocation(CompUnitAssem program) {
+	public CompUnitAssem doRegisterAllocation(CompUnitAssem program) {
 		tempToFuncMap = new HashMap<>();
 		funcData = new HashMap<>();
 		
-		List<Assem> assems = ArrayUtils.empty();
+		List<FuncDefnAssem> result = ArrayUtils.empty();
 		for(FuncDefnAssem func : program.getFunctions()) {
 			String funcName = func.getName();
 			funcData.put(funcName, new FunctionSpillData());
 			
-			List<Assem> funcAssems = func.getAssem().getAssems();
+			List<Assem> funcAssems = func.getBodyAssem().getAssems();
 
 			funcAssems.stream()
 				.map(Assem::getReplaceableRegs)
@@ -70,11 +71,21 @@ public class RegisterAllocation {
 				.filter(ReplaceableReg::isAbstract)
 				.map(ReplaceableReg::getName)
 				.forEach(t -> tempToFuncMap.put(t, funcName));
+			
+			SeqAssem newFuncBody = new SeqAssem(doRegisterAllocation(funcAssems));
+			FuncDefnAssem newFuncDefn = new FuncDefnAssem(funcName, func.getNumArgs(), newFuncBody);  
 
-			assems.addAll(funcAssems);
+			FunctionSpillData spillData = funcData.get(funcName);
+			newFuncDefn.setNumSpilledTemps(spillData.numSpilledTemps());
+			newFuncDefn.setCalleeRegs(spillData.getCalleeSavedAsList());
+			
+//			assems.addAll(funcAssems);
+			result.add(newFuncDefn);
 		}
 		
-		return doRegisterAllocation(assems);
+		CompUnitAssem newProg = program.copy();
+		newProg.setFunctions(result);
+		return newProg;
 	}
 	
 	private List<Assem> doRegisterAllocation(List<Assem> assems) {
@@ -174,8 +185,15 @@ public class RegisterAllocation {
 			} else {
 				coloredNodes.add(node);
 				String color = okColors.iterator().next();
+				String temp = interferenceGraph.getDataForNode(node);
 				
-				colorMap.put(interferenceGraph.getDataForNode(node), color);
+				// Record used callee saved register
+				RealReg reg = colors.get(color); 
+				if(RealReg.isCalleeSaved(reg)) {
+					funcData.get(tempToFuncMap.get(temp)).addCalleeSaved(reg);
+				}
+				
+				colorMap.put(temp, color);
 			}
 		}
 	}
@@ -260,8 +278,10 @@ public class RegisterAllocation {
 			for(ReplaceableReg reg : regs) { 
 				if(!reg.isAbstract()) continue;
 
-				String color = colorMap.get(reg.getName());
-				reg.replace(colors.get(color));
+				String colorName = colorMap.get(reg.getName());
+				RealReg color = colors.get(colorName);
+
+				reg.replace(color);
 			}
 			
 			result.add(newAssem);
@@ -347,9 +367,11 @@ public class RegisterAllocation {
 	
 	private static class FunctionSpillData {
 		private Map<String, Mem> memMap;
+		private Set<RealReg> calleeSaved;
 		
 		public FunctionSpillData() {
 			memMap = new HashMap<>();
+			calleeSaved = SetUtils.empty();
 		}
 		
 		public void addSpill(String temp) {
@@ -360,6 +382,22 @@ public class RegisterAllocation {
 		
 		public Mem getMemLocFor(String temp) {
 			return memMap.get(temp);
+		}
+		
+		public int numSpilledTemps() {
+			return memMap.size();
+		}
+		
+		public void addCalleeSaved(RealReg reg) {
+			calleeSaved.add(reg);
+		}
+
+		public Set<RealReg> getCalleeSaved() {
+			return calleeSaved;
+		}
+		
+		public List<RealReg> getCalleeSavedAsList(){
+			return calleeSaved.stream().collect(Collectors.toList());
 		}
 	}
 }
