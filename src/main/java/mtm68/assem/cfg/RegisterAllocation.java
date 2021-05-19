@@ -77,7 +77,6 @@ public class RegisterAllocation {
 			newFuncDefn.setNumSpilledTemps(spillData.numSpilledTemps());
 			newFuncDefn.setCalleeRegs(spillData.getCalleeSavedAsList());
 			
-//			assems.addAll(funcAssems);
 			result.add(newFuncDefn);
 		}
 		
@@ -289,12 +288,22 @@ public class RegisterAllocation {
 				reg.replace(color);
 			}
 			
+			if(unnecessaryMove(newAssem)) continue;
+
 			result.add(newAssem);
 		}
-
+		
 		return result;
 	}
 	
+	private boolean unnecessaryMove(Assem newAssem) {
+		if(newAssem instanceof MoveAssem) {
+			MoveAssem move = (MoveAssem) newAssem;
+			return move.getDest().equals(move.getSrc());
+		}
+		return false;
+	}
+
 	private void addEdge(String t1, String t2) {
 		Node u = interferenceGraph.getNodeForData(t1); 
 		Node v = interferenceGraph.getNodeForData(t2); 
