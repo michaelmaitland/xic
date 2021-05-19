@@ -15,12 +15,12 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.SetUtils;
 
 public class Graph<T> {
-	
+
 	private int currNodeId;
 	private List<Node> nodes;
 	private Map<Node, T> dataMap;
 	private Map<T, Node> invDataMap;
-	
+
 	public Graph() {
 		currNodeId = 0;
 
@@ -32,7 +32,7 @@ public class Graph<T> {
 	public List<Node> getNodes() {
 		return nodes;
 	}
-	
+
 	public Node createNode(T data) {
 		Node node = new Node(this, currNodeId++, data.toString());
 		nodes.add(node);
@@ -40,7 +40,7 @@ public class Graph<T> {
 		invDataMap.put(data, node);
 		return node;
 	}
-	
+
 	public T getDataForNode(Node n) {
 		return dataMap.get(n);
 	}
@@ -52,7 +52,7 @@ public class Graph<T> {
 	public boolean nodeExists(T data) {
 		return invDataMap.containsKey(data);
 	}
-	
+
 	public void addEdge(Node from, Node to) {
 		from.addSucc(to);
 		to.addPred(to);
@@ -62,23 +62,24 @@ public class Graph<T> {
 		from.removeSucc(to);
 		to.addSucc(to);
 	}
-	
+
 	public void show(Writer writer, String name, boolean directed, Function<T, String> getNodeRep) throws IOException {
 		writer.append(directed ? "digraph" : "graph");
 		writer.append(' ');
 		writer.append(name + " {\n");
-		
+
 		Set<Edge> seenEdges = SetUtils.empty();
-		
-		for(Node curr : nodes) {
-			String currStr = quote(getNodeRep.apply(dataMap.get(curr))); 
-			for(Node succ : curr.succ()) {
-				if(!directed) {
+
+		for (Node curr : nodes) {
+			String currStr = quote(getNodeRep.apply(dataMap.get(curr)));
+			for (Node succ : curr.succ()) {
+				if (!directed) {
 					Edge forward = new Edge(curr, succ);
 					Edge backward = new Edge(succ, curr);
-					
-					if(seenEdges.contains(forward) || seenEdges.contains(backward)) continue;
-					
+
+					if (seenEdges.contains(forward) || seenEdges.contains(backward))
+						continue;
+
 					seenEdges.add(forward);
 					seenEdges.add(backward);
 				}
@@ -89,15 +90,15 @@ public class Graph<T> {
 				writer.append('\n');
 			}
 		}
-		
+
 		writer.append("}");
 		writer.flush();
 	}
-	
+
 	private String quote(String str) {
 		return "\"" + str + "\"";
 	}
-	
+
 	public static class Edge {
 		private Node from;
 		private Node to;
@@ -138,7 +139,7 @@ public class Graph<T> {
 			return true;
 		}
 	}
-	
+
 	public static class Node {
 		private Graph graph;
 		private int nodeId;
@@ -146,34 +147,33 @@ public class Graph<T> {
 
 		private Set<Node> succ;
 		private Set<Node> pred;
-		
+
 		public Node(Graph graph, int nodeId, String prettyPrint) {
 			this.graph = graph;
 			this.nodeId = nodeId;
 			this.prettyPrint = prettyPrint;
-			
+
 			succ = new HashSet<>();
 			pred = new HashSet<>();
 		}
-		
+
 		public Set<Node> succ() {
 			return succ;
 		}
-		
+
 		public Set<Node> pred() {
 			return pred;
 		}
-		
+
 		// TODO: Memoize
 		public Set<Node> adj() {
-			return Stream.concat(succ.stream(), pred.stream())
-					.collect(Collectors.toSet());
+			return Stream.concat(succ.stream(), pred.stream()).collect(Collectors.toSet());
 		}
-		
+
 		public int degree() {
 			return adj().size();
 		}
-		
+
 		public void addSucc(Node succ) {
 			this.succ.add(succ);
 		}
@@ -189,7 +189,7 @@ public class Graph<T> {
 		public void removePred(Node pred) {
 			this.pred.remove(pred);
 		}
-		
+
 		public int inDegree() {
 			return pred.size();
 		}
@@ -197,20 +197,19 @@ public class Graph<T> {
 		public int outDegree() {
 			return succ.size();
 		}
-		
+
 		public boolean goesTo(Node n) {
 			return succ.contains(n);
 		}
-		
+
 		public boolean comesFrom(Node n) {
 			return pred.contains(n);
 		}
-		
+
 		public boolean adjacentTo(Node n) {
 			return goesTo(n) || comesFrom(n);
 		}
-		
-		
+
 		@Override
 		public String toString() {
 			return prettyPrint;

@@ -40,7 +40,7 @@ public class TrivialRegisterAllocatorTests {
 	@Test
 	public void testNoAbstr() {
 		List<Assem> insts = allocateSingleFunc(
-				new CallAssem("g"),
+				new CallAssem("g", 1),
 				new JumpAssem(JumpType.JMP, loc("header")),
 				new LabelAssem("lbl"),
 				new MoveAssem(RAX, RBX),

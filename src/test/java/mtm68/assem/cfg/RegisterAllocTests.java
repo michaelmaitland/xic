@@ -16,22 +16,6 @@ import static mtm68.assem.AssemTestUtils.*;
 
 public class RegisterAllocTests {
 	
-	private static final Set<RealReg> COLORS = SetUtils.elems(
-			RealReg.R8,
-			RealReg.R9,
-			RealReg.R10,
-			RealReg.R11,
-			RealReg.R12,
-			RealReg.R13,
-			RealReg.R14,
-			RealReg.R15,
-			RealReg.RAX,
-			RealReg.RBX,
-			RealReg.RCX,
-			RealReg.RDX,
-			RealReg.RDI
-		);
-	
 	@Test
 	void registerAlloc() {
 		Set<RealReg> colors = SetUtils.elems(RealReg.R12);
@@ -59,7 +43,7 @@ public class RegisterAllocTests {
 		System.out.println();
 
 		System.out.println("Colored\n=========");
-		printAssems(coloredProgram.getFunctions().get(0).getFlattenedAssem().getAssems());
+		printAssems(coloredProgram.flattenedProgram());
 		System.out.println();
 	}
 	

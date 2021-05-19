@@ -185,7 +185,7 @@ public class Tiler extends IRVisitor {
 		}
 
 		String funcName = ((IRName) stmt.target()).name();
-		assems.add(new CallAssem(funcName));
+		assems.add(new CallAssem(funcName, argExprs.size()));
 
 		// Since there's only one way to tile a IRCallStmt we can just give it no cost
 		return stmt.copyAndSetAssem(new SeqAssem(assems), TileCosts.NO_COST);

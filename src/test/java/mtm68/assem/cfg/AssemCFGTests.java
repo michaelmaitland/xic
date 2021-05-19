@@ -105,6 +105,23 @@ public class AssemCFGTests {
 		showOutput(graph);
 	}
 	
+	@Test
+	void testMultipleLabels() throws IOException {
+		List<Assem> assems = ArrayUtils.elems(
+				label("l1"),
+				label("l2"),
+				mov(reg("t1"), reg("t2")),
+				jmp("l1", JumpType.JE),
+				mov(reg("t4"), reg("t2"))
+			);
+		
+		AssemCFGBuilder<String> builder = new AssemCFGBuilder<>();
+		Graph<AssemData<String>> graph = builder.buildAssemCFG(assems, () -> "wow");
+		
+		showOutput(graph);
+	}
+	
+	
 	private void showOutput(Graph<AssemData<String>> graph) throws IOException {
 		graph.show(new PrintWriter(System.out), "CFG", true, printer);
 	}

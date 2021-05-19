@@ -32,6 +32,7 @@ public class Liveness {
 			for(Node node : nodes) {
 				AssemData<LiveData> data = graph.getDataForNode(node);
 				Assem assem = data.getAssem();
+				
 				LiveData flowData = data.getFlowData();
 
 				Set<String> inOld = flowData.getLiveIn();

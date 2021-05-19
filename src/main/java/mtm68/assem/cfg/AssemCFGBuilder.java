@@ -22,7 +22,7 @@ public class AssemCFGBuilder<T> {
 	private boolean prevWasLabel = false;
 	private boolean prevWasUnconditionalJump = false;
 	private boolean prevWasRet = false;
-	private String lastLabel;
+	private List<String> lastLabels;
 	
 	private Map<Loc, Node> locationMap;
 	private Map<Loc, List<Node>> waitingJumps;
@@ -31,18 +31,20 @@ public class AssemCFGBuilder<T> {
 		graph = new Graph<>();
 		locationMap = new HashMap<>();
 		waitingJumps = new HashMap<>();
+
+		lastLabels = ArrayUtils.empty();
 	}
 	
 	public Graph<AssemData<T>> buildAssemCFG(List<Assem> assems, Supplier<T> flowDataConstructor) {
 		for(Assem assem : assems) {
 			
-			if(isJump(assem)) {
-				handleJump((JumpAssem)assem);
-				continue;
-			}
-			
 			if(isLabel(assem)) {
 				handleLabel((LabelAssem)assem);
+				continue;
+			}
+
+			if(isJump(assem)) {
+				handleJump((JumpAssem)assem);
 				continue;
 			}
 
@@ -50,10 +52,13 @@ public class AssemCFGBuilder<T> {
 			curr = graph.createNode(data);
 			
 			if(prevWasLabel) {
-				Loc loc = new Loc(lastLabel);
-				locationMap.put(loc, curr);
-				resolveWaitingJumps(loc);
+				for(String label : lastLabels) {
+					Loc loc = new Loc(label);
+					locationMap.put(loc, curr);
+					resolveWaitingJumps(loc);
+				}
 				prevWasLabel = false;
+				lastLabels.clear();
 			} 
 			if(prev != null && !prevWasUnconditionalJump && !prevWasRet){
 				graph.addEdge(prev, curr);
@@ -102,7 +107,7 @@ public class AssemCFGBuilder<T> {
 	}
 
 	private void handleLabel(LabelAssem assem) {
-		lastLabel = assem.getName();
+		lastLabels.add(assem.getName());
 		prevWasLabel = true;
 	}
 	

@@ -1,7 +1,5 @@
 package mtm68.assem.cfg;
 
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -124,6 +122,11 @@ public class RegisterAllocation {
 		spilledNodes = new HashSet<>();
 		coloredNodes = new HashSet<>();
 		colorMap = new HashMap<>();
+		
+		// For precolored nodes
+		for(String color : colors.keySet()) {
+			colorMap.put(color, color);
+		}
 
 		k = colors.size();
 	}
@@ -136,11 +139,11 @@ public class RegisterAllocation {
 		interferenceGraph = liveness.getInterferenceGraph();
 		
 		try {
-			Writer writer = new PrintWriter(System.out);
-			liveness.showLiveGraph(writer);
-			System.out.println();
-			liveness.showInterferenceGraph(writer);
-			System.out.println();
+//			Writer writer = new PrintWriter(System.out);
+//			liveness.showLiveGraph(writer);
+//			System.out.println();
+//			liveness.showInterferenceGraph(writer);
+//			System.out.println();
 		} catch(Exception e) {
 		}
 
@@ -174,7 +177,7 @@ public class RegisterAllocation {
 			Set<String> okColors = SetUtils.copy(colors.keySet()); 
 			
 			for(Node adj : adjList.get(node)) {
-				if(coloredNodes.contains(adj)) {
+				if(coloredNodes.contains(adj) || precolored(adj)) {
 					String color = interferenceGraph.getDataForNode(adj);
 					okColors.remove(colorMap.get(color));
 				}
@@ -222,11 +225,12 @@ public class RegisterAllocation {
 			Assem newAssem = assem.copy();
 
 			Map<String, ReplaceableReg> uses = newAssem.useReplaceable().stream()
+					.filter(ReplaceableReg::isAbstract)
 					.collect(Collectors.toMap(ReplaceableReg::getName, t -> t));
 
 			Map<String, ReplaceableReg> defs = newAssem.defReplaceable().stream()
+					.filter(ReplaceableReg::isAbstract)
 					.collect(Collectors.toMap(ReplaceableReg::getName, t -> t));
-			
 			
 			for(String use : uses.keySet()) {
 				if(!memLocs.containsKey(use)) continue;
@@ -392,10 +396,6 @@ public class RegisterAllocation {
 			calleeSaved.add(reg);
 		}
 
-		public Set<RealReg> getCalleeSaved() {
-			return calleeSaved;
-		}
-		
 		public List<RealReg> getCalleeSavedAsList(){
 			return calleeSaved.stream().collect(Collectors.toList());
 		}

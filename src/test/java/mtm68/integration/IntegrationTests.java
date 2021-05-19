@@ -45,7 +45,8 @@ import mtm68.FileType;
 import mtm68.SymbolTableManager;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
-import mtm68.assem.visit.TrivialRegisterAllocator;
+import mtm68.assem.cfg.RegisterAllocation;
+import mtm68.assem.operand.RealReg;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
@@ -298,9 +299,15 @@ public class IntegrationTests {
 		
 		//System.out.println(tiled.getAssem());
 		
-		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+//		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+		RegisterAllocation regAllocator = new RegisterAllocation(RealReg.COLORS);
+
 		
-		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+//		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+		CompUnitAssem program = (CompUnitAssem) tiled.getAssem();
+		System.out.println("Abstract assembly");
+		System.out.println(program);
+		return regAllocator.doRegisterAllocation(program).flattenedProgram();
 	}
 	
 	private void runAndAssertAssem(List<Assem> assems, String expected) {
