@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,10 +26,10 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.interpret.IRSimulator;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
-import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
+import mtm68.Optimizer.Phase;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.visit.TrivialRegisterAllocator;
@@ -88,11 +89,29 @@ public class Main {
 	@Option(name = "-libpath", usage = "specify path to library interface files")
 	private Path libPath = Paths.get(System.getProperty("user.dir"));
 	
-	@Option(name = "-O", usage = "disable optimizations")
+	@Option(name = "-optir", usage = "specify opt phase to output IR (inital or final)")
+	private List<Phase> irPhases = new ArrayList<>();
+	
+	@Option(name = "-optcfg", usage = "specify opt phase to output CFG (inital or final)")
+	private List<Phase> cfgPhases = new ArrayList<>();
+	
+	@Option(name = "-O", usage = "disable all optimizations")
 	private boolean doNotOptimize;
+	
+	@Option(name = "-Ocf", usage = "enable constant folding")
+	private boolean doCF;
+	
+	@Option(name = "-Ocse", usage = "enable common subexpression elimination")
+	private boolean doCSE;
+	
+	@Option(name = "-Oinl", usage = "enable function inlining")
+	private boolean doINL;
 	
 	@Option(name = "-target", usage = "specify the OS for which to generate code")
 	private String osTarget = "linux";
+	
+	@Option(name = "--report-opts", usage = "print (only) supported optimizations")
+	private boolean reportOpts = false;
 
 	@Argument
 	private List<String> sourceFiles = new ArrayList<>();
@@ -125,6 +144,13 @@ public class Main {
 		FileUtils.diagPath = diagPath;
 		FileUtils.assemPath = assemPath;
 		Debug.DEBUG_ON = debug;
+		
+		setUpOptimizer();
+		
+		if(reportOpts) {
+			Optimizer.printSupportedOpts();
+			return;
+		}
 
 		if (help || sourceFiles.isEmpty())
 			printHelpScreen(cmdParser);
@@ -150,13 +176,14 @@ public class Main {
 		Map<String, Program> programs = getValidPrograms(symTableManager, progFuncDecls);
 		
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
+		Optimizer.setNodeFactory(nodeFactory);
 		for(String programName : programs.keySet()) {
 			Program program = programs.get(programName);
 			
+			program = Optimizer.optimizeAST(program);
 
 			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory, progFuncDecls.get(programName));
 			Lowerer lowerer = new Lowerer(nodeFactory);
-			IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
 			CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
 			UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
 			
@@ -167,16 +194,13 @@ public class Main {
 
 			IRNode irRoot = lowerer.visit(program.getIrCompUnit());
 
-			if(shouldOptimize()) irRoot = constFolder.visit(irRoot);
-
 			irRoot = cfgVisitor.visit(irRoot);
 			irRoot = unusedLabelVisitor.visit(irRoot);
 			
+			irRoot = Optimizer.optimizeIR((IRCompUnit)irRoot);
+			
 			if(outputIR) {
 				FileUtils.writeToFile(programName, irRoot);
-//				CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-//				irRoot.printSExp(codeWriter);
-//				codeWriter.flush();
 			}
 			
 			if(interpretIR) {
@@ -188,6 +212,29 @@ public class Main {
 			
 			List<Assem> assems = generateAssemFromIr(irRoot);
 			FileUtils.writeAssemToFile(programName, assems); 
+		}
+	}
+	
+	private void setUpOptimizer() {
+		Optimizer.setCFGPhases(new HashSet<>(cfgPhases));
+		Optimizer.setIRPhases(new HashSet<>(irPhases));
+		if(shouldOptimize()) {
+			boolean addAllOpts = true;
+			if(doCF) {
+				Optimizer.addCF();
+				addAllOpts = false;
+			}
+			if(doCSE) {
+				Optimizer.addCSE();
+				addAllOpts = false;
+			}
+			if(doINL) {
+				Optimizer.addINL();
+				addAllOpts = false;
+			}
+			if(addAllOpts) {
+				Optimizer.addAll();
+			}
 		}
 	}
 	

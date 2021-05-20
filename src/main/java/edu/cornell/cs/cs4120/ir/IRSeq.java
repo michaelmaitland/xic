@@ -98,7 +98,7 @@ public class IRSeq extends IRStmt {
 
 	@Override
 	public IRNode lower(Lowerer v) {
-		return new IRSeq(v.flattenSeq(stmts));
+		return new IRSeq(Lowerer.flattenSeq(stmts));
 	}
 	
 	@Override

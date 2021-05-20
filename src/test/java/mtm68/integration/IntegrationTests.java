@@ -249,7 +249,7 @@ public class IntegrationTests {
 	
 	@Test
 	void testIdentity() {
-		generateAndAssertOutput("identity.xi", "");
+		generateAndAssertOutput("inline.xi", "");
 	}
 	
 	private void generateAndAssertOutput(String filename) {

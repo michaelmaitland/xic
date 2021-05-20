@@ -43,7 +43,7 @@ public class Lowerer extends IRVisitor {
 		return sideEffects;
 	}
 	
-	public List<IRStmt> flattenSeq(List<IRStmt> stmts) {
+	public static List<IRStmt> flattenSeq(List<IRStmt> stmts) {
 		List<IRStmt> newSeq = new ArrayList<>();
 		for(IRStmt stmt : stmts) {
 			if(stmt instanceof IRSeq) newSeq.addAll(flattenSeq(((IRSeq)stmt).stmts()));
