@@ -15,6 +15,7 @@ import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a function call
@@ -120,9 +121,9 @@ public class IRCall extends IRExpr_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return args.stream()
-				   .map(IRNode::getTemps)
+				   .map(IRNode::use)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 	}

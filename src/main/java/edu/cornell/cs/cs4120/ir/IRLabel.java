@@ -88,7 +88,7 @@ public class IRLabel extends IRStmt {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return SetUtils.empty();
 	}
 

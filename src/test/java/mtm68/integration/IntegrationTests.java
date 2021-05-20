@@ -50,8 +50,7 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
-import mtm68.ir.cfg.CSETransformer;
-import mtm68.ir.cfg.CopyPropTransformer;
+import mtm68.ir.cfg.DeadCodeTransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
@@ -61,7 +60,6 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
 import mtm68.visit.FunctionCollector;
-import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 
@@ -458,7 +456,10 @@ public class IntegrationTests {
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
 		
-	irRoot = Optimizer.optimizeIR(irRoot);
+		irRoot = Optimizer.optimizeIR(irRoot);
+		
+		DeadCodeTransformer dcTransformer = new DeadCodeTransformer((IRCompUnit)irRoot, nodeFactory);
+		irRoot = dcTransformer.doDeadCodeRemoval();
 		
 //		if(CSE) {
 //			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);

@@ -149,8 +149,8 @@ public class IRCJump extends IRStmt {
 	}
 
 	@Override
-	public Set<IRTemp> getTemps() {
-		return cond.getTemps();
+	public Set<IRTemp> use() {
+		return cond.use();
 	}
 
 	@Override

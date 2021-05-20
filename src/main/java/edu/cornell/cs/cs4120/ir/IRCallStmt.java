@@ -128,9 +128,9 @@ public class IRCallStmt extends IRStmt {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return args.stream()
-				   .map(IRNode::getTemps)
+				   .map(IRNode::use)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 	}

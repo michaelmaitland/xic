@@ -83,8 +83,8 @@ public class IRJump extends IRStmt {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
-		return target.getTemps();
+	public Set<IRTemp> use() {
+		return target.use();
 	}
 
 	@Override

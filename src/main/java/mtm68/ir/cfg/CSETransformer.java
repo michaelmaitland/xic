@@ -59,7 +59,7 @@ public class CSETransformer {
 	
 	private IRFuncDefn doCSE(IRFuncDefn ir) {
 		AvailableExprs ae = new AvailableExprs(ir, f);
-		ae.performAvaliableExpressionsAnalysis();
+		ae.performAnalysis();
 		Graph<IRData<AvailableData>> graph = ae.getGraph();
 		
 		for(Node s : graph.getNodes()) {

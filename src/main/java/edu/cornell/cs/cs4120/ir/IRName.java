@@ -64,7 +64,7 @@ public class IRName extends IRExpr_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return SetUtils.empty();
 	}
 

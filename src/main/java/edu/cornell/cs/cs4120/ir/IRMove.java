@@ -103,8 +103,8 @@ public class IRMove extends IRStmt {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
-		return SetUtils.union(target.getTemps(), src.getTemps());
+	public Set<IRTemp> use() {
+		return SetUtils.union(target.use(), src.use());
 	}
 
 	@Override

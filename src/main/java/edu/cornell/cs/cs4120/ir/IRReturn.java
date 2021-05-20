@@ -100,9 +100,9 @@ public class IRReturn extends IRStmt {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return rets.stream()
-				   .map(IRNode::getTemps)
+				   .map(IRNode::use)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 	}

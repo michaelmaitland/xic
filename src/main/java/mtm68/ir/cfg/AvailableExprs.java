@@ -36,7 +36,7 @@ public class AvailableExprs {
 		this.f = f;
 	}
 	
-	public void performAvaliableExpressionsAnalysis() {
+	public void performAnalysis() {
 
 		// need this data for kill
 		IRFuncDefn visitedIr = (IRFuncDefn)new IRContainsMemSubexprDecorator(f).visit(ir);

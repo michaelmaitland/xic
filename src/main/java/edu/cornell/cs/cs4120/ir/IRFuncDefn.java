@@ -122,8 +122,8 @@ public class IRFuncDefn extends IRNode_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
-		return body.getTemps();
+	public Set<IRTemp> use() {
+		return body.use();
 	}
 
 	@Override

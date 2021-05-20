@@ -82,7 +82,7 @@ public class CopyPropTransformer {
 		if(!(stmt instanceof IRMove)) return;
 		IRMove mov = (IRMove)stmt;
 		
-		Set<IRTemp> temps = mov.source().getTemps();
+		Set<IRTemp> temps = mov.source().use();
 		Set<AvailableCopy> reachingCopies = data.getFlowData().getIn();
 		Set<AvailableCopy> tempsToReplace = reachingCopies.stream()
 												  .filter(d -> temps.contains(d.getX()))

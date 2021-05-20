@@ -75,7 +75,7 @@ public class IRConst extends IRExpr_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return SetUtils.empty();
 	}
 	

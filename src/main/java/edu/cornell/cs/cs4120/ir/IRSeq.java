@@ -149,9 +149,9 @@ public class IRSeq extends IRStmt {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		return stmts.stream()
-				   .map(IRNode::getTemps)
+				   .map(IRNode::use)
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 	}

@@ -111,8 +111,8 @@ public class IRMem extends IRExpr_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
-		return expr.getTemps();
+	public Set<IRTemp> use() {
+		return expr.use();
 	}
 
 	@Override

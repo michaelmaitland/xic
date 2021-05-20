@@ -203,7 +203,7 @@ public class AvailableExprTests {
 		IRFuncDefn func = new IRFuncDefn("f", seq, 0);
 
 		AvailableExprs ae = new AvailableExprs(func, new IRNodeFactory_c());
-		ae.performAvaliableExpressionsAnalysis();
+		ae.performAnalysis();
 		
 		ae.getGraph();
 

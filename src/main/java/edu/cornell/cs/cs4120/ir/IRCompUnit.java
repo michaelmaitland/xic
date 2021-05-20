@@ -166,10 +166,10 @@ public class IRCompUnit extends IRNode_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
+	public Set<IRTemp> use() {
 		Set<IRTemp> temps = SetUtils.empty();
 		for(IRFuncDefn fun : functions.values()) {
-			temps = SetUtils.union(temps, fun.getTemps());
+			temps = SetUtils.union(temps, fun.use());
 		}
 		return temps;
 	}

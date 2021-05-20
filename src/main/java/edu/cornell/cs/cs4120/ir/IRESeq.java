@@ -95,8 +95,8 @@ public class IRESeq extends IRExpr_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
-		return SetUtils.union(stmt.getTemps(), expr.getTemps());
+	public Set<IRTemp> use() {
+		return SetUtils.union(stmt.use(), expr.use());
 	}
 
 	@Override

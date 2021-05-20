@@ -212,8 +212,8 @@ public class IRBinOp extends IRExpr_c {
 	}
 	
 	@Override
-	public Set<IRTemp> getTemps() {
-		return SetUtils.union(left.getTemps(), right.getTemps());
+	public Set<IRTemp> use() {
+		return SetUtils.union(left.use(), right.use());
 	}
 
 	@Override

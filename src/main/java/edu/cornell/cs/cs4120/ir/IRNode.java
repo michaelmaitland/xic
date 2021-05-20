@@ -70,7 +70,7 @@ public interface IRNode {
 	
 	Set<IRExpr> genAvailableExprs();
 
-	Set<IRTemp> getTemps();
+	Set<IRTemp> use();
 	
 	boolean containsExpr(IRExpr expr);
 
