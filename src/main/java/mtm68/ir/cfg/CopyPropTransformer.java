@@ -13,12 +13,9 @@ import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
-import mtm68.ir.cfg.AvailableExprs.AvailableData;
-import mtm68.ir.cfg.AvailableExprs.AvailableExpr;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.ir.cfg.ReachingDefns.ReachingData;
 import mtm68.ir.cfg.ReachingDefns.ReachingDefn;
-import mtm68.util.FreshTempGenerator;
 
 public class CopyPropTransformer {
 
@@ -61,13 +58,11 @@ public class CopyPropTransformer {
 	}
 	
 	private IRFuncDefn doCopyProp(IRFuncDefn ir) {
-		ReachingDefns rd = new ReachingDefns(ir, f);
+		ReachingDefns rd = new ReachingDefns(ir);
 		rd.performReachingDefnsAnalysis();
 		Graph<IRData<ReachingData>> graph = rd.getGraph();
 		
 		for(Node s : graph.getNodes()) {
-			ReachingData d = graph.getDataForNode(s).getFlowData();
-			
 			makeSubstitution(s, graph);
 		}
 
@@ -86,16 +81,12 @@ public class CopyPropTransformer {
 
 		Set<ReachingDefn> reachingDefns = data.getFlowData().getIn();
 		Set<ReachingDefn> tempsToReplace = reachingDefns.stream()
-												  .filter(d -> temps.contains(d.getDefn()))
+												  .filter(d -> temps.contains(d.getX()))
 												  .collect(Collectors.toSet());
 		
 		for(ReachingDefn t : tempsToReplace) {
-			ReachingData aaaa = graph.getDataForNode(t.getDefiner()).getFlowData();
-//			stmt.replaceExpr(t.getDefn(), )
+			IRStmt newStmt = (IRStmt)stmt.replaceExpr(t.getX(), t.getY());
+			data.setIR(newStmt);
 		}
-	}
-	
-	private String getFreshTemp() {
-		return FreshTempGenerator.getFreshTemp();
 	}
 }

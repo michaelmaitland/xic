@@ -11,6 +11,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.tile.Tile;
 import mtm68.assem.tile.TileFactory;
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a move statement
@@ -99,7 +100,7 @@ public class IRMove extends IRStmt {
 	
 	@Override
 	public Set<IRTemp> getTemps() {
-		return target.getTemps();
+		return SetUtils.union(target.getTemps(), src.getTemps());
 	}
 
 	@Override
