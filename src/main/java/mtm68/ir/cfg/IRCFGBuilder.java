@@ -67,6 +67,7 @@ public class IRCFGBuilder<T> {
 		this.originalStmts = stmts;
 		for(int i = 0; i < stmts.size(); i++) {
 			IRStmt stmt = stmts.get(i);
+			
 			if(isLabel(stmt)) {
 				handleLabel((IRLabel)stmt);
 				continue;

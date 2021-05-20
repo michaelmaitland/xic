@@ -2,6 +2,7 @@ package mtm68;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +13,8 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import mtm68.assem.cfg.Graph;
 import mtm68.ast.nodes.Program;
+import mtm68.ir.cfg.CSETransformer;
+import mtm68.ir.cfg.CopyPropTransformer;
 import mtm68.ir.cfg.IRCFGBuilder;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.util.FileUtils;
@@ -45,10 +48,40 @@ public class Optimizer {
 	public static IRNode optimizeIR(IRNode root) {
 		Set<SupportedOpt> irOpts = SupportedOpt.getIROpts();
 		Set<SupportedOpt> opts = SetUtils.intersect(optsToPerform, irOpts);
+				
+		writeInitial(root);
 		
+		List<SupportedOpt> optList = new ArrayList<>(opts);
+		Collections.sort(optList); 
+		
+		for(SupportedOpt opt : opts) {
+			switch(opt) {
+			case CF:
+				IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
+				root = constFolder.visit(root);
+				break;
+			case CSE:
+				CSETransformer cseTransformer = new CSETransformer((IRCompUnit)root, nodeFactory);
+				root = cseTransformer.doCSE();
+				break;
+			case CP:
+				CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)root, nodeFactory);
+				root = cpTransformer.doCopyProp();
+				break;
+			default:
+				break;
+			}
+		}		
+		
+		writeFinal(root);
+		
+		return root;
+	}
+	
+	private static void writeInitial(IRNode root) {
 		IRCompUnit compUnit = (IRCompUnit) root;
-		
 		String rootFilename = compUnit.name().replaceFirst("\\.xi", "");
+		
 		if(irPhases.contains(Phase.INITIAL)) {
 			String filename = rootFilename + "_initial.xi"; 
 			FileUtils.writeToFile(filename, root);
@@ -59,22 +92,11 @@ public class Optimizer {
 			Graph<IRData<String>> graph = builder.buildIRCFG(compUnit.flattenCompUnit(), () -> "");
 			FileUtils.writeCFGToFile(filename, graph);
 		}
-				
-		for(SupportedOpt opt : opts) {
-			switch(opt) {
-			case CF:
-				IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
-				root = constFolder.visit(root);
-				break;
-			case CSE:
-				//TODO
-				break;
-			default:
-				break;
-			}
-		}
-		
-		compUnit = (IRCompUnit) root;
+	}
+	
+	private static void writeFinal(IRNode root) {
+		IRCompUnit compUnit = (IRCompUnit) root;
+		String rootFilename = compUnit.name().replaceFirst("\\.xi", "");
 		
 		if(irPhases.contains(Phase.FINAL)) {
 			String filename = rootFilename + "_final.xi"; 
@@ -86,8 +108,6 @@ public class Optimizer {
 			Graph<IRData<String>> graph = builder.buildIRCFG(compUnit.flattenCompUnit(), () -> "");
 			FileUtils.writeCFGToFile(filename, graph);
 		}
-		
-		return root;
 	}
 	
 	public static void addCF() {
@@ -100,6 +120,10 @@ public class Optimizer {
 	
 	public static void addINL() {
 		optsToPerform.add(SupportedOpt.INL);
+	}
+	
+	public static void addCP() {
+		optsToPerform.add(SupportedOpt.CP);
 	}
 	
 	public static void addAll() {
@@ -127,6 +151,7 @@ public class Optimizer {
 	public static enum SupportedOpt{
 		CF,
 		CSE,
+		CP,
 		INL;
 		
 		@Override
@@ -139,7 +164,7 @@ public class Optimizer {
 		}
 		
 		public static Set<SupportedOpt> getIROpts(){
-			return SetUtils.elems(CF, CSE);
+			return SetUtils.elems(CF, CSE, CP);
 		}
 		
 		public static Set<SupportedOpt> getASTOpts(){
