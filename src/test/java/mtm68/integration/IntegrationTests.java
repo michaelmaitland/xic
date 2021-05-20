@@ -306,8 +306,8 @@ public class IntegrationTests {
 		
 //		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
 		CompUnitAssem program = (CompUnitAssem) tiled.getAssem();
-		System.out.println("Abstract assembly");
-		System.out.println(program);
+//		System.out.println("Abstract assembly");
+//		System.out.println(program);
 		return regAllocator.doRegisterAllocation(program).flattenedProgram();
 	}
 	

@@ -260,13 +260,13 @@ public class RegisterAllocation {
 			}
 		}
 		
-		System.out.println("Original\n========");
-		assems.forEach(System.out::println);
-		System.out.println();
-		
-		System.out.println("New program\n=======");
-		result.forEach(System.out::println);
-		System.out.println();
+//		System.out.println("Original\n========");
+//		assems.forEach(System.out::println);
+//		System.out.println();
+//		
+//		System.out.println("New program\n=======");
+//		result.forEach(System.out::println);
+//		System.out.println();
 
 		return result;
 	}
