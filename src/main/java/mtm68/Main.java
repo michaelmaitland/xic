@@ -104,6 +104,9 @@ public class Main {
 	@Option(name = "-Ocse", usage = "enable common subexpression elimination")
 	private boolean doCSE;
 	
+	@Option(name = "-Ocp", usage = "enable copy propagation")
+	private boolean doCP;
+	
 	@Option(name = "-Oinl", usage = "enable function inlining")
 	private boolean doINL;
 	
@@ -226,6 +229,10 @@ public class Main {
 			}
 			if(doCSE) {
 				Optimizer.addCSE();
+				addAllOpts = false;
+			}
+			if(doCP) {
+				Optimizer.addCP();
 				addAllOpts = false;
 			}
 			if(doINL) {
