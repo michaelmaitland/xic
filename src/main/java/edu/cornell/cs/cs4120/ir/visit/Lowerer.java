@@ -44,6 +44,7 @@ public class Lowerer extends IRVisitor {
 		return sideEffects;
 	}
 	
+
 	public List<IRStmt> flattenSeq(List<IRStmt> stmts) {
 		return IRUtils.flattenSeq(stmts);
 	}

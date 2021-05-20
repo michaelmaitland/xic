@@ -77,6 +77,14 @@ public class IRCompUnit extends IRNode_c {
     public IRData getData(String name) {
         return dataMap.get(name);
     }
+    
+    public List<IRStmt> flattenCompUnit(){
+    	List<IRStmt> stmts = new ArrayList<>();
+    	for(IRFuncDefn fDefn : functions.values()) {
+    		stmts.add(fDefn.body());
+    	}
+    	return IRUtils.flattenSeq(stmts);
+    }
 
     @Override
     public String label() {
