@@ -13,6 +13,7 @@ import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRStmt;
+import edu.cornell.cs.cs4120.ir.IRUtils;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.util.ArrayUtils;
@@ -29,16 +30,41 @@ public class IRCFGBuilder<T> {
 	
 	private Map<String, Node> locationMap;
 	private Map<String, List<Node>> waitingJumps;
+	private Map<Integer, Node> stmtIdxToNode;
+	private List<IRStmt> originalStmts;
 	
 	public IRCFGBuilder() {
 		graph = new Graph<>();
 		locationMap = new HashMap<>();
 		waitingJumps = new HashMap<>();
+		stmtIdxToNode = new HashMap<>();
 	}
 	
+	/**
+	 * Converts the CFG back to IR as long as there were no
+	 * new nodes added to the graph after a call to buildIRCFG returned
+	 */
+	public List<IRStmt> convertBackToIR() {
+		List<IRStmt> rebuilt = ArrayUtils.empty();
+		for(int i = 0; i < originalStmts.size(); i++) {
+			IRStmt stmt = originalStmts.get(i);
+			if (stmt instanceof IRLabel || stmt instanceof IRJump || stmt instanceof IRCJump) {
+				rebuilt.add(stmt);
+				continue;
+			} 
+			
+			Node n = stmtIdxToNode.get(i);
+			IRData<T> data = graph.getDataForNode(n);
+			IRStmt newStmt = data.getIR();
+			rebuilt.add(newStmt);
+		}
+		return IRUtils.flattenSeq(rebuilt);
+	}
+
 	public Graph<IRData<T>> buildIRCFG(List<IRStmt> stmts, Supplier<T> flowDataConstructor) {
-		for(IRStmt stmt : stmts) {
-					
+		this.originalStmts = stmts;
+		for(int i = 0; i < stmts.size(); i++) {
+			IRStmt stmt = stmts.get(i);
 			if(isLabel(stmt)) {
 				handleLabel((IRLabel)stmt);
 				continue;
@@ -47,6 +73,7 @@ public class IRCFGBuilder<T> {
 			if(!(stmt instanceof IRJump)) {
 				IRData<T> data = new IRData<>(stmt, flowDataConstructor.get());
 				curr = graph.createNode(data);
+				stmtIdxToNode.put(i, curr);
 				
 				if(prev != null && !prevWasJump && !prevWasRet){
 					graph.addEdge(prev, curr);
@@ -149,14 +176,24 @@ public class IRCFGBuilder<T> {
 
 		private IRStmt ir;
 		private T flowData;
+		private int stmtIdx;
 
 		public IRData(IRStmt ir, T flowData) {
+			this(ir, flowData, -1);
+		}
+		
+		public IRData(IRStmt ir, T flowData, int stmtIdx) {
 			this.ir= ir;
 			this.flowData = flowData;
+			this.stmtIdx = stmtIdx;
 		}
 
 		public IRStmt getIR() {
 			return ir;
+		}
+
+		public void setIR(IRStmt ir) {
+			this.ir = ir;
 		}
 
 		public T getFlowData() {
@@ -165,6 +202,14 @@ public class IRCFGBuilder<T> {
 
 		public void setFlowData(T flowData) {
 			this.flowData = flowData;
+		}
+
+		public int getStmtIdx() {
+			return stmtIdx;
+		}
+
+		public void setStmtIdx(int stmtIdx) {
+			this.stmtIdx = stmtIdx;
 		}
 
 		@Override

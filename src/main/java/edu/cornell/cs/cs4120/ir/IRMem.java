@@ -109,10 +109,33 @@ public class IRMem extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return expr.getTemps();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return this.equals(expr) || this.expr.containsExpr(expr);
+	}
+
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		if(this.equals(toReplace)) return replaceWith;
+
+		IRExpr newExpr = (IRExpr)expr.replaceExpr(toReplace, replaceWith);
+
+		IRMem copy = copy();
+		copy.expr = newExpr;
+		return copy;
+	}
+	
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRMem copy = copy();
+		copy.setContainsMutableMemSubexpr(memType.equals(MemType.IMMUTABLE));
+		return copy;
 	}
 
 	@Override
@@ -141,12 +164,5 @@ public class IRMem extends IRExpr_c {
 		if (memType != other.memType)
 			return false;
 		return true;
-	}
-	
-	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		IRMem copy = copy();
-		copy.setContainsMemSubexpr(true);
-		return copy;
 	}
 }

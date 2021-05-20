@@ -69,13 +69,16 @@ public interface IRNode {
 	float getTileCost();
 	
 	Set<IRExpr> genAvailableExprs();
+
+	Set<IRTemp> getTemps();
 	
 	boolean containsExpr(IRExpr expr);
 
-	public boolean isContainsMemSubexpr();
+	IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith);
 
-	void setContainsMemSubexpr(boolean containsMemSubexpr);
+	public boolean isContainsMutableMemSubexpr();
 
-	IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr);
+	void setContainsMutableMemSubexpr(boolean containsMemSubexpr);
 
+	IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr);
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 
 public interface IRNodeFactory {
 
@@ -83,6 +84,13 @@ public interface IRNodeFactory {
      * @param expr the address of this memory location
      */
     IRMem IRMem(IRExpr expr);
+    
+    /**
+     * 
+     * @param expr the address of this memory location
+     * @param memType the type of memory
+     */
+    IRMem IRMem(IRExpr expr, MemType memType);
 
     /**
      * @param target address of the code for this function call

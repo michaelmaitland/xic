@@ -86,16 +86,26 @@ public class IRLabel extends IRStmt {
 	public Set<IRExpr> genAvailableExprs() {
 		return SetUtils.empty();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.empty();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return false;
 	}
-	
+
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		return this;
+	}
+
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRLabel copy = copy();
-		copy.setContainsMemSubexpr(false);
+		copy.setContainsMutableMemSubexpr(false);
 		return copy;
 	}
 }

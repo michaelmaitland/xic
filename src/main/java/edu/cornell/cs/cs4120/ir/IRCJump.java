@@ -149,14 +149,28 @@ public class IRCJump extends IRStmt {
 	}
 
 	@Override
+	public Set<IRTemp> getTemps() {
+		return cond.getTemps();
+	}
+
+	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return cond.containsExpr(expr);
 	}
-	
+
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newCond = (IRExpr)cond.replaceExpr(toReplace, replaceWith);
+		
 		IRCJump copy = copy();
-		copy.setContainsMemSubexpr(cond.isContainsMemSubexpr());
+		copy.cond = newCond;
+		return copy;
+	}
+
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRCJump copy = copy();
+		copy.setContainsMutableMemSubexpr(cond.isContainsMutableMemSubexpr());
 		return copy;
 	}
 }

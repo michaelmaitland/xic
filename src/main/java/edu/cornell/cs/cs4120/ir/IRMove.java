@@ -11,6 +11,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.tile.Tile;
 import mtm68.assem.tile.TileFactory;
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 /**
  * An intermediate representation for a move statement
@@ -96,6 +97,11 @@ public class IRMove extends IRStmt {
 	public Set<IRExpr> genAvailableExprs() {
 		return target.genAvailableExprs();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.union(target.getTemps(), src.getTemps());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -103,11 +109,23 @@ public class IRMove extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMemSubexpr() || src.isContainsMemSubexpr();
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+
+		IRExpr newSrc = (IRExpr)src.replaceExpr(toReplace, replaceWith);
+		IRExpr newTarget = (IRExpr)target.replaceExpr(toReplace, replaceWith);
 		
 		IRMove copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.src = newSrc;
+		copy.target = newTarget;
 		return copy;
 	}	
+
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMutableMemSubexpr() || src.isContainsMutableMemSubexpr();
+		
+		IRMove copy = copy();
+		copy.setContainsMutableMemSubexpr(b);
+		return copy;
+	}
 }

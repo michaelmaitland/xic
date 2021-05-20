@@ -118,6 +118,14 @@ public class IRCall extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return args.stream()
+				   .map(IRNode::getTemps)
+				   .flatMap(Collection::stream)
+				   .collect(Collectors.toSet());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -125,13 +133,18 @@ public class IRCall extends IRExpr_c {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMemSubexpr() 
+	public IRExpr replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		throw new InternalCompilerError("containsExpr built to work on lowered IR. IRCall not part of lowered IR");
+	}
+
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMutableMemSubexpr() 
 					|| args.stream()
-						.map(IRNode::isContainsMemSubexpr)
+						.map(IRNode::isContainsMutableMemSubexpr)
 						.reduce(Boolean.FALSE, Boolean::logicalOr);
 		IRCall copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 }

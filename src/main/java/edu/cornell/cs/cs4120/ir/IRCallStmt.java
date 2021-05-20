@@ -126,6 +126,14 @@ public class IRCallStmt extends IRStmt {
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return args.stream()
+				   .map(IRNode::getTemps)
+				   .flatMap(Collection::stream)
+				   .collect(Collectors.toSet());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -136,13 +144,26 @@ public class IRCallStmt extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMemSubexpr() 
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newTarget = (IRExpr)target.replaceExpr(toReplace, replaceWith);
+		List<IRExpr> newArgs = args.stream()
+								   .map(e -> (IRExpr)e.replaceExpr(toReplace, replaceWith))
+								   .collect(Collectors.toList());
+		
+		IRCallStmt copy = copy();
+		copy.args = newArgs;
+		copy.target = newTarget;
+		return copy;
+	}
+
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = target.isContainsMutableMemSubexpr() 
 					|| args.stream()
-						.map(IRNode::isContainsMemSubexpr)
+						.map(IRNode::isContainsMutableMemSubexpr)
 						.reduce(Boolean.FALSE, Boolean::logicalOr);
 		IRCallStmt copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
 	}
 }

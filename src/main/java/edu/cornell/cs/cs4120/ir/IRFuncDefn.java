@@ -42,8 +42,16 @@ public class IRFuncDefn extends IRNode_c {
     public String label() {
         return "FUNC " + name;
     }
+    
+    public IRStmt getBody() {
+		return body;
+	}
 
-    @Override
+	public void setBody(IRStmt body) {
+		this.body = body;
+	}
+
+	@Override
     public IRNode visitChildren(IRVisitor v) {
         IRStmt stmt = (IRStmt) v.visit(this, body);
 
@@ -112,6 +120,11 @@ public class IRFuncDefn extends IRNode_c {
 	public Set<IRExpr> genAvailableExprs() {
 		return body.genAvailableExprs();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return body.getTemps();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -119,9 +132,17 @@ public class IRFuncDefn extends IRNode_c {
 	}
 	
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRFuncDefn copy = copy();
-		copy.setContainsMemSubexpr(body.isContainsMemSubexpr());
+		copy.setContainsMutableMemSubexpr(body.isContainsMutableMemSubexpr());
 		return copy;
 	}
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRStmt newBody = (IRStmt)body.replaceExpr(toReplace, replaceWith);
+		
+		IRFuncDefn copy = copy();
+		copy.body = newBody;
+		return copy;
+	}	
 }

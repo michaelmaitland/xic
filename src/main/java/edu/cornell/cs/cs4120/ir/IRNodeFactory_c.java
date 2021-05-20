@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
+import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 
 public class IRNodeFactory_c implements IRNodeFactory {
 
@@ -77,6 +78,11 @@ public class IRNodeFactory_c implements IRNodeFactory {
     public IRMem IRMem(IRExpr expr) {
         return new IRMem(expr);
     }
+    
+    @Override
+	public IRMem IRMem(IRExpr expr, MemType memType) {
+		return new IRMem(expr, memType);
+	}
 
     @Override
     public IRCallStmt IRCallStmt(IRExpr target, int numRets, List<IRExpr> args) {
@@ -127,5 +133,4 @@ public class IRNodeFactory_c implements IRNodeFactory {
     public IRTemp IRTemp(String name) {
         return new IRTemp(name);
     }
-
 }

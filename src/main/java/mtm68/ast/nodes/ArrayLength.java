@@ -59,7 +59,7 @@ public class ArrayLength extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		IRMem lengthSlot = cv.getOffsetIntoArr(exp.getIRExpr(), inf.IRConst(-1));
+		IRMem lengthSlot = cv.getOffsetIntoArr(exp.getIRExpr(), inf.IRConst(-1), true);
 		return copyAndSetIRExpr(lengthSlot);
 	}
 	

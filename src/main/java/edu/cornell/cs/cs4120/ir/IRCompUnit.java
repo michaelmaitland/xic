@@ -12,6 +12,7 @@ import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
@@ -21,10 +22,10 @@ import mtm68.util.SetUtils;
  * An intermediate representation for a compilation unit
  */
 public class IRCompUnit extends IRNode_c {
-    private final String name;
-    private final Map<String, IRFuncDefn> functions;
-    private final List<String> ctors;
-    private final Map<String, IRData> dataMap;
+    private String name;
+    private Map<String, IRFuncDefn> functions;
+    private List<String> ctors;
+    private Map<String, IRData> dataMap;
 
     public IRCompUnit(String name) {
         this(name, new LinkedHashMap<>(), new ArrayList<>(), new LinkedHashMap<>());
@@ -82,7 +83,7 @@ public class IRCompUnit extends IRNode_c {
     	for(IRFuncDefn fDefn : functions.values()) {
     		stmts.add(fDefn.body());
     	}
-    	return Lowerer.flattenSeq(stmts);
+    	return IRUtils.flattenSeq(stmts);
     }
 
     @Override
@@ -163,6 +164,15 @@ public class IRCompUnit extends IRNode_c {
 		}
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		Set<IRTemp> temps = SetUtils.empty();
+		for(IRFuncDefn fun : functions.values()) {
+			temps = SetUtils.union(temps, fun.getTemps());
+		}
+		return temps;
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -170,15 +180,24 @@ public class IRCompUnit extends IRNode_c {
 				   .map(e -> e.containsExpr(expr))
 				   .reduce(Boolean.FALSE, Boolean::logicalOr);
 	}
+	
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		throw new InternalCompilerError("not replace IRCompUnit");
+	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		boolean b = functions.values().stream()
-				   .map(IRNode::isContainsMemSubexpr)
+				   .map(IRNode::isContainsMutableMemSubexpr)
 				   .reduce(Boolean.FALSE, Boolean::logicalOr);
 		
 		IRCompUnit copy = copy();
-		copy.setContainsMemSubexpr(b);
+		copy.setContainsMutableMemSubexpr(b);
 		return copy;
+	}
+
+	public void setFunctions(Map<String, IRFuncDefn> newFuncs) {
+		this.functions = newFuncs;
 	}
 }

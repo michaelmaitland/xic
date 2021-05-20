@@ -49,6 +49,7 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
+import mtm68.ir.cfg.CSETransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
@@ -454,6 +455,10 @@ public class IntegrationTests {
 		irRoot = constFolder.visit(irRoot);
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
+		
+		
+		CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
+		irRoot = cseTransformer.doCSE();
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();

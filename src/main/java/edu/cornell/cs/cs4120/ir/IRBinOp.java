@@ -109,7 +109,11 @@ public class IRBinOp extends IRExpr_c {
         return right;
     }
 
-    @Override
+	public void setRight(IRExpr right) {
+		this.right = right;
+	}
+
+	@Override
     public String label() {
         return type.toString();
     }
@@ -206,10 +210,39 @@ public class IRBinOp extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.union(left.getTemps(), right.getTemps());
+	}
 
 	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = left.isContainsMutableMemSubexpr() || right .isContainsMutableMemSubexpr();
+		
+		IRBinOp copy = copy();
+		copy.setContainsMutableMemSubexpr(b);
+		return copy;
+	}
+	
+	@Override
 	public boolean containsExpr(IRExpr expr) {
-		return this.equals(expr) || left.containsExpr(expr) || right.containsExpr(expr);
+		return this.equals(expr) 
+				|| left.containsExpr(expr) 
+				|| right.containsExpr(expr);
+	}
+
+	@Override
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		if(this.equals(toReplace)) return replaceWith;
+		
+		IRExpr newLeft = (IRExpr)left.replaceExpr(toReplace, replaceWith);
+		IRExpr newRight = (IRExpr)right.replaceExpr(toReplace, replaceWith);
+		
+		IRBinOp copy = copy();
+		copy.setLeft(newLeft);
+		copy.setRight(newRight);
+		return copy;
 	}
 
 	@Override
@@ -244,14 +277,5 @@ public class IRBinOp extends IRExpr_c {
 		if (type != other.type)
 			return false;
 		return true;
-	}
-
-	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = left.isContainsMemSubexpr() || right .isContainsMemSubexpr();
-		
-		IRBinOp copy = copy();
-		copy.setContainsMemSubexpr(b);
-		return copy;
 	}
 }

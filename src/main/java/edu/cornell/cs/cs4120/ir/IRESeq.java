@@ -93,6 +93,11 @@ public class IRESeq extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.union(stmt.getTemps(), expr.getTemps());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -100,12 +105,16 @@ public class IRESeq extends IRExpr_c {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = stmt.isContainsMemSubexpr() || expr.isContainsMemSubexpr();
-		
-		IRESeq copy = copy();
-		copy.setContainsMemSubexpr(b);
-		return copy;
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		throw new InternalCompilerError("containsExpr built to work on lowered IR. IRCall not part of lowered IR");
 	}
 	
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		boolean b = stmt.isContainsMutableMemSubexpr() || expr.isContainsMutableMemSubexpr();
+		
+		IRESeq copy = copy();
+		copy.setContainsMutableMemSubexpr(b);
+		return copy;
+	}
 }

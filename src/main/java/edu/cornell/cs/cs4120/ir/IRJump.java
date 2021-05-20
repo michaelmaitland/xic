@@ -81,6 +81,11 @@ public class IRJump extends IRStmt {
 	public Set<IRExpr> genAvailableExprs() {
 		return target.genAvailableExprs();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return target.getTemps();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
@@ -88,9 +93,18 @@ public class IRJump extends IRStmt {
 	}
 
 	@Override
-	public IRNode decorateContainsMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
+		IRExpr newExpr = (IRExpr)target.replaceExpr(toReplace, replaceWith);
+
 		IRJump copy = copy();
-		copy.setContainsMemSubexpr(target.isContainsMemSubexpr());
+		copy.target = newExpr;
+		return copy;
+	}
+
+	@Override
+	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
+		IRJump copy = copy();
+		copy.setContainsMutableMemSubexpr(target.isContainsMutableMemSubexpr());
 		return copy;
 	}
 }
