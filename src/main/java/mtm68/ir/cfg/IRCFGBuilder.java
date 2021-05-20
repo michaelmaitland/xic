@@ -1,5 +1,6 @@
 package mtm68.ir.cfg;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +27,7 @@ public class IRCFGBuilder<T> {
 	private boolean prevWasLabel = false;
 	private boolean prevWasJump = false;
 	private boolean prevWasRet = false;
-	private String lastLabel;
+	private List<String> lastLabels;
 	
 	private Map<String, Node> locationMap;
 	private Map<String, List<Node>> waitingJumps;
@@ -38,6 +39,7 @@ public class IRCFGBuilder<T> {
 		locationMap = new HashMap<>();
 		waitingJumps = new HashMap<>();
 		stmtIdxToNode = new HashMap<>();
+		lastLabels = new ArrayList<>();
 	}
 	
 	/**
@@ -82,14 +84,19 @@ public class IRCFGBuilder<T> {
 			
 			if(isJump(stmt)) {
 				handleJump(stmt);
-				if(stmt instanceof IRJump) continue;
+				if(stmt instanceof IRJump) {
+					if(prevWasLabel) {
+						String dest = labelFromJump(stmt);
+						if(locationMap.containsKey(dest)) {
+							Node destNode = locationMap.get(dest);
+							attachLabels(destNode);
+						}
+					}
+					continue;
+				}
 			}
 			
-			if(prevWasLabel) {
-				locationMap.put(lastLabel, curr);
-				resolveWaitingJumps(lastLabel);
-				prevWasLabel = false;
-			} 
+			if(prevWasLabel) attachLabels(curr);
 			
 			prev = curr;
 			if(!isJump(stmt)) prevWasJump = false;
@@ -99,6 +106,15 @@ public class IRCFGBuilder<T> {
 		if(waitingJumps.size() != 0) throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
 		
 		return graph;
+	}
+	
+	private void attachLabels(Node n) {
+		for(String label : lastLabels) {
+			locationMap.put(label, n);
+			resolveWaitingJumps(label);
+		}
+		lastLabels.clear();
+		prevWasLabel = false;
 	}
 	
 	private void handleJump(IRStmt jump) {
@@ -150,9 +166,14 @@ public class IRCFGBuilder<T> {
 		
 		return new HashSet<>();
 	}
+	
+	private String labelFromJump(IRStmt stmt) {
+		IRJump jump = (IRJump) stmt;
+		return ((IRName) jump.target()).name();
+	}
 
 	private void handleLabel(IRLabel label) {
-		lastLabel = label.name();
+		lastLabels.add(label.name());
 		prevWasLabel = true;
 	}
 	

@@ -82,7 +82,30 @@ public class IRCFGBuilderTests {
 		
 		showOutput(graph);
 	}
-
+	
+	@Test
+	void jumpsAndLabelsTest() throws IOException {
+		List<IRStmt> stmts = elems(
+				label("l0"),
+				label("l1"),
+				move("c", "b"),
+				move("x", "y"),
+				cjump("l0", null),
+				cjump("l1", null),
+				label("l3"),
+				move("x", "z"),
+				move("a", "b"),
+				label("l4"),
+				cjump("l3", "l5"),
+				label("l5"),
+				jump("l0")
+			);
+		
+		IRCFGBuilder<String> builder = new IRCFGBuilder<>();
+		Graph<IRData<String>> graph = builder.buildIRCFG(stmts, () -> "wow");
+		
+		showOutput(graph);
+	}
 	
 	private void showOutput(Graph<IRData<String>> graph) throws IOException {
 		graph.show(new PrintWriter(System.out), "CFG", true, printer);

@@ -50,6 +50,7 @@ import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
 import mtm68.ir.cfg.CSETransformer;
+import mtm68.ir.cfg.CopyPropTransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
@@ -68,8 +69,10 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
-	private static final boolean FUNCTION_INLINE = true;
-	
+	private static final boolean INL = true;
+	private static final boolean CSE = true;
+	private static final boolean CP = true;
+
 	@BeforeEach
 	void setUpFileUtils() {
 		FileUtils.diagPath = Paths.get(ASSEM_PATH);
@@ -434,7 +437,7 @@ public class IntegrationTests {
 		
 		//AST OPTS
 		
-		if(FUNCTION_INLINE) {
+		if(INL) {
 			FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
 			program = program.accept(fl);
 		}
@@ -456,9 +459,15 @@ public class IntegrationTests {
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
 		
+		if(CSE) {
+			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
+			irRoot = cseTransformer.doCSE();
+		}
 		
-		CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
-		irRoot = cseTransformer.doCSE();
+		if(CP){
+			CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)irRoot, nodeFactory);
+			irRoot = cpTransformer.doCopyProp();
+		}
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
@@ -469,6 +478,7 @@ public class IntegrationTests {
 		
 		return irRoot;
 	}
+	
 	
 	private enum OSType{
 		WINDOWS,
