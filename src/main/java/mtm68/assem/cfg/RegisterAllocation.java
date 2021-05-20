@@ -16,8 +16,6 @@ import mtm68.assem.MoveAssem;
 import mtm68.assem.ReplaceableReg;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.cfg.AssemCFGBuilder.AssemData;
-import mtm68.assem.cfg.Graph.Edge;
-import mtm68.assem.cfg.Graph.Node;
 import mtm68.assem.cfg.Liveness.LiveData;
 import mtm68.assem.operand.FreshRegGenerator;
 import mtm68.assem.operand.Mem;
@@ -41,6 +39,7 @@ public class RegisterAllocation {
 	private Stack<Node> selectStack;
 	private Map<Node, Integer> degreeMap;
 	
+	private List<Node> initial;
 	private Set<Edge> adjSet;
 	private Map<Node, List<Node>> adjList;
 	private Set<Node> spilledNodes;
@@ -146,13 +145,21 @@ public class RegisterAllocation {
 		} catch(Exception e) {
 		}
 
-		for(Node node : interferenceGraph.getNodes()) {
+		initial = ArrayUtils.elems(interferenceGraph.getNodes()).stream()
+				.map(interferenceGraph::getDataForNode)
+				.map(Node::new)
+				.collect(Collectors.toList());
+
+		for(Node node : initial) {
 			degreeMap.put(node, 0);
 			adjList.put(node, ArrayUtils.empty());
 		}
 		
-		for(Node node : liveGraph.getNodes()) {
-			AssemData<LiveData> data = liveGraph.getDataForNode(node);
+		List<AssemData<LiveData>> nodeData = liveGraph.getNodes().stream()
+				.map(liveGraph::getDataForNode)
+				.collect(Collectors.toList());
+
+		for(AssemData<LiveData> data : nodeData) {
 			Set<String> live = data.getFlowData().getLiveOut();
 
 			Set<String> defined = regsToStrs(data.getAssem().def());
@@ -177,8 +184,8 @@ public class RegisterAllocation {
 			
 			for(Node adj : adjList.get(node)) {
 				if(coloredNodes.contains(adj) || precolored(adj)) {
-					String color = interferenceGraph.getDataForNode(adj);
-					okColors.remove(colorMap.get(color));
+					String temp = adj.getId(); 
+					okColors.remove(colorMap.get(temp));
 				}
 			}
 			
@@ -187,7 +194,7 @@ public class RegisterAllocation {
 			} else {
 				coloredNodes.add(node);
 				String color = okColors.iterator().next();
-				String temp = interferenceGraph.getDataForNode(node);
+				String temp = node.getId(); 
 				
 				// Record used callee saved register
 				RealReg reg = colors.get(color); 
@@ -210,7 +217,7 @@ public class RegisterAllocation {
 
 		Map<String, Mem> memLocs = new HashMap<>();
 		for(Node spilled : spilledNodes) {
-			String temp = interferenceGraph.getDataForNode(spilled);
+			String temp = spilled.getId(); 
 			String func = tempToFuncMap.get(temp);
 
 			FunctionSpillData spillData = funcData.get(func);
@@ -305,8 +312,8 @@ public class RegisterAllocation {
 	}
 
 	private void addEdge(String t1, String t2) {
-		Node u = interferenceGraph.getNodeForData(t1); 
-		Node v = interferenceGraph.getNodeForData(t2); 
+		Node u = new Node(t1); 
+		Node v = new Node(t2); 
 		
 		Edge uv = new Edge(u, v);
 		
@@ -339,7 +346,7 @@ public class RegisterAllocation {
 	}
 	
 	private void makeWorklists() {
-		for(Node node : interferenceGraph.getNodes()) {
+		for(Node node : initial) {
 			if(precolored(node)) continue;
 			
 			if(degree(node) < k) {
@@ -371,12 +378,109 @@ public class RegisterAllocation {
 	}
 	
 	private boolean precolored(Node node) {
-		String regId = interferenceGraph.getDataForNode(node);
-		return RealReg.isRealReg(regId);
+		return RealReg.isRealReg(node.getId());
 	}
 	
 	private int degree(Node n) {
 		return degreeMap.get(n);
+	}
+	
+	private static class Node {
+		private String id;
+		
+		private Node(String id) {
+			super();
+			this.id = id;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((id == null) ? 0 : id.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Node other = (Node) obj;
+			if (id == null) {
+				if (other.id != null)
+					return false;
+			} else if (!id.equals(other.id))
+				return false;
+			return true;
+		}
+		
+		@Override
+		public String toString() {
+			return id;
+		}
+	}
+	
+	private static class Edge {
+		private Node from;
+		private Node to;
+
+		public Edge(Node from, Node to) {
+			this.from = from;
+			this.to = to;
+		}
+		
+		public Node getFrom() {
+			return from;
+		}
+		
+		public Node getTo() {
+			return to;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((from == null) ? 0 : from.hashCode());
+			result = prime * result + ((to == null) ? 0 : to.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Edge other = (Edge) obj;
+			if (from == null) {
+				if (other.from != null)
+					return false;
+			} else if (!from.equals(other.from))
+				return false;
+			if (to == null) {
+				if (other.to != null)
+					return false;
+			} else if (!to.equals(other.to))
+				return false;
+			return true;
+		}
+		
+		@Override
+		public String toString() {
+			return from + " - " + to;
+		}
+		
 	}
 	
 	private static class FunctionSpillData {
