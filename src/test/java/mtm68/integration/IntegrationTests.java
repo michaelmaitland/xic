@@ -447,7 +447,6 @@ public class IntegrationTests {
 		IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
 		CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
 		UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
-		CSETransformer cseTransformer = new CSETransformer();
 		
 		program = irConverter.performConvertToIR(program);
 		program.getIrCompUnit().appendFunc(irConverter.allocLayer());
@@ -456,7 +455,10 @@ public class IntegrationTests {
 		irRoot = constFolder.visit(irRoot);
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
-		irRoot = cseTransformer.doCSE((IRCompUnit)irRoot, nodeFactory);
+		
+		
+		CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
+		irRoot = cseTransformer.doCSE();
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();

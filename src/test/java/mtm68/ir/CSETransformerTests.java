@@ -409,8 +409,8 @@ public class CSETransformerTests {
 		funcs.put("f", func);
 		IRCompUnit comp = new IRCompUnit("test.xi", funcs);
 
-		CSETransformer c = new CSETransformer();
-		IRCompUnit res = c.doCSE(comp, new IRNodeFactory_c());
+		CSETransformer c = new CSETransformer(comp, new IRNodeFactory_c());
+		IRCompUnit res = c.doCSE();
 		return ((IRSeq)(res.functions().get("f").body())).stmts();
 	}
 }

@@ -85,7 +85,7 @@ public class AvailableExprs {
 			Set<AvailableExpr> predData = graph.getDataForNode(pred)
 											   .getFlowData()
 											   .getOut();
-			/*
+			/**
 			* The first iteration, we need to set the base set 
 			* because intersect with empty set will always be empty
 			* and there is no good way to set the initial set
@@ -110,10 +110,35 @@ public class AvailableExprs {
 		Set<AvailableExpr> in = in(n);
 		Set<AvailableExpr> kill = kill(n, in);
 		
-		return SetUtils.difference(
-			       SetUtils.union(in, exprs), 
-				   kill
-			   );
+		/** 
+		 * The definer of exprs and in will be different so 
+		 * with a typical set union both cases will be added
+		 * to the set. We only want to take from in, if the same
+		 * IRExpr exists in exprs and in.
+		 */
+		Set<AvailableExpr> inUExprsWithCorrectDefs = 
+				inUnionExprs(in, exprs);
+		
+		return SetUtils.difference(inUExprsWithCorrectDefs, kill);
+	 }
+	 
+	 /**
+	  * Returns the union of in and exprs where element equality is defined
+	  * by the equality of the IRExpr. If in and exprs contain the same IRExpr,
+	  * then the AvaliableExpr belonging to the in set is part of the union
+	  * and the one from the exprs set is not.
+	  */
+	 private Set<AvailableExpr> inUnionExprs(Set<AvailableExpr> in, Set<AvailableExpr> exprs) {
+		 Set<IRExpr> inExprs = in.stream()
+				 .map(AvailableExpr::getExpr)
+				 .collect(Collectors.toSet());
+		 
+		 Set<AvailableExpr> exprsToAdd = exprs.stream().filter(e -> {
+			return !inExprs.contains(e.getExpr());
+		 })
+		 .collect(Collectors.toSet());
+		 
+		 return SetUtils.union(in, exprsToAdd);
 	 }
 	
 	/**
@@ -228,10 +253,6 @@ public class AvailableExprs {
 		return l.stream()
 				.filter(e -> e.getExpr().isContainsMutableMemSubexpr())
 				.collect(Collectors.toSet());
-//		IRMem e1 = (IRMem)ir.target();
-//		return l.stream()
-//				.filter(e -> e.containsExpr(e1))
-//				.collect(Collectors.toSet());
 	}
 
 	/**
