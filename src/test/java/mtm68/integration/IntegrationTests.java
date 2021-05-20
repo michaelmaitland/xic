@@ -42,6 +42,7 @@ import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import mtm68.FileType;
+import mtm68.Optimizer;
 import mtm68.SymbolTableManager;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
@@ -71,12 +72,13 @@ public class IntegrationTests {
 	
 	private static final boolean INL = true;
 	private static final boolean CSE = true;
-	private static final boolean CP = true;
+	private static final boolean CP = false;
 
 	@BeforeEach
 	void setUpFileUtils() {
 		FileUtils.diagPath = Paths.get(ASSEM_PATH);
 		FileUtils.assemPath = Paths.get(ASSEM_PATH);
+		setUpOptimizer();
 	}
 	
 	@Test
@@ -401,7 +403,7 @@ public class IntegrationTests {
 	}
 
 	private IRNode generateIRFromFile(String filename) throws FileNotFoundException, SemanticException {
-
+		
 		Path testFilePath = Paths.get("src/test/resources/testfiles");
 		Path libPath = Paths.get("src/test/resources/testlib");
 		
@@ -437,10 +439,7 @@ public class IntegrationTests {
 		
 		//AST OPTS
 		
-		if(INL) {
-			FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
-			program = program.accept(fl);
-		}
+		program = Optimizer.optimizeAST(program);
 
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
@@ -459,15 +458,17 @@ public class IntegrationTests {
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
 		
-		if(CSE) {
-			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
-			irRoot = cseTransformer.doCSE();
-		}
+		irRoot = Optimizer.optimizeIR(irRoot);
 		
-		if(CP){
-			CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)irRoot, nodeFactory);
-			irRoot = cpTransformer.doCopyProp();
-		}
+//		if(CSE) {
+//			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
+//			irRoot = cseTransformer.doCSE();
+//		}
+//		
+//		if(CP){
+//			CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)irRoot, nodeFactory);
+//			irRoot = cpTransformer.doCopyProp();
+//		}
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
@@ -479,6 +480,13 @@ public class IntegrationTests {
 		return irRoot;
 	}
 	
+	private void setUpOptimizer() {
+		Optimizer.setNodeFactory(new IRNodeFactory_c());
+		Optimizer.addCF();
+		if(CSE) Optimizer.addCSE();
+		if(CP) Optimizer.addCP();
+		if(INL) Optimizer.addINL();
+	}
 	
 	private enum OSType{
 		WINDOWS,
