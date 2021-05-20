@@ -2,9 +2,13 @@ package mtm68.ir;
 
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.ADD;
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.MUL;
+import static mtm68.ir.IRTestUtils.cjump;
 import static mtm68.ir.IRTestUtils.constant;
+import static mtm68.ir.IRTestUtils.jump;
+import static mtm68.ir.IRTestUtils.label;
 import static mtm68.ir.IRTestUtils.move;
 import static mtm68.ir.IRTestUtils.op;
+import static mtm68.ir.IRTestUtils.ret;
 import static mtm68.ir.IRTestUtils.temp;
 import static mtm68.util.TestUtils.assertInstanceOf;
 import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
@@ -110,6 +114,25 @@ public class CopyPropTests {
 		IRTemp t6  = assertInstanceOfAndReturn(IRTemp.class, b2.right());
 		assertEquals("q", t6.name());
 	}	
+	
+	@Test
+	void mergeFromIf() throws IOException {
+	List<IRStmt> func = ArrayUtils.elems(
+				move(temp("x"), temp("y")),
+				cjump("l1", "l2"),
+				label("l1"),
+				move(temp("x"), temp("z")),
+				jump("m"),
+				label("l2"),
+				move(temp("x"), temp("w")),
+				jump("m"),
+				label("m"),
+				move(temp("a"), temp("x")),
+				ret()
+			);
+
+		List<IRStmt> res = perform(func);
+	}
 
 
 	private List<IRStmt> perform(List<IRStmt> stmts) throws IOException {

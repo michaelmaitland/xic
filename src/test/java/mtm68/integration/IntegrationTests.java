@@ -463,7 +463,7 @@ public class IntegrationTests {
 			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
 			irRoot = cseTransformer.doCSE();
 		}
-		
+	
 		if(CP){
 			CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)irRoot, nodeFactory);
 			irRoot = cpTransformer.doCopyProp();

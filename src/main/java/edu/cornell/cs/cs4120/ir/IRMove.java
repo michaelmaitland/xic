@@ -43,6 +43,10 @@ public class IRMove extends IRStmt {
         return src;
     }
 
+    public void setSource(IRExpr source) {
+    	this.src = source;
+    }
+    
     @Override
     public String label() {
         return "MOVE";

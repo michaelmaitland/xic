@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Test;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
-import mtm68.ir.cfg.ReachingDefns;
+import mtm68.ir.cfg.AvailableCopies;
 import mtm68.util.ArrayUtils;
 
-public class ReachingDefnsTest {
+public class AvailableCopiesTest {
 	
 	@Test
 	void prelim2Example() throws IOException {
@@ -44,6 +44,7 @@ public class ReachingDefnsTest {
 				move(temp("w"), temp("y")),
 				move(temp("y"), mem(op(ADD, temp("x"), constant(4)))),
 				jump("merge"),
+				label("merge"),
 				move(temp("x"), op(SUB, temp("x"), temp("w"))),
 				cjump("header", "fallthrough"),
 				label("fallthrough"),
@@ -70,6 +71,19 @@ public class ReachingDefnsTest {
 				move(temp("x"), temp("y")),
 				move(temp("x"), temp("w")),
 				move(temp("z"), op(ADD, op(MUL, constant(2), temp("x")), constant(1)))
+			);
+
+		perform(func);
+	}
+	
+	@Test
+	void redefine2() throws IOException {
+	List<IRStmt> func = ArrayUtils.elems(
+				move(temp("x"), temp("y")),
+				label("l"),
+				move(temp("r"), temp("w")),
+				move(temp("z"), op(ADD, op(MUL, constant(2), temp("x")), constant(1))),
+				jump("l")
 			);
 
 		perform(func);
@@ -103,13 +117,32 @@ public class ReachingDefnsTest {
 
 		perform(func);
 	}
+	
+	@Test
+	void mergeFromIf() throws IOException {
+	List<IRStmt> func = ArrayUtils.elems(
+				move(temp("x"), temp("y")),
+				cjump("l1", "l2"),
+				label("l1"),
+				move(temp("x"), temp("z")),
+				jump("m"),
+				label("l2"),
+				move(temp("x"), temp("w")),
+				jump("m"),
+				label("m"),
+				move(temp("a"), temp("x")),
+				ret()
+			);
+
+		perform(func);
+	}
 
 	private void perform(List<IRStmt> stmts) throws IOException {
 		IRSeq seq = new IRSeq(stmts);
 		IRFuncDefn func = new IRFuncDefn("f", seq, 0);
 
-		ReachingDefns rd = new ReachingDefns(func);
-		rd.performReachingDefnsAnalysis();
+		AvailableCopies rd = new AvailableCopies(func);
+		rd.performAnalysis();
 		
 		rd.getGraph();
 
