@@ -66,6 +66,12 @@ public class IRTemp extends IRExpr_c {
 	public Set<IRExpr> genAvailableExprs() {
 		return SetUtils.empty();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.elems(this);
+	}
+
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

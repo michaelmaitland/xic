@@ -93,6 +93,11 @@ public class IRESeq extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.union(stmt.getTemps(), expr.getTemps());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

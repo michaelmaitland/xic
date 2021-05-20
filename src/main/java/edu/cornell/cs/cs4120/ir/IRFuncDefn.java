@@ -120,6 +120,11 @@ public class IRFuncDefn extends IRNode_c {
 	public Set<IRExpr> genAvailableExprs() {
 		return body.genAvailableExprs();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return body.getTemps();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

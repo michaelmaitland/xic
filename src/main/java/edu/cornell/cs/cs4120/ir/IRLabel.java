@@ -86,6 +86,11 @@ public class IRLabel extends IRStmt {
 	public Set<IRExpr> genAvailableExprs() {
 		return SetUtils.empty();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.empty();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

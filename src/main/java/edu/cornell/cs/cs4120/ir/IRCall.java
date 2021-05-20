@@ -118,6 +118,14 @@ public class IRCall extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return args.stream()
+				   .map(IRNode::getTemps)
+				   .flatMap(Collection::stream)
+				   .collect(Collectors.toSet());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

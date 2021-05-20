@@ -210,6 +210,11 @@ public class IRBinOp extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.union(left.getTemps(), right.getTemps());
+	}
 
 	@Override
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {

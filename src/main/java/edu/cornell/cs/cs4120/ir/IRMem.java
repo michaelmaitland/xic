@@ -109,6 +109,11 @@ public class IRMem extends IRExpr_c {
 		exprs.add(this);
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return expr.getTemps();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

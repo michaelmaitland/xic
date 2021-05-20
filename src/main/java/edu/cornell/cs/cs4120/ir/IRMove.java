@@ -96,6 +96,11 @@ public class IRMove extends IRStmt {
 	public Set<IRExpr> genAvailableExprs() {
 		return target.genAvailableExprs();
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return target.getTemps();
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

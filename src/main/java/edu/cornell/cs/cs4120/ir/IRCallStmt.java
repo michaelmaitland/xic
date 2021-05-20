@@ -126,6 +126,14 @@ public class IRCallStmt extends IRStmt {
 				   .flatMap(Collection::stream)
 				   .collect(Collectors.toSet());
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		return args.stream()
+				   .map(IRNode::getTemps)
+				   .flatMap(Collection::stream)
+				   .collect(Collectors.toSet());
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {

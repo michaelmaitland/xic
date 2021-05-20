@@ -75,6 +75,11 @@ public class IRConst extends IRExpr_c {
 	}
 	
 	@Override
+	public Set<IRTemp> getTemps() {
+		return SetUtils.empty();
+	}
+	
+	@Override
 	public boolean containsExpr(IRExpr expr) {
 		return this.equals(expr);
 	}

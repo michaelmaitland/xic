@@ -69,6 +69,8 @@ public interface IRNode {
 	float getTileCost();
 	
 	Set<IRExpr> genAvailableExprs();
+
+	Set<IRTemp> getTemps();
 	
 	boolean containsExpr(IRExpr expr);
 

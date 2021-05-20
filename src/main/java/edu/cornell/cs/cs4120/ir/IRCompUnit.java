@@ -156,6 +156,15 @@ public class IRCompUnit extends IRNode_c {
 		}
 		return exprs;
 	}
+	
+	@Override
+	public Set<IRTemp> getTemps() {
+		Set<IRTemp> temps = SetUtils.empty();
+		for(IRFuncDefn fun : functions.values()) {
+			temps = SetUtils.union(temps, fun.getTemps());
+		}
+		return temps;
+	}
 
 	@Override
 	public boolean containsExpr(IRExpr expr) {
