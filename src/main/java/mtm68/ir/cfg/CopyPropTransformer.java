@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
@@ -77,7 +78,10 @@ public class CopyPropTransformer {
 		IRData<ReachingData> data = graph.getDataForNode(s);
 
 		IRStmt stmt = data.getIR();
-		Set<IRTemp> temps = stmt.getTemps();
+		if(!(stmt instanceof IRMove)) return;
+		IRMove mov = (IRMove)stmt;
+		
+		Set<IRTemp> temps = mov.source().getTemps();
 
 		Set<ReachingDefn> reachingDefns = data.getFlowData().getIn();
 		Set<ReachingDefn> tempsToReplace = reachingDefns.stream()

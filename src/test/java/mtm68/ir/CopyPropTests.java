@@ -77,6 +77,40 @@ public class CopyPropTests {
 		IRTemp t4  = assertInstanceOfAndReturn(IRTemp.class, b2.right());
 		assertEquals("y", t4.name());
 	}	
+	
+	@Test
+	void redefReplace() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("x"), temp("y")),
+				move(temp("x"), temp("q")),
+				move(temp("z"), op(ADD, op(MUL, constant(2), temp("x")), constant(1)))
+			);
+		List<IRStmt> res = perform(func);
+		
+		assertEquals(3, res.size());
+		IRMove m1 = assertInstanceOfAndReturn(IRMove.class, res.get(0));
+		IRTemp t1 = assertInstanceOfAndReturn(IRTemp.class, m1.target());
+		assertEquals("x", t1.name());
+		IRTemp t2 = assertInstanceOfAndReturn(IRTemp.class, m1.source());
+		assertEquals("y", t2.name());
+		
+		IRMove m2 = assertInstanceOfAndReturn(IRMove.class, res.get(1));
+		IRTemp t3 = assertInstanceOfAndReturn(IRTemp.class, m2.target());
+		assertEquals("x", t3.name());
+		IRTemp t4 = assertInstanceOfAndReturn(IRTemp.class, m2.source());
+		assertEquals("q", t4.name());
+
+		IRMove m3 = assertInstanceOfAndReturn(IRMove.class, res.get(2));
+		IRTemp t5 = assertInstanceOfAndReturn(IRTemp.class, m3.target());
+		assertEquals("z", t5.name());
+
+		IRBinOp b1 = assertInstanceOfAndReturn(IRBinOp.class, m3.source());
+		IRBinOp b2 = assertInstanceOfAndReturn(IRBinOp.class, b1.left());
+		IRTemp t6  = assertInstanceOfAndReturn(IRTemp.class, b2.right());
+		assertEquals("q", t6.name());
+	}	
+
 
 	private List<IRStmt> perform(List<IRStmt> stmts) throws IOException {
 		IRSeq seq = new IRSeq(stmts);
