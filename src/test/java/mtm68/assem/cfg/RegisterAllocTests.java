@@ -19,11 +19,11 @@ public class RegisterAllocTests {
 	@Test
 	void registerAlloc() {
 		Set<RealReg> colors = SetUtils.elems(RealReg.R12);
-		RegisterAllocation regAlloc = new RegisterAllocation(colors);
+		RegisterAllocation regAlloc = new RegisterAllocation(RealReg.COLORS);
 		
 		List<Assem> assems = ArrayUtils.elems(
 				mov(reg("t1"), reg("t2")),
-				mov(reg("t2"), reg("t3")),
+				mov(reg("t2"), reg("t1")),
 				mov(reg("t1"), reg("t4")),
 				ret()
 			);

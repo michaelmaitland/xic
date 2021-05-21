@@ -2,13 +2,17 @@ package mtm68.assem.cfg;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
@@ -17,10 +21,12 @@ import mtm68.assem.ReplaceableReg;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.cfg.AssemCFGBuilder.AssemData;
 import mtm68.assem.cfg.Liveness.LiveData;
+import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.FreshRegGenerator;
 import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Reg;
+import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 import mtm68.util.SetUtils;
@@ -34,16 +40,31 @@ public class RegisterAllocation {
 	private int k;
 	private Graph<String> interferenceGraph;
 	private Graph<AssemData<LiveData>> liveGraph;
-	private List<Node> simplifyWorklist;
-	private List<Node> spillWorklist;
 	private Stack<Node> selectStack;
 	private Map<Node, Integer> degreeMap;
 	
+	// Worklists
+	private Queue<Node> simplifyWorklist;
+	private Queue<Node> spillWorklist;
+	private Queue<Node> freezeWorklist;
+	
+	// Move sets
+	private Queue<Move> coalescedMoves;
+	private Queue<Move> constrainedMoves;
+	private Queue<Move> frozenMoves;
+	private Queue<Move> worklistMoves;
+	private Set<Move> activeMoves;
+
+	private Map<String, Node> nodeMap;
 	private List<Node> initial;
+	private Set<Node> precolored;
 	private Set<Edge> adjSet;
 	private Map<Node, List<Node>> adjList;
+	private Map<Node, Set<Move>> moveList;
+	private Map<Node, Node> alias;
 	private Set<Node> spilledNodes;
 	private Set<Node> coloredNodes;
+	private Set<Node> coalescedNodes;
 	private Map<String, String> colorMap;
 	
 	public RegisterAllocation(Set<RealReg> colors) {
@@ -88,12 +109,16 @@ public class RegisterAllocation {
 		init();
 		build(assems);
 		makeWorklists();
+
+		checkInvariants();
 		
-		while(!(simplifyWorklist.isEmpty() && spillWorklist.isEmpty())) {
+		while(!(simplifyWorklist.isEmpty() && worklistMoves.isEmpty()
+				&& freezeWorklist.isEmpty() && spillWorklist.isEmpty())) {
 
 			if(!simplifyWorklist.isEmpty()) simplify();
+			else if(!worklistMoves.isEmpty()) coalesce();
+			else if(!freezeWorklist.isEmpty()) freeze();
 			else if(!spillWorklist.isEmpty()) selectSpill();
-			
 		}
 		
 		assignColors();
@@ -112,14 +137,25 @@ public class RegisterAllocation {
 	private void init() {
 		simplifyWorklist = new LinkedList<>();
 		spillWorklist = new LinkedList<>();
+		freezeWorklist = new LinkedList<>();
 		selectStack = new Stack<>();
+
+		coalescedMoves = new LinkedList<>();
+		constrainedMoves = new LinkedList<>();
+		frozenMoves = new LinkedList<>();
+		worklistMoves = new LinkedList<>();
+		activeMoves = new HashSet<>();
+
+		nodeMap = new HashMap<>();
 		degreeMap = new HashMap<>();
-		
 		adjSet = new HashSet<>();
 		adjList = new HashMap<>();
+		moveList = new HashMap<>();
 		spilledNodes = new HashSet<>();
 		coloredNodes = new HashSet<>();
+		coalescedNodes = new HashSet<>();
 		colorMap = new HashMap<>();
+		alias = new HashMap<>();
 		
 		// For precolored nodes
 		for(String color : colors.keySet()) {
@@ -147,22 +183,58 @@ public class RegisterAllocation {
 
 		initial = ArrayUtils.elems(interferenceGraph.getNodes()).stream()
 				.map(interferenceGraph::getDataForNode)
-				.map(Node::new)
+				.filter(r -> !RealReg.isRealReg(r))
+				.map(t -> new Node(t, NodeWorklist.INITIAL))
 				.collect(Collectors.toList());
+		
+		precolored = colors.keySet().stream()
+				.map(t -> new Node(t, NodeWorklist.PRECOLORED))
+				.collect(Collectors.toSet());
 
-		for(Node node : initial) {
+		// The stack point and base pointer can't be used as colors
+		// but they can interfere with other nodes and are considered
+		// precolored.
+		precolored.add(new Node("rbp", NodeWorklist.PRECOLORED));
+		precolored.add(new Node("rsp", NodeWorklist.PRECOLORED));
+
+		Stream.concat(initial.stream(), precolored.stream()).forEach(node -> {
 			degreeMap.put(node, 0);
 			adjList.put(node, ArrayUtils.empty());
-		}
+			nodeMap.put(node.getId(), node);
+		});
 		
 		List<AssemData<LiveData>> nodeData = liveGraph.getNodes().stream()
 				.map(liveGraph::getDataForNode)
 				.collect(Collectors.toList());
 
 		for(AssemData<LiveData> data : nodeData) {
-			Set<String> live = data.getFlowData().getLiveOut();
+			Assem assem = data.getAssem();
 
-			Set<String> defined = regsToStrs(data.getAssem().def());
+			Set<String> live = data.getFlowData().getLiveOut();
+			Set<String> defined = regsToStrs(assem.def());
+			
+			if(assem instanceof MoveAssem) {
+				MoveAssem moveAssem = (MoveAssem) assem;
+
+				Dest dest = moveAssem.getDest();
+				Src src = moveAssem.getSrc();
+				
+				if(dest instanceof Reg && src instanceof Reg) {
+					Reg destReg = (Reg) dest;
+					Reg srcReg = (Reg) src;
+					
+					Node destNode = nodeMap.get(destReg.getId());
+					Node srcNode = nodeMap.get(srcReg.getId());
+					
+					Move move = new Move(destNode, srcNode, MoveSet.WORKLIST);
+
+					addToMoveList(destNode, move);
+					addToMoveList(srcNode, move);
+					addToWorklistMoves(move);
+					
+					live.remove(srcNode.getId());
+				}
+			}
 			
 			for(String d : defined) {
 				for(String l : live) {
@@ -171,10 +243,153 @@ public class RegisterAllocation {
 			}
 		}
 	}
+
+	private void makeWorklists() {
+		Iterator<Node> iterator = initial.iterator();
+		while(iterator.hasNext()) {
+			Node node = iterator.next();
+
+			if(degree(node) >= k) {
+				addToSpillWorklist(node);
+			} 
+			else if(isMoveRelated(node)) {
+				addToFreezeWorklist(node);
+			}
+			else {
+				addToSimplifyWorklist(node);
+			}
+
+			iterator.remove();
+		}
+	}
 	
+	private void checkInvariants() {
+		checkDegreeInvariant();
+		checkSimplifyInvariant();
+		checkFreezeInvariant();
+		checkSpillInvariant();
+	}
+	
+
+	private void checkDegreeInvariant() {
+		Set<Node> degreeNodes = new HashSet<>(simplifyWorklist);
+		degreeNodes.addAll(freezeWorklist);
+		degreeNodes.addAll(spillWorklist);
+		
+		for(Node u : degreeNodes) {
+			Set<Node> union = new HashSet<>(precolored);
+			union.addAll(degreeNodes);
+
+			int size = SetUtils.intersect(new HashSet<>(adjList.get(u)), union).size();
+			
+			if(degree(u) != size) {
+				throw new InternalCompilerError("Degree invariant violated for " + u + ". " + degree(u) + " != " + size);
+			}
+		}
+	}
+	
+	private void checkSimplifyInvariant() {
+		for(Node node : simplifyWorklist) {
+			Set<Move> intersect = SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()),
+					SetUtils.union(activeMoves, new HashSet<>(worklistMoves)));
+
+			if(degree(node) < k && intersect.isEmpty()) continue;
+			throw new InternalCompilerError("Simplify invariant violated for " + node);
+		}
+	}
+
+	private void checkFreezeInvariant() {
+		for(Node node : freezeWorklist) {
+			Set<Move> intersect = SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()),
+					SetUtils.union(activeMoves, new HashSet<>(worklistMoves)));
+
+			if(degree(node) < k && !intersect.isEmpty()) continue;
+			throw new InternalCompilerError("Freeze invariant violated for " + node);
+		}
+	}
+
+	private void checkSpillInvariant() {
+		for(Node node : spillWorklist) {
+			if(degree(node) >= k) continue;
+			throw new InternalCompilerError("Spill invariant violated for " + node);
+		}
+	}
+
+	private void coalesce() {
+		Move move = worklistMoves.poll();
+		Node x = getAlias(move.getDest());
+		Node y = getAlias(move.getSrc());
+		
+		Node u, v;
+		if(precolored(y)) {
+			u = y;
+			v = x;
+		} else {
+			u = x;
+			v = y;
+		}
+		
+		Edge uv = new Edge(u, v);
+		
+		if(u.equals(v)) {
+			addToCoalescedMoves(move);
+			addWorkList(u);
+		} else if (precolored(v) || adjSet.contains(uv)) {
+			addToConstrainedMoves(move);
+			addWorkList(u);
+			addWorkList(v);
+		} else {
+			Set<Node> uAdj = adjacent(u);
+			Set<Node> vAdj = adjacent(v);
+
+			boolean allAdjOk = vAdj.stream()
+					.allMatch(t -> ok(t, u));
+			
+			if((precolored(u) && allAdjOk) ||
+					!precolored(u) && conservative(SetUtils.union(uAdj, vAdj))) {
+				addToCoalescedMoves(move);
+				combine(u, v);
+				addWorkList(u);
+			} else {
+				addToActiveMoves(move);
+			}
+		}
+	}
+
+	private void freeze() {
+		Node node = freezeWorklist.poll();
+		addToSimplifyWorklist(node);
+		freezeMoves(node);
+	}
+	
+	private void freezeMoves(Node node) {
+		for(Move move : nodeMoves(node)) {
+			Node x = move.getDest();
+			Node y = move.getSrc();
+
+			Node v = null;
+
+			if(getAlias(y).equals(getAlias(node))) {
+				v = getAlias(x);
+			} else {
+				v = getAlias(y);
+			}
+			
+			activeMoves.remove(move);
+			addToFrozenMoves(move);
+			
+			if(v.getWorklist() == NodeWorklist.FREEZE && nodeMoves(v).isEmpty()) {
+				freezeWorklist.remove(v);
+				addToSimplifyWorklist(v);
+			}
+		}
+	}
+
+
 	private void selectSpill() {
-		Node spill = spillWorklist.remove(0);
-		simplifyWorklist.add(spill);
+		Node spill = spillWorklist.poll();
+		addToSimplifyWorklist(spill);
+		freezeMoves(spill);
 	}
 
 	private void assignColors() {
@@ -183,16 +398,18 @@ public class RegisterAllocation {
 			Set<String> okColors = SetUtils.copy(colors.keySet()); 
 			
 			for(Node adj : adjList.get(node)) {
-				if(coloredNodes.contains(adj) || precolored(adj)) {
-					String temp = adj.getId(); 
+				Node alias = getAlias(adj);
+				if(coloredNodes.contains(alias) || precolored(alias)) {
+					String temp = alias.getId(); 
 					okColors.remove(colorMap.get(temp));
 				}
 			}
 			
 			if(okColors.isEmpty()) {
-				spilledNodes.add(node);
+				addToSpilledNodes(node);
 			} else {
-				coloredNodes.add(node);
+				addToColoredNodes(node);
+
 				String color = okColors.iterator().next();
 				String temp = node.getId(); 
 				
@@ -205,8 +422,15 @@ public class RegisterAllocation {
 				colorMap.put(temp, color);
 			}
 		}
+		
+		for(Node node : coalescedNodes) {
+			String aliasTemp = getAlias(node).getId();
+			String temp = node.getId();
+			colorMap.put(temp, colorMap.get(aliasTemp));
+		}
 	}
 	
+
 	private List<Assem> rewriteProgram(List<Assem> assems) {
 		System.out.println("Nodes spilled, rewriting.");
 		System.out.println();
@@ -267,13 +491,13 @@ public class RegisterAllocation {
 			}
 		}
 		
-//		System.out.println("Original\n========");
-//		assems.forEach(System.out::println);
-//		System.out.println();
-//		
-//		System.out.println("New program\n=======");
-//		result.forEach(System.out::println);
-//		System.out.println();
+		System.out.println("Original\n========");
+		assems.forEach(System.out::println);
+		System.out.println();
+		
+		System.out.println("New program\n=======");
+		result.forEach(System.out::println);
+		System.out.println();
 
 		return result;
 	}
@@ -310,11 +534,8 @@ public class RegisterAllocation {
 		}
 		return false;
 	}
-
-	private void addEdge(String t1, String t2) {
-		Node u = new Node(t1); 
-		Node v = new Node(t2); 
-		
+	
+	private void addEdge(Node u, Node v) {
 		Edge uv = new Edge(u, v);
 		
 		if(!adjSet.contains(uv) && !u.equals(v)) {
@@ -332,10 +553,18 @@ public class RegisterAllocation {
 			}
 		}
 	}
+
+	private void addEdge(String t1, String t2) {
+		Node u = nodeMap.get(t1); 
+		Node v = nodeMap.get(t2); 
+		
+		addEdge(u, v);
+	}
 	
 	private Set<Node> adjacent(Node node) {
 		return adjList.get(node).stream()
-				.filter(n -> !selectStack.contains(n))
+				.filter(n -> n.getWorklist() != NodeWorklist.SELECT_STACK &&
+								n.getWorklist() != NodeWorklist.COALESCED)
 				.collect(Collectors.toSet());
 	}
 	
@@ -345,36 +574,181 @@ public class RegisterAllocation {
 			.collect(Collectors.toSet());
 	}
 	
-	private void makeWorklists() {
-		for(Node node : initial) {
-			if(precolored(node)) continue;
-			
-			if(degree(node) < k) {
-				simplifyWorklist.add(node);
-			} else {
-				spillWorklist.add(node);
-			}
-		}
-	}
 	
+	private Set<Move> nodeMoves(Node node) {
+		Set<Move> union = Stream.concat(activeMoves.stream(), worklistMoves.stream())
+				.collect(Collectors.toSet());
+
+		return SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()), union);
+	}
+
+	private boolean isMoveRelated(Node node) {
+		return !nodeMoves(node).isEmpty();
+	}
+
 	private void simplify() {
-		Node node = simplifyWorklist.remove(0);
-		selectStack.push(node);
+		Node node = simplifyWorklist.poll();
+		addToSelectStack(node);
 		
 		for(Node adj : adjacent(node)) {
 			decrementDegree(adj);
 		}
 	}
-	
+
 	private void decrementDegree(Node node) {
+		// Do we want this here?
+		if(precolored(node)) return;
+
 		int d = degree(node);
 		degreeMap.put(node, degreeMap.get(node) - 1);
 		
 		if(d == k) {
+			enableMoves(SetUtils.union(SetUtils.elems(node), adjacent(node)));
 			spillWorklist.remove(node);
-			simplifyWorklist.add(node);
+			
+			if(isMoveRelated(node)) {
+				addToFreezeWorklist(node);
+			} else {
+				addToSimplifyWorklist(node);
+			}
 		}
 		
+	}
+	
+	private void enableMoves(Set<Node> nodes) {
+		for(Node node : nodes) {
+			for(Move move : nodeMoves(node)) {
+				if(move.getMoveSet() == MoveSet.ACTIVE) {
+					activeMoves.remove(move);
+					addToWorklistMoves(move);
+				}
+			}
+		}
+	}
+	
+	private void combine(Node u, Node v) {
+		if(v.getWorklist() == NodeWorklist.FREEZE) {
+			freezeWorklist.remove(v);
+		} else {
+			spillWorklist.remove(v);
+		}
+		
+		addToCoalescedNodes(v);
+		alias.put(v, u);
+		SetUtils.unionMutable(moveList.get(u), moveList.get(v));
+		
+		enableMoves(SetUtils.elems(v));
+		
+		for(Node t : adjacent(v)) {
+			addEdge(t, u);
+			decrementDegree(t);
+		}
+		
+		if(degree(u) >= k && u.getWorklist() == NodeWorklist.FREEZE) {
+			freezeWorklist.remove(u);
+			addToSpillWorklist(u);
+		}
+	}
+		
+	private Node getAlias(Node node) {
+		if(node.getWorklist() == NodeWorklist.COALESCED) {
+			return getAlias(alias.get(node));
+		}
+		
+		return node;
+	}
+	
+	private void addWorkList(Node node) {
+		if(!precolored(node) && !(isMoveRelated(node) && degree(node) < k)) {
+			freezeWorklist.remove(node);
+			addToSimplifyWorklist(node);
+		}
+	}
+	
+	private boolean ok(Node t, Node r) {
+		return degree(t) < k || precolored(t) || adjSet.contains(new Edge(t, r));
+	}
+	
+	private boolean conservative(Set<Node> nodes) {
+		int count = 0;
+		
+		for(Node node : nodes) {
+			if(degree(node) >= k || precolored(node)) count++;
+		}
+		
+		return count < k;
+	}
+	
+	//-------------------------------------------------------------------------------- 
+	// Worklist management 
+	//-------------------------------------------------------------------------------- 
+
+	private void addToSimplifyWorklist(Node spill) {
+		spill.setWorklist(NodeWorklist.SIMPLIFY);
+		simplifyWorklist.add(spill);
+	}
+
+	private void addToSpillWorklist(Node node) {
+		node.setWorklist(NodeWorklist.SPILL);
+		spillWorklist.add(node);
+	}
+
+	private void addToFreezeWorklist(Node node) {
+		node.setWorklist(NodeWorklist.FREEZE);
+		freezeWorklist.add(node);
+	}
+
+	private void addToSelectStack(Node node) {
+		node.setWorklist(NodeWorklist.SELECT_STACK);
+		selectStack.push(node);
+	}
+
+	private void addToSpilledNodes(Node node) {
+		node.setWorklist(NodeWorklist.SPILLED);
+		spilledNodes.add(node);
+	}
+	
+	private void addToColoredNodes(Node node) {
+		node.setWorklist(NodeWorklist.COLORED);
+		coloredNodes.add(node);
+	}
+
+	private void addToCoalescedNodes(Node node) {
+		node.setWorklist(NodeWorklist.COALESCED);
+		coalescedNodes.add(node);
+	}
+
+	private void addToWorklistMoves(Move move) {
+		move.setMoveSet(MoveSet.WORKLIST);
+		worklistMoves.add(move);
+	}
+
+	private void addToCoalescedMoves(Move move) {
+		move.setMoveSet(MoveSet.COALESCED);
+		coalescedMoves.add(move);
+	}
+
+	private void addToActiveMoves(Move move) {
+		move.setMoveSet(MoveSet.ACTIVE);
+		activeMoves.add(move);
+	}
+
+	private void addToConstrainedMoves(Move move) {
+		move.setMoveSet(MoveSet.CONSTRAINED);
+		constrainedMoves.add(move);
+	}
+
+	private void addToFrozenMoves(Move move) {
+		move.setMoveSet(MoveSet.FROZEN);
+		frozenMoves.add(move);
+	}
+
+	private void addToMoveList(Node node, Move move) {
+		if(!moveList.containsKey(node)) {
+			moveList.put(node, SetUtils.empty());
+		}
+		
+		moveList.get(node).add(move);
 	}
 	
 	private boolean precolored(Node node) {
@@ -387,14 +761,28 @@ public class RegisterAllocation {
 	
 	private static class Node {
 		private String id;
+		private NodeWorklist worklist;
 		
-		private Node(String id) {
+		private Node(String id, NodeWorklist worklist) {
 			super();
 			this.id = id;
+			this.worklist = worklist;
+		}
+
+		private Node(String id) {
+			this(id, NodeWorklist.INITIAL);
 		}
 
 		public String getId() {
 			return id;
+		}
+		
+		public void setWorklist(NodeWorklist worklist) {
+			this.worklist = worklist;
+		}
+		
+		public NodeWorklist getWorklist() {
+			return worklist;
 		}
 
 		@Override
@@ -481,6 +869,91 @@ public class RegisterAllocation {
 			return from + " - " + to;
 		}
 		
+	}
+	
+	private enum NodeWorklist {
+		PRECOLORED,
+		INITIAL,
+		SIMPLIFY,
+		FREEZE,
+		SPILL,
+		SPILLED,
+		COALESCED,
+		COLORED,
+		SELECT_STACK
+	}
+	
+	private static class Move {
+		private Node dest;
+		private Node src;
+		private MoveSet moveSet;
+
+		public Move(Node dest, Node src, MoveSet moveSet) {
+			super();
+			this.dest = dest;
+			this.src = src;
+			this.moveSet = moveSet;
+		}
+		
+		public void setMoveSet(MoveSet moveSet) {
+			this.moveSet = moveSet;
+		}
+		
+		public Node getDest() {
+			return dest;
+		}
+		
+		public Node getSrc() {
+			return src;
+		}
+		
+		public MoveSet getMoveSet() {
+			return moveSet;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((dest == null) ? 0 : dest.hashCode());
+			result = prime * result + ((src == null) ? 0 : src.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Move other = (Move) obj;
+			if (dest == null) {
+				if (other.dest != null)
+					return false;
+			} else if (!dest.equals(other.dest))
+				return false;
+			if (src == null) {
+				if (other.src != null)
+					return false;
+			} else if (!src.equals(other.src))
+				return false;
+			return true;
+		}
+		
+		@Override
+		public String toString() {
+			return dest + " <- " + src;
+		}
+	}
+	
+	private enum MoveSet {
+		COALESCED,
+		CONSTRAINED,
+		FROZEN,
+		WORKLIST,
+		ACTIVE
 	}
 	
 	private static class FunctionSpillData {

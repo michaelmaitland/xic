@@ -40,7 +40,8 @@ public class RealReg extends Reg{
 			RBX,
 			RCX,
 			RDX,
-			RDI
+			RDI,
+			RSI
 		);
 
 	public static final List<RealReg> getCallerSaveReg() {
