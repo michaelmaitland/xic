@@ -241,7 +241,7 @@ public class Tiler extends IRVisitor {
 				new LabelAssem(name),
 				new PushAssem(RealReg.RBP),
 				new MoveAssem(RealReg.RBP, RealReg.RSP),
-				new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l)),
+				l == 0 ? null : new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l)),
 				pushCalleeSaved(calleeSaved)
 			);
 	}

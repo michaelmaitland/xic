@@ -3,10 +3,8 @@ package mtm68.assem.cfg;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -44,15 +42,15 @@ public class RegisterAllocation {
 	private Map<Node, Integer> degreeMap;
 	
 	// Worklists
-	private Queue<Node> simplifyWorklist;
-	private Queue<Node> spillWorklist;
-	private Queue<Node> freezeWorklist;
+	private Set<Node> simplifyWorklist;
+	private Set<Node> spillWorklist;
+	private Set<Node> freezeWorklist;
 	
 	// Move sets
-	private Queue<Move> coalescedMoves;
-	private Queue<Move> constrainedMoves;
-	private Queue<Move> frozenMoves;
-	private Queue<Move> worklistMoves;
+	private Set<Move> coalescedMoves;
+	private Set<Move> constrainedMoves;
+	private Set<Move> frozenMoves;
+	private Set<Move> worklistMoves;
 	private Set<Move> activeMoves;
 
 	private Map<String, Node> nodeMap;
@@ -135,15 +133,15 @@ public class RegisterAllocation {
 	}
 	
 	private void init() {
-		simplifyWorklist = new LinkedList<>();
-		spillWorklist = new LinkedList<>();
-		freezeWorklist = new LinkedList<>();
+		simplifyWorklist = new HashSet<>();
+		spillWorklist = new HashSet<>();
+		freezeWorklist = new HashSet<>();
 		selectStack = new Stack<>();
 
-		coalescedMoves = new LinkedList<>();
-		constrainedMoves = new LinkedList<>();
-		frozenMoves = new LinkedList<>();
-		worklistMoves = new LinkedList<>();
+		coalescedMoves = new HashSet<>();
+		constrainedMoves = new HashSet<>();
+		frozenMoves = new HashSet<>();
+		worklistMoves = new HashSet<>();
 		activeMoves = new HashSet<>();
 
 		nodeMap = new HashMap<>();
@@ -316,7 +314,7 @@ public class RegisterAllocation {
 	}
 
 	private void coalesce() {
-		Move move = worklistMoves.poll();
+		Move move = SetUtils.poll(worklistMoves);
 		Node x = getAlias(move.getDest());
 		Node y = getAlias(move.getSrc());
 		
@@ -357,7 +355,7 @@ public class RegisterAllocation {
 	}
 
 	private void freeze() {
-		Node node = freezeWorklist.poll();
+		Node node = SetUtils.poll(freezeWorklist);
 		addToSimplifyWorklist(node);
 		freezeMoves(node);
 	}
@@ -387,7 +385,7 @@ public class RegisterAllocation {
 
 
 	private void selectSpill() {
-		Node spill = spillWorklist.poll();
+		Node spill = SetUtils.poll(spillWorklist);
 		addToSimplifyWorklist(spill);
 		freezeMoves(spill);
 	}
@@ -587,7 +585,7 @@ public class RegisterAllocation {
 	}
 
 	private void simplify() {
-		Node node = simplifyWorklist.poll();
+		Node node = SetUtils.poll(simplifyWorklist);
 		addToSelectStack(node);
 		
 		for(Node adj : adjacent(node)) {

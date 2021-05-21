@@ -1,6 +1,7 @@
 package mtm68.util;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +47,14 @@ public class SetUtils {
 
 	public static <V, T extends V> Set<V> fromList(List<T> list) {
 		return list.stream().collect(Collectors.toSet());
+	}
+	
+	public static <T> T poll(Set<T> set) {
+		Iterator<T> iter = set.iterator();
+		T result = iter.next();
+		iter.remove();
+
+		return result;
 	}
 
 }
