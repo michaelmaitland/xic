@@ -82,9 +82,9 @@ public class DeadCodeTransformer {
 
 		Set<LiveVar> liveOut = data.getFlowData().getOut();
 		
-		boolean isDead = liveOut.stream().anyMatch(l ->  l.a.equals(temp));
+		boolean isAlive = liveOut.stream().anyMatch(l ->  l.a.equals(temp));
 		
-		if(isDead) {
+		if(!isAlive) {
 			data.setIR(f.IRSeq());
 		}
 	}

@@ -12,6 +12,7 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRReturn;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
@@ -81,11 +82,11 @@ public class LiveVariables {
 	 * out[n] = vars live on entry to any successor node
 	 */
 	 private Set<LiveVar> out(Node node) {
-		Set<LiveVar> out= SetUtils.empty();
+		Set<LiveVar> out = SetUtils.empty();
 		for(Node succ: node.succ()) {
 			Set<LiveVar> succData = graph.getDataForNode(succ)
 											   .getFlowData()
-											   .getOut();
+											   .getIn();
 			out = SetUtils.union(out, succData);
 		}
 
@@ -116,10 +117,14 @@ public class LiveVariables {
 		} else if(hasIfEForm(ir)) {
 			return useIfE((IRCJump)ir, node);
 
+		} else if(hasRetForm(ir)) {
+			return useRet((IRReturn)ir, node);
+	
 		} else {
 			return SetUtils.empty();
 		}
 	}
+
 
 	private Set<LiveVar> useXGetsE(IRMove mov, Node node) {
 		return mov.source()
@@ -152,6 +157,12 @@ public class LiveVariables {
 				  .collect(Collectors.toSet());
 	}
 
+	private Set<LiveVar> useRet(IRReturn ret, Node node) {
+		return ret.use()
+				  .stream()
+				  .map(LiveVar::new)
+				  .collect(Collectors.toSet());
+	}
 	/**
 	 * Expressions def by a node 
 	 * 
@@ -165,6 +176,9 @@ public class LiveVariables {
 		if (hasXGetsEForm(ir)) {
 			return defXGetsE((IRMove)ir);
 
+//		} else if(hasRetForm(ir)) {
+//			return defRet((IRReturn)ir, node);
+//	
 		} else {
 			return SetUtils.empty();
 		}
@@ -176,6 +190,7 @@ public class LiveVariables {
 								   .map(LiveVar::new)
 								   .collect(Collectors.toSet());
 	}
+	
 
 	private boolean hasXGetsEForm(IRStmt ir) {
 		return ir instanceof IRMove 
@@ -195,6 +210,10 @@ public class LiveVariables {
 
 	private boolean hasIfEForm(IRStmt ir) {
 		return ir instanceof IRCJump; 
+	}
+
+	private boolean hasRetForm(IRStmt ir) {
+		return ir instanceof IRReturn;
 	}
 
 	public Graph<IRData<LiveData>> getGraph() {
@@ -283,6 +302,11 @@ public class LiveVariables {
 
 		public void setA(IRTemp a) {
 			this.a = a;
+		}
+
+		@Override 
+		public String toString() {
+			return a.toString();
 		}
 
 		@Override

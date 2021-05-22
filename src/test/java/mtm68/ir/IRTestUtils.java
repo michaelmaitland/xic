@@ -1,6 +1,6 @@
 package mtm68.ir;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
@@ -59,6 +59,10 @@ public class IRTestUtils {
 	
 	public static IRReturn ret() {
 		return new IRReturn();
+	}
+	
+	public static IRReturn ret(IRExpr... rets){
+		return new IRReturn(rets);
 	}
 	
 	public static IRTemp temp(String name) {
