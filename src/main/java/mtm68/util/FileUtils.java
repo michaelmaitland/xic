@@ -8,16 +8,20 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNode;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.assem.Assem;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.visit.AssemToFileBuilder;
 import mtm68.ast.nodes.Node;
+import mtm68.ir.cfg.IRCFGBuilder;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.lexer.Token;
 import mtm68.parser.ParseResult;
@@ -149,14 +153,19 @@ public class FileUtils {
 		 * @param filename the name of the file parsed
 		 * @param assem    
 		 */
-		public static void writeCFGToFile(String filename, Graph<IRData<String>> graph) {
+		public static void writeCFGToFile(String filename, Collection<IRFuncDefn> fDefns) {
 			String outfile = filename.replaceFirst("\\.(xi|ixi)", ".dot");
 			Path outpath = Paths.get(outfile);
 			BufferedWriter writer;
 			try {
 				Files.createDirectories(outpath.getParent());			
 				writer = new BufferedWriter(new FileWriter(outpath.toString()));
-				graph.show(writer, "CFG", true, o -> o.getIR().toString());
+				for(IRFuncDefn fDefn : fDefns) {
+					IRCFGBuilder<String> builder = new IRCFGBuilder<>();
+					Graph<IRData<String>> graph = builder.buildIRCFG(((IRSeq)fDefn.getBody()), () -> "");
+					graph.show(writer, fDefn.name(), true, o -> o.getIR().toString());
+					writer.append('\n');
+				}
 			    writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();

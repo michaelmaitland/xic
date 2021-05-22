@@ -13,6 +13,7 @@ import edu.cornell.cs.cs4120.ir.IRJump;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRReturn;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRUtils;
 import mtm68.assem.cfg.Graph;
@@ -62,7 +63,11 @@ public class IRCFGBuilder<T> {
 		}
 		return IRUtils.flattenSeq(rebuilt);
 	}
-
+	
+	public Graph<IRData<T>> buildIRCFG(IRSeq seq, Supplier<T> flowDataConstructor) {
+		return buildIRCFG(seq.stmts(), flowDataConstructor);
+	}
+	
 	public Graph<IRData<T>> buildIRCFG(List<IRStmt> stmts, Supplier<T> flowDataConstructor) {
 		this.originalStmts = stmts;
 		for(int i = 0; i < stmts.size(); i++) {

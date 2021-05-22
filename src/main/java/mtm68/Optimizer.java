@@ -96,9 +96,7 @@ public class Optimizer {
 		}
 		if(cfgPhases.contains(Phase.INITIAL)) {
 			String filename = rootFilename + "_f_initial.xi"; 
-			IRCFGBuilder<String> builder = new IRCFGBuilder<>();
-			Graph<IRData<String>> graph = builder.buildIRCFG(compUnit.flattenCompUnit(), () -> "");
-			FileUtils.writeCFGToFile(filename, graph);
+			FileUtils.writeCFGToFile(filename, compUnit.functions().values());
 		}
 	}
 	
@@ -112,9 +110,7 @@ public class Optimizer {
 		}
 		if(cfgPhases.contains(Phase.FINAL)) {
 			String filename = rootFilename + "_f_final.xi"; 
-			IRCFGBuilder<String> builder = new IRCFGBuilder<>();
-			Graph<IRData<String>> graph = builder.buildIRCFG(compUnit.flattenCompUnit(), () -> "");
-			FileUtils.writeCFGToFile(filename, graph);
+			FileUtils.writeCFGToFile(filename, compUnit.functions().values());
 		}
 	}
 	
