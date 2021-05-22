@@ -35,6 +35,7 @@ import mtm68.assem.CompUnitAssem;
 import mtm68.assem.RegisterAllocator;
 import mtm68.assem.cfg.RegisterAllocation;
 import mtm68.assem.operand.RealReg;
+import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
@@ -117,6 +118,12 @@ public class Main {
 	
 	@Option(name = "-Oinl", usage = "enable function inlining")
 	private boolean doINL;
+
+	@Option(name = "-Omc", usage = "enable optimal register allocation with move coalescing")
+	private boolean doMC;
+
+	@Option(name = "-Oreg", usage = "enable optimal register allocation with move coalescing")
+	private boolean doReg;
 	
 	@Option(name = "-target", usage = "specify the OS for which to generate code")
 	private String osTarget = "linux";
@@ -255,8 +262,15 @@ public class Main {
 				Optimizer.addINL();
 				addAllOpts = false;
 			}
+			if(doMC) {
+				addAllOpts = false;
+			}
+			if(doReg) {
+				addAllOpts = false;
+			}
 			if(addAllOpts) {
 				Optimizer.addAll();
+				doMC = doReg = true;
 			}
 		}
 	}
@@ -265,7 +279,9 @@ public class Main {
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
 		IRNode tiled = tiler.visit(irRoot);
 				
-		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
+		RegisterAllocator regAllocator = doMC || doReg 
+				? new RegisterAllocation(RealReg.COLORS)
+				: new TrivialRegisterAllocator();
 		
 		return regAllocator.allocateRegisters((CompUnitAssem) tiled.getAssem()).flattenedProgram();
 	}
