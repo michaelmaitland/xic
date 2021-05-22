@@ -71,10 +71,11 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
+	private static final boolean CF = true;
 	private static final boolean INL = false;
-	private static final boolean CSE = false;
-	private static final boolean CP = false;
-	private static final boolean COPY = false;
+	private static final boolean CSE = true;
+	private static final boolean CP = true;
+	private static final boolean COPY = true;
 	private static final boolean DCE = false;
 
 	@BeforeEach
@@ -286,6 +287,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("cse_1.xi", "");
 	}
 	
+	@Test
+	void testDCE1Benchmark() {
+		generateAndAssertOutput("dce_1.xi", "");
+	}
+	
 	//1.430 vs 0.326
 	@Test
 	@Disabled
@@ -335,7 +341,7 @@ public class IntegrationTests {
 //			irRoot.printSExp(codeWriter);
 //			codeWriter.flush();
 		
-			//assertIRSimulatorOutput(irRoot, expected);
+			assertIRSimulatorOutput(irRoot, expected);
 			
 			List<Assem> assem = generateAssem(irRoot);
 			runAndAssertAssem(assem, expected);
@@ -526,18 +532,20 @@ public class IntegrationTests {
 		printer2.flush();
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
-		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
+		if(CF) {
+			CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
+			assertTrue("IRNode is not properly folded" , constFoldVisitor.visit(irRoot));
+		}
 		
 		canonVisitor.visit(irRoot);		
 		assertNull(canonVisitor.noncanonical());
-		assertTrue("IRNode is not properly folded" , constFoldVisitor.visit(irRoot));
 		
 		return irRoot;
 	}
 	
 	private void setUpOptimizer() {
 		Optimizer.setNodeFactory(new IRNodeFactory_c());
-		Optimizer.addCF();
+		if(CF) Optimizer.addCF();
 		if(CSE) Optimizer.addCSE();
 		if(CP) Optimizer.addCP();
 		if(INL) Optimizer.addINL();

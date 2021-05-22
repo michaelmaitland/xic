@@ -229,7 +229,7 @@ public class IRBinOp extends IRExpr_c {
 	@Override
 	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
 		boolean rightIsNonzeroConst = isNonzeroConst(right);
-		boolean b = (type.equals(OpType.DIV) || type.equals(OpType.DIV)) && !rightIsNonzeroConst;
+		boolean b = (type.equals(OpType.DIV) || type.equals(OpType.MOD)) && !rightIsNonzeroConst;
 
 		IRBinOp copy = copy();
 		copy.setContainsExprWithSideEffect(b);

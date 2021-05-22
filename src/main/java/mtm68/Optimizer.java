@@ -178,7 +178,7 @@ public class Optimizer {
 		}
 		
 		public static Set<SupportedOpt> getIROpts(){
-			return SetUtils.elems(CF, CSE, COPY);
+			return SetUtils.elems(CF, CSE, COPY, DCE, CP);
 		}
 		
 		public static Set<SupportedOpt> getASTOpts(){
