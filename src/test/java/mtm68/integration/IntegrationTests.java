@@ -71,12 +71,12 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
-	private static final boolean CF = true;
+	private static final boolean CF = false;
 	private static final boolean INL = false;
-	private static final boolean CSE = true;
-	private static final boolean CP = true;
-	private static final boolean COPY = true;
-	private static final boolean DCE = false;
+	private static final boolean CSE = false;
+	private static final boolean CP = false;
+	private static final boolean COPY = false;
+	private static final boolean DCE = true;
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -312,6 +312,11 @@ public class IntegrationTests {
 	void testINL3Benchmark() {
 		generateAndAssertOutput("inl_3.xi", "");
 	}
+
+	@Test
+	void testDCE2Benchmark() {
+		generateAndAssertOutput("dce_2.xi", "");
+	}
 	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
@@ -356,7 +361,7 @@ public class IntegrationTests {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
 		IRSimulator simulator = new IRSimulator((IRCompUnit) root, baos);
-		simulator.call("_Imain_paai", 0);
+//		simulator.call("_Imain_paai", 0);
 
 		assertEquals(expected, baos.toString());
 	}
