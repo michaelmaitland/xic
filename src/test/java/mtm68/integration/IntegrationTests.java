@@ -73,10 +73,17 @@ public class IntegrationTests {
 	
 	private static final boolean CF = false;
 	private static final boolean INL = false;
+<<<<<<< HEAD
 	private static final boolean CSE = false;
 	private static final boolean CP = false;
 	private static final boolean COPY = false;
 	private static final boolean DCE = true;
+=======
+	private static final boolean CSE = true;
+	private static final boolean CP = false;
+	private static final boolean COPY = false;
+	private static final boolean DCE = false;
+>>>>>>> 2702978eb402ccd9f7916a58d22a38fe74432512
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -272,22 +279,28 @@ public class IntegrationTests {
 		generateAndAssertOutput("register_pressure.xi", "351");
 	}
 	
-	/**
-	 * With optimization .783
-	 */
-	@Test
-	@Disabled
-	void testCSEBenchmark() {
-		generateAndAssertOutput("cse.xi", "done");
-	}
-	
+	//2.330 vs 0.429
 	@Test
 	@Disabled
 	void testCSE1Benchmark() {
 		generateAndAssertOutput("cse_1.xi", "");
 	}
 	
+	//2.864 vs 1.035
 	@Test
+	void testCSE2Benchmark() {
+		generateAndAssertOutput("cse_2.xi", "");
+	}
+	
+	//2.391 vs 0.199
+	@Test
+	@Disabled
+	void testCSE3Benchmark() {
+		generateAndAssertOutput("cse_3.xi", "");
+	}
+	
+	@Test
+	@Disabled
 	void testDCE1Benchmark() {
 		generateAndAssertOutput("dce_1.xi", "");
 	}
@@ -346,7 +359,7 @@ public class IntegrationTests {
 //			irRoot.printSExp(codeWriter);
 //			codeWriter.flush();
 		
-			assertIRSimulatorOutput(irRoot, expected);
+			//assertIRSimulatorOutput(irRoot, expected);
 			
 			List<Assem> assem = generateAssem(irRoot);
 			runAndAssertAssem(assem, expected);
