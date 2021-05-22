@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import mtm68.assem.operand.AbstractReg;
 import mtm68.assem.operand.Dest;
 import mtm68.assem.operand.Mem;
-import mtm68.assem.operand.RealReg;
 import mtm68.assem.operand.Reg;
 import mtm68.assem.operand.Src;
 import mtm68.util.ArrayUtils;
@@ -22,10 +21,10 @@ public class ReplaceableReg {
 	private String name;
 	private Reg initialReg;
 	private RegType regType;
-	private Consumer<RealReg> replace;
+	private Consumer<Reg> replace;
 	private boolean isAbstract;
 	
-	public ReplaceableReg(String name, Reg initialReg, RegType regType, Consumer<RealReg> replace, boolean isAbstract) {
+	public ReplaceableReg(String name, Reg initialReg, RegType regType, Consumer<Reg> replace, boolean isAbstract) {
 		super();
 		this.name = name;
 		this.initialReg = initialReg;
@@ -34,7 +33,7 @@ public class ReplaceableReg {
 		this.isAbstract = isAbstract;
 	}
 	
-	public static List<ReplaceableReg> fromDest(Dest dest, Consumer<RealReg> replace){
+	public static List<ReplaceableReg> fromDest(Dest dest, Consumer<Reg> replace){
 		if(dest instanceof Mem) {
 			return fromMem((Mem)dest);
 		} else if (dest instanceof Reg){
@@ -44,7 +43,7 @@ public class ReplaceableReg {
 		return ArrayUtils.empty();
 	}
 	
-	public static List<ReplaceableReg> fromDestRead(Dest dest, Consumer<RealReg> replace){
+	public static List<ReplaceableReg> fromDestRead(Dest dest, Consumer<Reg> replace){
 		if(dest instanceof Mem) {
 			return fromMem((Mem)dest);
 		} else if (dest instanceof Reg){
@@ -54,7 +53,7 @@ public class ReplaceableReg {
 		return ArrayUtils.empty();
 	}
 
-	public static List<ReplaceableReg> fromSrc(Src src, Consumer<RealReg> replace){
+	public static List<ReplaceableReg> fromSrc(Src src, Consumer<Reg> replace){
 		if(src instanceof Mem) {
 			return fromMem((Mem)src);
 		} else if (src instanceof Reg){
@@ -64,7 +63,7 @@ public class ReplaceableReg {
 		return ArrayUtils.empty();
 	}
 	
-	public static ReplaceableReg fromRealReg(RealReg reg, RegType regType) {
+	public static ReplaceableReg fromRealReg(Reg reg, RegType regType) {
 		return fromReg(reg, regType, r -> {});
 	}
 	
@@ -72,7 +71,7 @@ public class ReplaceableReg {
 		return mem.getReplaceableRegs();
 	}
 
-	private static ReplaceableReg fromReg(Reg reg, RegType regType, Consumer<RealReg> replace){
+	private static ReplaceableReg fromReg(Reg reg, RegType regType, Consumer<Reg> replace){
 		return new ReplaceableReg(reg.getId(), reg, regType, replace, reg instanceof AbstractReg);
 	}
 	
@@ -89,7 +88,7 @@ public class ReplaceableReg {
 		return regType;
 	}
 	
-	public void replace(RealReg realReg) {
+	public void replace(Reg realReg) {
 		replace.accept(realReg);
 	}
 	

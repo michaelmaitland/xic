@@ -1,9 +1,12 @@
 package mtm68.assem.operand;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import mtm68.util.ArrayUtils;
+import mtm68.util.SetUtils;
 
 public class RealReg extends Reg{
 
@@ -23,6 +26,23 @@ public class RealReg extends Reg{
 	public static final RealReg R13 = new RealReg(RealRegId.R13);
 	public static final RealReg R14 = new RealReg(RealRegId.R14);
 	public static final RealReg R15 = new RealReg(RealRegId.R15);
+	
+	public static final Set<RealReg> COLORS = SetUtils.elems(
+			R8,
+			R9,
+			R10,
+			R11,
+			R12,
+			R13,
+			R14,
+			R15,
+			RAX,
+			RBX,
+			RCX,
+			RDX,
+			RDI,
+			RSI
+		);
 
 	public static final List<RealReg> getCallerSaveReg() {
 		return ArrayUtils.elems(RAX, RCX, RDX, RSI, RDI, R8, R9, R10, R11);
@@ -30,6 +50,18 @@ public class RealReg extends Reg{
 
 	public static final List<RealReg> getCalleeSaveReg() {
 		return ArrayUtils.elems(RBP, RSP, RBX, R12, R13, R14, R15);
+	}
+	
+	public static boolean isRealReg(String regId) {
+		return Stream.of(RealRegId.values()).anyMatch(r -> r.toString().equalsIgnoreCase(regId));
+	}
+	
+	public static boolean isCalleeSaved(RealReg reg) {
+		return getCalleeSaveReg().contains(reg);
+	}
+	
+	public static List<RealReg> getArgRegs(){
+		return RealRegId.getArgRegs();
 	}
 
 	public RealReg(RealRegId regId) {

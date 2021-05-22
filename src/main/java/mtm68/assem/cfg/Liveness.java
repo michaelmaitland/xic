@@ -3,6 +3,7 @@ package mtm68.assem.cfg;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,37 +25,38 @@ public class Liveness {
 		graph = builder.buildAssemCFG(assems, LiveData::new);
 		
 		List<Node> nodes = graph.getNodes();
+		Set<Node> worklist = new LinkedHashSet<>(nodes);
 		
-		boolean changes = true;
-		while(changes) {
-			changes = false;
+		while(!worklist.isEmpty()) {
+			Node node = worklist.iterator().next();
+			worklist.remove(node);
 
-			for(Node node : nodes) {
-				AssemData<LiveData> data = graph.getDataForNode(node);
-				Assem assem = data.getAssem();
-				LiveData flowData = data.getFlowData();
+			AssemData<LiveData> data = graph.getDataForNode(node);
+			Assem assem = data.getAssem();
+			
+			LiveData flowData = data.getFlowData();
 
-				Set<String> inOld = flowData.getLiveIn();
-				Set<String> outOld = flowData.getLiveOut();
-				
-				Set<String> use = regToStr(assem.use()); 
-				Set<String> def = regToStr(assem.def()); 
-				
-				// in = use U (out - def)
-				Set<String> in = Stream.concat(
-						outOld.stream().filter(v -> !def.contains(v)),
-						use.stream()).collect(Collectors.toSet());
+			Set<String> inOld = flowData.getLiveIn();
+			
+			Set<String> use = regToStr(assem.use()); 
+			Set<String> def = regToStr(assem.def()); 
 
-				// out = U in 
-				Set<String> out = SetUtils.empty();
-				for(Node succ : node.succ()) {
-					out.addAll(graph.getDataForNode(succ).getFlowData().getLiveIn());
-				}
-				
-				flowData.setLiveIn(in);
-				flowData.setLiveOut(out);
-				
-				changes = changes || (!inOld.equals(in) || !outOld.equals(out));
+			// out = U in 
+			Set<String> out = SetUtils.empty();
+			for(Node succ : node.succ()) {
+				out.addAll(graph.getDataForNode(succ).getFlowData().getLiveIn());
+			}
+			
+			// in = use U (out - def)
+			Set<String> in = Stream.concat(
+					out.stream().filter(v -> !def.contains(v)),
+					use.stream()).collect(Collectors.toSet());
+			
+			flowData.setLiveIn(in);
+			flowData.setLiveOut(out);
+			
+			if(!inOld.equals(in)) {
+				worklist.addAll(node.pred());
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package mtm68.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,10 @@ public class ArrayUtils {
 			ret.add(elem);
 		}
 		return ret;
+	}
+
+	public static <T> List<T> elems(Collection<T> elems) {
+		return new ArrayList<>(elems);
 	}
 
 	/** 

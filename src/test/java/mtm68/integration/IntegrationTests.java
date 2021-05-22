@@ -46,7 +46,9 @@ import mtm68.Optimizer;
 import mtm68.SymbolTableManager;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
-import mtm68.assem.visit.TrivialRegisterAllocator;
+import mtm68.assem.RegisterAllocator;
+import mtm68.assem.cfg.RegisterAllocation;
+import mtm68.assem.operand.RealReg;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
@@ -72,7 +74,6 @@ public class IntegrationTests {
 	private static final boolean CP = true;
 	private static final boolean COPY = true;
 	private static final boolean DCE = true;
-
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -244,6 +245,14 @@ public class IntegrationTests {
 	void testRecRetSpace() {
 		generateAndAssertOutput("rec_retspace.xi", "c1: 4\nc2: 8\nc3: 12\nc4: 16\n");
 	}
+	
+	/**
+	 * With optimization .716
+	 */
+	@Test
+	void testCSEBenchmark() {
+		generateAndAssertOutput("cse.xi", "done");
+	}
 	 
 	// Must be run manually to have meaning
 	@Test
@@ -261,6 +270,11 @@ public class IntegrationTests {
 	@Test
 	void testIdentity() {
 		generateAndAssertOutput("inline.xi", "");
+	}
+
+	@Test
+	void testRegisterPressure() {
+		generateAndAssertOutput("register_pressure.xi", "351");
 	}
 	
 	private void generateAndAssertOutput(String filename) {
@@ -317,9 +331,15 @@ public class IntegrationTests {
 		
 		System.out.println(tiled.getAssem());
 		
-		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+//		RegisterAllocator regAllocator = new TrivialRegisterAllocator();
+		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
+
 		
-		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+//		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+		CompUnitAssem program = (CompUnitAssem) tiled.getAssem();
+//		System.out.println("Abstract assembly");
+//		System.out.println(program);
+		return regAllocator.allocateRegisters(program).flattenedProgram();
 	}
 	
 	private void runAndAssertAssem(List<Assem> assems, String expected) {

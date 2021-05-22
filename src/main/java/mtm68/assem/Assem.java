@@ -29,16 +29,26 @@ public abstract class Assem implements Cloneable, HasReplaceableRegs {
 	}
 	
 	public Set<Reg> def() {
-		return getReplaceableRegs().stream()
-			.filter(r -> r.getRegType() == RegType.WRITE)
-			.map(ReplaceableReg::getInitialReg)
-			.collect(Collectors.toSet());
+		return defReplaceable().stream()
+				.map(ReplaceableReg::getInitialReg)
+				.collect(Collectors.toSet());
 	}
 
 	public Set<Reg> use() {
+		return useReplaceable().stream()
+				.map(ReplaceableReg::getInitialReg)
+				.collect(Collectors.toSet());
+	}
+
+	public Set<ReplaceableReg> defReplaceable() {
+		return getReplaceableRegs().stream()
+			.filter(r -> r.getRegType() == RegType.WRITE)
+			.collect(Collectors.toSet());
+	}
+
+	public Set<ReplaceableReg> useReplaceable() {
 		return getReplaceableRegs().stream()
 			.filter(r -> r.getRegType() == RegType.READ)
-			.map(ReplaceableReg::getInitialReg)
 			.collect(Collectors.toSet());
 	}
 }

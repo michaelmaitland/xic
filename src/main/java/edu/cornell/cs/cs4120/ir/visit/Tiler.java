@@ -185,7 +185,7 @@ public class Tiler extends IRVisitor {
 		}
 
 		String funcName = ((IRName) stmt.target()).name();
-		assems.add(new CallAssem(funcName));
+		assems.add(new CallAssem(funcName, argExprs.size()));
 
 		// Since there's only one way to tile a IRCallStmt we can just give it no cost
 		return stmt.copyAndSetAssem(new SeqAssem(assems), TileCosts.NO_COST);
@@ -195,7 +195,7 @@ public class Tiler extends IRVisitor {
 		return getExtraArgCount(stmt.args().size());
 	}
 
-	private int getExtraArgCount(int numArgs) {
+	private static int getExtraArgCount(int numArgs) {
 		return Math.max(numArgs - 6, 0);
 	}
 
@@ -224,7 +224,7 @@ public class Tiler extends IRVisitor {
 	 * @param l
 	 * @return
 	 */
-	public SeqAssem getPrologue(String name, int numArgs, int l) {
+	public static SeqAssem getPrologue(String name, int numArgs, int l, List<RealReg> calleeSaved) {
 		// In our stack frame we include a ret space pointer which isn't included
 		// when our main function is called. For alignment reasons, we have to treat
 		// the main function specially since its stack frame is off by one.
@@ -232,7 +232,7 @@ public class Tiler extends IRVisitor {
 		
 		// If we are allocating an odd number of words in total, we need to add an
 		// extra word to ensure 16 byte alignment
-		int align = l + getExtraArgCount(numArgs);
+		int align = l + getExtraArgCount(numArgs) + calleeSaved.size();
 		if(!isMainFunc) align += 2; // For ret space pointer
 		
 		if(align % 2 == 1) l++;
@@ -241,19 +241,35 @@ public class Tiler extends IRVisitor {
 				new LabelAssem(name),
 				new PushAssem(RealReg.RBP),
 				new MoveAssem(RealReg.RBP, RealReg.RSP),
-				new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l))
+				l == 0 ? null : new SubAssem(RealReg.RSP, new Imm(Constants.WORD_SIZE * l)),
+				pushCalleeSaved(calleeSaved)
 			);
 	}
 
 	/**
 	 * Get assembly instructions corresponding to the epilogue of a function.
+	 * Note that the actual <code>ret</code> statement is not part of the epilogue.
 	 * @return
 	 */
-	public SeqAssem getEpilogue() {
+	public static SeqAssem getEpilogue(List<RealReg> calleeSaved) {
 		return new SeqAssem(
+				popCalleeSaved(calleeSaved),
 				new MoveAssem(RealReg.RSP, RealReg.RBP),
-				new PopAssem(RealReg.RBP),
-				new RetAssem()
+				new PopAssem(RealReg.RBP)
 			);
+	}
+	
+	private static SeqAssem pushCalleeSaved(List<RealReg> calleeSaved) {
+		return new SeqAssem(calleeSaved.stream()
+										.map(PushAssem::new)
+										.collect(Collectors.toList()));
+	}
+
+	private static SeqAssem popCalleeSaved(List<RealReg> calleeSaved) {
+		List<Assem> pops = ArrayUtils.empty();
+		for(int i = calleeSaved.size() - 1; i >= 0; i--) {
+			pops.add(new PopAssem(calleeSaved.get(i)));
+		}
+		return new SeqAssem(pops);
 	}
 }
