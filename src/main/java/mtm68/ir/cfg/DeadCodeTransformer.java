@@ -82,7 +82,7 @@ public class DeadCodeTransformer {
 		if(!isMove(stmt)) return;
 		IRMove mov = (IRMove)stmt;
 		
-		if(!isTemp(mov.target()) || !isMem(mov.target())) return;
+		if(isMem(mov.target())) return;
 		
 		if(mov.source().doesContainsExprWithSideEffect()) return;
 
