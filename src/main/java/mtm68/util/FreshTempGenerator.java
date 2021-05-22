@@ -6,4 +6,8 @@ public class FreshTempGenerator {
 	public static String getFreshTemp() {
 		return "_t" + counter++;
 	}
+	
+	public static void resetCounter() {
+		counter = 0;
+	}
 }

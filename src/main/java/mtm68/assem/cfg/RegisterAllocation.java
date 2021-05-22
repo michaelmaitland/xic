@@ -40,7 +40,7 @@ public class RegisterAllocation implements RegisterAllocator{
 	
 	private static final boolean SHOW_GRAPHS = false;
 	private static final boolean CHECK_INVARIANTS = false;
-	private static final boolean PRINT_SPILLS = false;
+	private static final boolean PRINT_SPILLS = true;
 	private static final boolean PRINT_PROGRAM_REWRITE = false;
 	
 	private Map<String, RealReg> colors;
@@ -76,6 +76,7 @@ public class RegisterAllocation implements RegisterAllocator{
 	private Set<Node> coloredNodes;
 	private Set<Node> coalescedNodes;
 	private Map<String, String> colorMap;
+	private Set<String> spilledTemps;
 	
 	public RegisterAllocation(Set<RealReg> colors) {
 		this.colors = colors.stream()
@@ -89,6 +90,8 @@ public class RegisterAllocation implements RegisterAllocator{
 		
 		List<FuncDefnAssem> result = ArrayUtils.empty();
 		for(FuncDefnAssem func : program.getFunctions()) {
+			spilledTemps = new HashSet<>();
+
 			String funcName = func.getName();
 			funcData.put(funcName, new FunctionSpillData());
 			
@@ -125,7 +128,7 @@ public class RegisterAllocation implements RegisterAllocator{
 		
 		while(!(simplifyWorklist.isEmpty() && worklistMoves.isEmpty()
 				&& freezeWorklist.isEmpty() && spillWorklist.isEmpty())) {
-
+			
 			if(!simplifyWorklist.isEmpty()) simplify();
 			else if(!worklistMoves.isEmpty()) coalesce();
 			else if(!freezeWorklist.isEmpty()) freeze();
@@ -167,7 +170,7 @@ public class RegisterAllocation implements RegisterAllocator{
 		coalescedNodes = new HashSet<>();
 		colorMap = new HashMap<>();
 		alias = new HashMap<>();
-		
+
 		// For precolored nodes
 		for(String color : colors.keySet()) {
 			colorMap.put(color, color);
@@ -271,7 +274,8 @@ public class RegisterAllocation implements RegisterAllocator{
 		Node node = SetUtils.poll(simplifyWorklist);
 		addToSelectStack(node);
 		
-		for(Node adj : adjacent(node)) {
+		Set<Node> adjacent = adjacent(node);
+		for(Node adj : adjacent) {
 			decrementDegree(adj);
 		}
 	}
@@ -329,6 +333,11 @@ public class RegisterAllocation implements RegisterAllocator{
 		int bestDegree = 0;
 		
 		for(Node spill : spillWorklist) {
+			// Don't spill a temp that's already been spilled
+			if(spilledTemps.contains(spill.getId())) {
+				continue;
+			}
+
 			int deg = degree(spill);
 			if(deg > bestDegree) {
 				bestDegree = deg;
@@ -336,7 +345,14 @@ public class RegisterAllocation implements RegisterAllocator{
 			}
 		}
 		
-		spillWorklist.remove(bestSpill);
+		// If we can't find a temp that hasn't been spilled before,
+		// then just spill it again (although this should never get hit).
+		if(bestSpill == null) {
+			bestSpill = SetUtils.poll(spillWorklist);
+		} else {
+			spillWorklist.remove(bestSpill);
+		}
+		
 		addToSimplifyWorklist(bestSpill);
 		freezeMoves(bestSpill);
 	}
@@ -385,6 +401,7 @@ public class RegisterAllocation implements RegisterAllocator{
 			System.out.println("Nodes spilled, rewriting.");
 			System.out.println();
 
+			System.out.println("Previously spilled temps: " + spilledTemps);
 			System.out.println("Spilled Nodes (" + spilledNodes.size() + ")\n=========");
 			spilledNodes.forEach(System.out::println);
 			System.out.println();
@@ -413,34 +430,11 @@ public class RegisterAllocation implements RegisterAllocator{
 					.filter(ReplaceableReg::isAbstract)
 					.collect(Collectors.toSet());
 			
-			for(ReplaceableReg use : uses) {
-				String useName = use.getName();
-				if(!memLocs.containsKey(useName)) continue;
-
-				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
-				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(useName));
-				Mem stackLoc = memLocs.get(useName);
-				
-				result.add(new MoveAssem(newTemp, stackLoc));
-				
-				use.replace(newTemp);
-			}
-			
+			replaceRegs(result, uses, memLocs, true);
 			result.add(newAssem);
-
-			for(ReplaceableReg def : defs) {
-				String defName = def.getName();
-				if(!memLocs.containsKey(defName)) continue;
-
-				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
-				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(defName));
-				Mem stackLoc = memLocs.get(defName);
-				
-				result.add(new MoveAssem(stackLoc, newTemp));
-				
-				def.replace(newTemp);
-			}
+			replaceRegs(result, defs, memLocs, false);
 		}
+			
 		
 		if(PRINT_PROGRAM_REWRITE) {
 			System.out.println("Original\n========");
@@ -453,6 +447,28 @@ public class RegisterAllocation implements RegisterAllocator{
 		}
 
 		return result;
+	}
+
+	private void replaceRegs(List<Assem> result, Set<ReplaceableReg> regs, Map<String, Mem> memLocs, boolean readFromStack) {
+			for(ReplaceableReg reg : regs) {
+				String regName = reg.getName();
+				if(!memLocs.containsKey(regName)) continue;
+
+				Reg newTemp = FreshRegGenerator.getFreshAbstractReg();
+				spilledTemps.add(newTemp.getId());
+
+				tempToFuncMap.put(newTemp.getId(), tempToFuncMap.get(regName));
+				Mem stackLoc = memLocs.get(regName);
+				
+				if(readFromStack) {
+					result.add(new MoveAssem(newTemp, stackLoc));
+				} else {
+					result.add(new MoveAssem(stackLoc, newTemp));
+				}
+				
+				reg.replace(newTemp);
+			}
+		
 	}
 	
 	private List<Assem> substitution(List<Assem> assems) {
@@ -561,8 +577,6 @@ public class RegisterAllocation implements RegisterAllocator{
 		}
 	}
 
-
-	
 	private boolean unnecessaryMove(Assem newAssem) {
 		if(newAssem instanceof MoveAssem) {
 			MoveAssem move = (MoveAssem) newAssem;
@@ -571,6 +585,13 @@ public class RegisterAllocation implements RegisterAllocator{
 		return false;
 	}
 	
+	private void addEdge(String t1, String t2) {
+		Node u = nodeMap.get(t1); 
+		Node v = nodeMap.get(t2); 
+		
+		addEdge(u, v);
+	}
+
 	private void addEdge(Node u, Node v) {
 		Edge uv = new Edge(u, v);
 		
@@ -589,13 +610,6 @@ public class RegisterAllocation implements RegisterAllocator{
 			}
 		}
 	}
-
-	private void addEdge(String t1, String t2) {
-		Node u = nodeMap.get(t1); 
-		Node v = nodeMap.get(t2); 
-		
-		addEdge(u, v);
-	}
 	
 	private Set<Node> adjacent(Node node) {
 		return adjList.get(node).stream()
@@ -612,10 +626,12 @@ public class RegisterAllocation implements RegisterAllocator{
 	
 	
 	private Set<Move> nodeMoves(Node node) {
+		if(!moveList.containsKey(node)) return SetUtils.empty();
+
 		Set<Move> union = Stream.concat(activeMoves.stream(), worklistMoves.stream())
 				.collect(Collectors.toSet());
 
-		return SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()), union);
+		return SetUtils.intersect(moveList.get(node), union);
 	}
 
 	private boolean isMoveRelated(Node node) {
@@ -627,10 +643,13 @@ public class RegisterAllocation implements RegisterAllocator{
 		if(precolored(node)) return;
 
 		int d = degree(node);
-		degreeMap.put(node, degreeMap.get(node) - 1);
+		degreeMap.put(node, d - 1);
 		
 		if(d == k) {
-			enableMoves(SetUtils.union(SetUtils.elems(node), adjacent(node)));
+			Set<Node> movesToEnable = adjacent(node);
+			movesToEnable.add(node);
+
+			enableMoves(movesToEnable);
 			spillWorklist.remove(node);
 			
 			if(isMoveRelated(node)) {
@@ -686,7 +705,7 @@ public class RegisterAllocation implements RegisterAllocator{
 	}
 	
 	private void addWorkList(Node node) {
-		if(!precolored(node) && !(isMoveRelated(node) && degree(node) < k)) {
+		if(!precolored(node) && !isMoveRelated(node) && degree(node) < k) {
 			freezeWorklist.remove(node);
 			addToSimplifyWorklist(node);
 		}

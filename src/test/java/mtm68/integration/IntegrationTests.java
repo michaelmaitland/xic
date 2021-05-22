@@ -69,11 +69,11 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
-	private static final boolean INL = true;
-	private static final boolean CSE = true;
-	private static final boolean CP = true;
-	private static final boolean COPY = true;
-	private static final boolean DCE = true;
+	private static final boolean INL = false;
+	private static final boolean CSE = false;
+	private static final boolean CP = false;
+	private static final boolean COPY = false;
+	private static final boolean DCE = false;
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -301,9 +301,9 @@ public class IntegrationTests {
 						
 			FileUtils.writeToFile("unitTest.ir", irRoot); 
 			
-			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
-			irRoot.printSExp(codeWriter);
-			codeWriter.flush();
+//			CodeWriterSExpPrinter codeWriter = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+//			irRoot.printSExp(codeWriter);
+//			codeWriter.flush();
 		
 			assertIRSimulatorOutput(irRoot, expected);
 			
@@ -329,7 +329,7 @@ public class IntegrationTests {
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
 		IRNode tiled = tiler.visit(root);
 		
-		System.out.println(tiled.getAssem());
+//		System.out.println(tiled.getAssem());
 		
 //		RegisterAllocator regAllocator = new TrivialRegisterAllocator();
 		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
@@ -344,7 +344,7 @@ public class IntegrationTests {
 	
 	private void runAndAssertAssem(List<Assem> assems, String expected) {
 		try {
-			assems.forEach(System.out::println);
+//			assems.forEach(System.out::println);
 			Path pwd = Paths.get(System.getProperty("user.dir"));			
 					
 			FileUtils.writeAssemToFile("unitTest.xi", assems);
