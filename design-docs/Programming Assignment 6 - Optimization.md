@@ -30,7 +30,7 @@ Also, if -O is used, then all optimizations will be turned off regardless of the
 The key classes and packages we created or updated for this assignment are the following...
  
 - mtm68.Main.java
-    - Our Main functions very similarly to the previous assignment. We added new options to the command line as described in the spec. We also added intermediate code generation to the source file pipeline. 
+    - Here passed XI files run through the entire pipeline of compilation, from parsing to optimizing to assembly generation.
 
 - mtm68.ir.cfg.AvailableCopies
     - This class performs an available copies analysis on the given IR
