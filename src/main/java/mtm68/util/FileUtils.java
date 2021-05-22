@@ -156,7 +156,7 @@ public class FileUtils {
 			try {
 				Files.createDirectories(outpath.getParent());			
 				writer = new BufferedWriter(new FileWriter(outpath.toString()));
-				graph.show(writer, filename, true, o -> o.getIR().toString());
+				graph.show(writer, "CFG", true, o -> o.getIR().toString());
 			    writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();
