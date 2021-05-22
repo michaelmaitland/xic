@@ -5,20 +5,13 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
-import edu.cornell.cs.cs4120.ir.IRMem;
-import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
-import edu.cornell.cs.cs4120.ir.IRStmt;
-import edu.cornell.cs.cs4120.ir.IRTemp;
-import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
-import mtm68.ir.cfg.LiveVariables.LiveData;
-import mtm68.ir.cfg.LiveVariables.LiveVar;
 import mtm68.ir.cfg.ReachingDefns.ReachingData;
 
 public class LoopInvCodeMotion {
@@ -63,6 +56,8 @@ public class LoopInvCodeMotion {
 		ReachingDefns rd = new ReachingDefns(ir);
 		rd.performAnalysis();
 		Graph<IRData<ReachingData>> graph = rd.getGraph();
+		
+		//Set<IRExpr> inv = initializeINV();
 		
 		for(Node s : graph.getNodes()) {
 		}

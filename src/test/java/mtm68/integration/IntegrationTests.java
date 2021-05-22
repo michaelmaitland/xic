@@ -50,6 +50,7 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
+import mtm68.ir.cfg.ConstantPropTransformer;
 import mtm68.ir.cfg.DeadCodeTransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
@@ -466,6 +467,10 @@ public class IntegrationTests {
 		DeadCodeTransformer dcTransformer = new DeadCodeTransformer((IRCompUnit)irRoot, nodeFactory);
 		irRoot = dcTransformer.doDeadCodeRemoval();
 		
+		ConstantPropTransformer constProp = new ConstantPropTransformer((IRCompUnit)irRoot, nodeFactory);
+		irRoot = constProp.doConstantProp();
+		
+		irRoot = constFolder.visit(irRoot);
 //		if(CSE) {
 //			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
 //			irRoot = cseTransformer.doCSE();

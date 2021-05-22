@@ -126,8 +126,9 @@ public class ReachingDefns {
 	
 	private Set<ReachingDefn> genXGetsE(IRMove mov, Node d) {
 		IRTemp x = (IRTemp)mov.target();
+		IRExpr e = mov.source();
 
-		ReachingDefn defn = new ReachingDefn(x, d);
+		ReachingDefn defn = new ReachingDefn(x, e, d);
 
 		return SetUtils.elems(defn);
 	}
@@ -246,9 +247,11 @@ public class ReachingDefns {
 	public static class ReachingDefn {
 		Node definer;
 		IRTemp defn;
+		IRExpr defnExpr;
 		
-		public ReachingDefn(IRTemp defn, Node definer) {
+		public ReachingDefn(IRTemp defn, IRExpr defnExpr, Node definer) {
 			this.defn = defn;
+			this.defnExpr = defnExpr;
 			this.definer = definer;
 		}
 		
@@ -267,6 +270,14 @@ public class ReachingDefns {
 			this.defn = defn;
 		}
 		
+		public IRExpr getDefnExpr() {
+			return defnExpr;
+		}
+
+		public void setDefnExpr(IRExpr defnExpr) {
+			this.defnExpr = defnExpr;
+		}
+
 		public String toString() {
 			return definer.getNodeId() + "";
 		}
