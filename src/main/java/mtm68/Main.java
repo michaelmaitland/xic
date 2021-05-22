@@ -91,10 +91,10 @@ public class Main {
 	@Option(name = "-libpath", usage = "specify path to library interface files")
 	private Path libPath = Paths.get(System.getProperty("user.dir"));
 	
-	@Option(name = "-optir", usage = "specify opt phase to output IR (inital or final)")
+	@Option(name = "--optir", usage = "specify opt phase to output IR (inital or final)")
 	private List<Phase> irPhases = new ArrayList<>();
 	
-	@Option(name = "-optcfg", usage = "specify opt phase to output CFG (inital or final)")
+	@Option(name = "--optcfg", usage = "specify opt phase to output CFG (inital or final)")
 	private List<Phase> cfgPhases = new ArrayList<>();
 	
 	@Option(name = "-O", usage = "disable all optimizations")

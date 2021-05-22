@@ -53,3 +53,5 @@ src/test/resources/runtime/release/unitTest.s
 a.out
 
 runtime/
+benchmarks/*.s
+benchmarks/*.ir
