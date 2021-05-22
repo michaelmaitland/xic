@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import mtm68.assem.Assem;
 import mtm68.assem.JumpAssem;
@@ -26,11 +27,13 @@ public class AssemCFGBuilder<T> {
 	
 	private Map<Loc, Node> locationMap;
 	private Map<Loc, List<Node>> waitingJumps;
+	private Map<Loc, List<Loc>> waitingLabels;
 	
 	public AssemCFGBuilder() {
 		graph = new Graph<>();
 		locationMap = new HashMap<>();
 		waitingJumps = new HashMap<>();
+		waitingLabels = new HashMap<>();
 
 		lastLabels = ArrayUtils.empty();
 	}
@@ -52,9 +55,20 @@ public class AssemCFGBuilder<T> {
 				if(jump.isUnconditional() && prevWasLabel) {
 					Node jumpTarget = locationMap.get(jump.getLoc());
 					
-					if(jumpTarget == null) throw new InternalCompilerError("Jump target is null");
+					
+					if(jumpTarget == null) {
+						List<Loc> waiting = lastLabels.stream()
+							.map(Loc::new)
+							.collect(Collectors.toList());
 
-					handleAfterLabel(jumpTarget);
+						waitingLabels.put(jump.getLoc(), waiting);
+
+						lastLabels.clear();
+						prevWasLabel = false;
+//						throw new InternalCompilerError("Jump target is null");
+					} else {
+						handleAfterLabel(jumpTarget);
+					}
 				}
 				
 				continue;
@@ -75,7 +89,11 @@ public class AssemCFGBuilder<T> {
 			prevWasRet = graph.getDataForNode(prev).getAssem() instanceof RetAssem;
 		}
 		
-		if(waitingJumps.size() != 0) throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
+		if(waitingJumps.size() != 0) 
+			throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
+
+		if(waitingLabels.size() != 0) 
+			throw new InternalCompilerError("Still have labels that need resolving: " + waitingLabels);
 		
 		return graph;
 	}
@@ -119,6 +137,14 @@ public class AssemCFGBuilder<T> {
 		if(waitingJumps.containsKey(loc)) {
 			waitingJumps.get(loc).forEach(n -> graph.addEdge(n, jumpTo));
 			waitingJumps.remove(loc);
+		}
+		
+		if(waitingLabels.containsKey(loc)) {
+			waitingLabels.get(loc).forEach(l -> {
+				locationMap.put(l, jumpTo);
+				resolveWaitingJumps(l);
+			});
+			waitingLabels.remove(loc);
 		}
 	}
 
