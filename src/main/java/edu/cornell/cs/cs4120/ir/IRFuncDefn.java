@@ -4,6 +4,7 @@ import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
@@ -134,9 +135,16 @@ public class IRFuncDefn extends IRNode_c {
 	@Override
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRFuncDefn copy = copy();
-		copy.setContainsMutableMemSubexpr(body.isContainsMutableMemSubexpr());
+		copy.setContainsMutableMemSubexpr(body.doesContainsMutableMemSubexpr());
 		return copy;
 	}
+
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		IRFuncDefn copy = copy();
+		copy.setContainsExprWithSideEffect(body.doesContainsExprWithSideEffect());
+		return copy;
+	}	
 	@Override
 	public IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith) {
 		IRStmt newBody = (IRStmt)body.replaceExpr(toReplace, replaceWith);
@@ -144,5 +152,5 @@ public class IRFuncDefn extends IRNode_c {
 		IRFuncDefn copy = copy();
 		copy.body = newBody;
 		return copy;
-	}	
+	}
 }

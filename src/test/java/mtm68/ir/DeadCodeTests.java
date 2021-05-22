@@ -1,6 +1,7 @@
 package mtm68.ir;
 
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.ADD;
+import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.DIV;
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.MUL;
 import static mtm68.ir.IRTestUtils.cjump;
 import static mtm68.ir.IRTestUtils.constant;
@@ -35,6 +36,23 @@ import mtm68.util.ArrayUtils;
 
 public class DeadCodeTests {
 	
+	@Test
+	void testDivByZero() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("t1"), op(DIV, constant(1), constant(0))),
+				ret(temp("t2"))
+			);
+		List<IRStmt> res = perform(func);
+		
+		assertEquals(2, res.size());
+		IRMove m1 = assertInstanceOfAndReturn(IRMove.class, res.get(0));
+		IRTemp t1 = assertInstanceOfAndReturn(IRTemp.class, m1.target());
+		assertEquals("t1", t1.name());
+
+		assertInstanceOf(IRReturn.class, res.get(1));
+	}
+
 	@Test
 	void testSimple() throws IOException {
 		
@@ -90,26 +108,27 @@ public class DeadCodeTests {
 		List<IRStmt> func = ArrayUtils.elems(
 				move(temp("a"), temp("y")),
 				move(temp("x"), temp("q")),
-				move(temp("z"), op(ADD, op(MUL, constant(2), temp("x")), constant(1)))
+				move(temp("z"), op(ADD, op(MUL, constant(2), temp("x")), constant(1))),
+				ret(temp("z"))
 			);
 		List<IRStmt> res = perform(func);
 		
-		assertEquals(2, res.size());
+		assertEquals(3, res.size());
 		
-		IRMove m2 = assertInstanceOfAndReturn(IRMove.class, res.get(1));
+		IRMove m2 = assertInstanceOfAndReturn(IRMove.class, res.get(0));
 		IRTemp t3 = assertInstanceOfAndReturn(IRTemp.class, m2.target());
 		assertEquals("x", t3.name());
 		IRTemp t4 = assertInstanceOfAndReturn(IRTemp.class, m2.source());
 		assertEquals("q", t4.name());
 
-		IRMove m3 = assertInstanceOfAndReturn(IRMove.class, res.get(2));
+		IRMove m3 = assertInstanceOfAndReturn(IRMove.class, res.get(1));
 		IRTemp t5 = assertInstanceOfAndReturn(IRTemp.class, m3.target());
 		assertEquals("z", t5.name());
 
 		IRBinOp b1 = assertInstanceOfAndReturn(IRBinOp.class, m3.source());
 		IRBinOp b2 = assertInstanceOfAndReturn(IRBinOp.class, b1.left());
 		IRTemp t6  = assertInstanceOfAndReturn(IRTemp.class, b2.right());
-		assertEquals("q", t6.name());
+		assertEquals("x", t6.name());
 	}	
 	
 	@Test

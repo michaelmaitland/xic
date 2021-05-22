@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -158,12 +159,23 @@ public class IRCallStmt extends IRStmt {
 
 	@Override
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMutableMemSubexpr() 
+		boolean b = target.doesContainsMutableMemSubexpr() 
 					|| args.stream()
-						.map(IRNode::isContainsMutableMemSubexpr)
+						.map(IRNode::doesContainsMutableMemSubexpr)
 						.reduce(Boolean.FALSE, Boolean::logicalOr);
 		IRCallStmt copy = copy();
 		copy.setContainsMutableMemSubexpr(b);
+		return copy;
+	}
+
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		boolean b = target.doesContainsExprWithSideEffect()
+					|| args.stream()
+						.map(IRNode::doesContainsExprWithSideEffect)
+						.reduce(Boolean.FALSE, Boolean::logicalOr);
+		IRCallStmt copy = copy();
+		copy.setContainsExprWithSideEffect(b);
 		return copy;
 	}
 }

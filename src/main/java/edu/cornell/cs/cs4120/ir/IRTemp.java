@@ -3,6 +3,7 @@ package edu.cornell.cs.cs4120.ir;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
@@ -88,6 +89,13 @@ public class IRTemp extends IRExpr_c {
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
 		IRTemp copy = copy();
 		copy.setContainsMutableMemSubexpr(false);
+		return copy;
+	}
+	
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		IRTemp copy = copy();
+		copy.setContainsExprWithSideEffect(false);
 		return copy;
 	}
 	

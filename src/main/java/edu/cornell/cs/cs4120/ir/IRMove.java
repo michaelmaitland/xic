@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -126,10 +127,19 @@ public class IRMove extends IRStmt {
 
 	@Override
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = target.isContainsMutableMemSubexpr() || src.isContainsMutableMemSubexpr();
+		boolean b = target.doesContainsMutableMemSubexpr() || src.doesContainsMutableMemSubexpr();
 		
 		IRMove copy = copy();
 		copy.setContainsMutableMemSubexpr(b);
+		return copy;
+	}
+
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		boolean b = target.doesContainsExprWithSideEffect() || src.doesContainsExprWithSideEffect();
+		
+		IRMove copy = copy();
+		copy.setContainsExprWithSideEffect(b);
 		return copy;
 	}
 }

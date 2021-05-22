@@ -5,6 +5,7 @@ import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -137,6 +138,14 @@ public class IRMem extends IRExpr_c {
 		copy.setContainsMutableMemSubexpr(memType.equals(MemType.IMMUTABLE));
 		return copy;
 	}
+	
+	
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		IRMem copy = copy();
+		copy.setContainsExprWithSideEffect(expr.doesContainsExprWithSideEffect());
+		return copy;
+	}
 
 	@Override
 	public int hashCode() {
@@ -165,4 +174,5 @@ public class IRMem extends IRExpr_c {
 			return false;
 		return true;
 	}
+
 }

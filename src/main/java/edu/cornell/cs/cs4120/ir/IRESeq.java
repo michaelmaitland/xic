@@ -5,6 +5,7 @@ import java.util.Set;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -111,10 +112,19 @@ public class IRESeq extends IRExpr_c {
 	
 	@Override
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = stmt.isContainsMutableMemSubexpr() || expr.isContainsMutableMemSubexpr();
+		boolean b = stmt.doesContainsMutableMemSubexpr() || expr.doesContainsMutableMemSubexpr();
 		
 		IRESeq copy = copy();
 		copy.setContainsMutableMemSubexpr(b);
+		return copy;
+	}
+
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		boolean b = stmt.doesContainsExprWithSideEffect() || expr.doesContainsExprWithSideEffect();
+		
+		IRESeq copy = copy();
+		copy.setContainsExprWithSideEffect(b);
 		return copy;
 	}
 }

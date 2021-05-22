@@ -7,6 +7,7 @@ import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.InsnMapsBuilder;
@@ -76,9 +77,18 @@ public interface IRNode {
 
 	IRNode replaceExpr(IRExpr toReplace, IRExpr replaceWith);
 
-	public boolean isContainsMutableMemSubexpr();
+	public boolean doesContainsMutableMemSubexpr();
 
 	void setContainsMutableMemSubexpr(boolean containsMemSubexpr);
 
 	IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr);
+
+	boolean doesContainsExprWithSideEffect();
+
+	void setContainsExprWithSideEffect(boolean containsExprWithSideEffect);
+
+	IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect);
+
+
+
 }

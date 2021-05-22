@@ -12,6 +12,7 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
@@ -42,16 +43,19 @@ public class DeadCodeTransformer {
 	 */
 	public IRCompUnit doDeadCodeRemoval() {
 
+		IRContainsExprWithSideEffect visitor = new IRContainsExprWithSideEffect(f);
+		IRCompUnit newIR = (IRCompUnit)visitor.visit(ir);
+	
 		Map<String, IRFuncDefn> newFuncs = new HashMap<>();
-		for(String k : ir.functions().keySet()) {
-			IRFuncDefn func = ir.functions().get(k);
+		for(String k : newIR.functions().keySet()) {
+			IRFuncDefn func = newIR.functions().get(k);
 			IRFuncDefn newFunc = doDeadCodeRemoval(func);
 			newFuncs.put(k, newFunc);
 		}
 
-		ir.copy();
-		ir.setFunctions(newFuncs);
-		return ir;
+		newIR.copy();
+		newIR.setFunctions(newFuncs);
+		return newIR;
 	}
 	
 	private IRFuncDefn doDeadCodeRemoval(IRFuncDefn ir) {
@@ -79,6 +83,8 @@ public class DeadCodeTransformer {
 		
 		if(!isTemp(mov.target())) return;
 		IRTemp temp = (IRTemp)mov.target();
+		
+		if(mov.source().doesContainsExprWithSideEffect()) return;
 
 		Set<LiveVar> liveOut = data.getFlowData().getOut();
 		
@@ -88,7 +94,7 @@ public class DeadCodeTransformer {
 			data.setIR(f.IRSeq());
 		}
 	}
-	
+
 	private boolean isTemp(IRNode n) {
 		return n instanceof IRTemp;
 	}

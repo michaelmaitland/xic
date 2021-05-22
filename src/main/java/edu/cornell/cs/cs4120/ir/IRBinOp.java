@@ -6,6 +6,7 @@ import java.util.Set;
 import edu.cornell.cs.cs4120.ir.visit.AggregateVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
+import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.IRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
@@ -218,11 +219,31 @@ public class IRBinOp extends IRExpr_c {
 
 	@Override
 	public IRNode decorateContainsMutableMemSubexpr(IRContainsMemSubexprDecorator irContainsMemSubexpr) {
-		boolean b = left.isContainsMutableMemSubexpr() || right .isContainsMutableMemSubexpr();
+		boolean b = left.doesContainsMutableMemSubexpr() || right .doesContainsMutableMemSubexpr();
 		
 		IRBinOp copy = copy();
 		copy.setContainsMutableMemSubexpr(b);
 		return copy;
+	}
+	
+	@Override
+	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
+		boolean rightIsNonzeroConst = isNonzeroConst(right);
+		boolean b = (type.equals(OpType.DIV) || type.equals(OpType.DIV)) && !rightIsNonzeroConst;
+
+		IRBinOp copy = copy();
+		copy.setContainsExprWithSideEffect(b);
+		return copy;
+	}
+	
+	private boolean isNonzeroConst(IRExpr expr) {
+		if (expr instanceof IRConst) {
+			IRConst c = (IRConst)expr;
+			return c.value() != 0;
+			
+		}
+		
+		return false;
 	}
 	
 	@Override
