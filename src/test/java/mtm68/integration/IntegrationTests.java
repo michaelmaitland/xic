@@ -245,6 +245,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("count_islands.xi", "Number of islands: 5\n");
 	}
 	
+	@Test
+	void testRegisterPressure() {
+		generateAndAssertOutput("register_pressure.xi", "351");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
