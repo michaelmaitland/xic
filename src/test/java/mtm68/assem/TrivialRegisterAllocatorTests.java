@@ -599,7 +599,7 @@ public class TrivialRegisterAllocatorTests {
 
 	private List<Assem> allocate(CompUnitAssem a) {
 		TrivialRegisterAllocator allocator = new TrivialRegisterAllocator();
-		List<Assem> result = allocator.allocate(a);
+		List<Assem> result = allocator.allocateRegisters(a).flattenedProgram();
 		return result;
 	}
 

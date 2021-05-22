@@ -31,7 +31,7 @@ public class RegisterAllocTests {
 		FuncDefnAssem func = new FuncDefnAssem("f", 0, new SeqAssem(assems));
 		CompUnitAssem program = new CompUnitAssem("test", ArrayUtils.singleton(func));
 		
-		CompUnitAssem newProgram = regAlloc.doRegisterAllocation(program);
+		CompUnitAssem newProgram = regAlloc.allocateRegisters(program);
 		printResults(assems, newProgram);
 		
 //		System.out.println("Color map: " + regAlloc.getColorMap());

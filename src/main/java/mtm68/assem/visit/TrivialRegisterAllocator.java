@@ -16,6 +16,7 @@ import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
 import mtm68.assem.MoveAssem;
+import mtm68.assem.RegisterAllocator;
 import mtm68.assem.ReplaceableReg;
 import mtm68.assem.ReplaceableReg.RegType;
 import mtm68.assem.SeqAssem;
@@ -23,7 +24,7 @@ import mtm68.assem.operand.Mem;
 import mtm68.assem.operand.RealReg;
 import mtm68.util.ArrayUtils;
 
-public class TrivialRegisterAllocator {
+public class TrivialRegisterAllocator implements RegisterAllocator {
 	
 	private static final List<RealReg> SHUTTLE_REGS = Arrays.asList(R10, R11, R12);
 	
@@ -32,17 +33,17 @@ public class TrivialRegisterAllocator {
 	 * FuncDefAssem can be a mix of abstract or real registers. The list returned
 	 * contains the assembly for all the functions where all Regs are RealRegs.
 	 */
-	public  List<Assem> allocate(CompUnitAssem assem) {
-		List<Assem> allAssems = assem.getFunctions().stream()
+	@Override
+	public CompUnitAssem allocateRegisters(CompUnitAssem assem) {
+		List<FuncDefnAssem> newFuncs = assem.getFunctions().stream()
 			.map(this::allocateForFunc)
-			.flatMap(List::stream)
 			.collect(Collectors.toList());
 		
 		// flatten all seqs
-		return new SeqAssem(allAssems).getAssems();
+		return new CompUnitAssem(assem.getName(), newFuncs);
 	}
 
-	private List<Assem> allocateForFunc(FuncDefnAssem func) {
+	private FuncDefnAssem allocateForFunc(FuncDefnAssem func) {
 		List<Assem> insts = func.getBodyAssem().getAssems();
 		Map<String, Mem> regsToLoc = assignAbstrRegsToStackLocations(insts);
 		List<Assem> newBody = assignAbstrRegsToRealRegs(insts, regsToLoc);
@@ -50,7 +51,7 @@ public class TrivialRegisterAllocator {
 		FuncDefnAssem newFunc = func.copy(); 
 		newFunc.setBodyAssem(new SeqAssem(newBody));
 		newFunc.setNumSpilledTemps(regsToLoc.size());
-		return newFunc.getFlattenedAssem().getAssems();
+		return newFunc;
 	}
 
 	private Map<String, Mem> assignAbstrRegsToStackLocations(List<Assem> insts) {

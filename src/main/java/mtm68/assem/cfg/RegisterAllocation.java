@@ -15,6 +15,7 @@ import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
 import mtm68.assem.FuncDefnAssem;
 import mtm68.assem.MoveAssem;
+import mtm68.assem.RegisterAllocator;
 import mtm68.assem.ReplaceableReg;
 import mtm68.assem.SeqAssem;
 import mtm68.assem.cfg.AssemCFGBuilder.AssemData;
@@ -29,7 +30,7 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 import mtm68.util.SetUtils;
 
-public class RegisterAllocation {
+public class RegisterAllocation implements RegisterAllocator{
 	
 	private Map<String, RealReg> colors;
 	private Map<String, FunctionSpillData> funcData;
@@ -70,7 +71,8 @@ public class RegisterAllocation {
 				.collect(Collectors.toMap(c -> c.getId(), c -> c));
 	}
 	
-	public CompUnitAssem doRegisterAllocation(CompUnitAssem program) {
+	@Override
+	public CompUnitAssem allocateRegisters(CompUnitAssem program) {
 		tempToFuncMap = new HashMap<>();
 		funcData = new HashMap<>();
 		
@@ -823,14 +825,6 @@ public class RegisterAllocation {
 			this.to = to;
 		}
 		
-		public Node getFrom() {
-			return from;
-		}
-		
-		public Node getTo() {
-			return to;
-		}
-
 		@Override
 		public int hashCode() {
 			final int prime = 31;
