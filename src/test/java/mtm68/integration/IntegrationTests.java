@@ -73,17 +73,10 @@ public class IntegrationTests {
 	
 	private static final boolean CF = false;
 	private static final boolean INL = false;
-<<<<<<< HEAD
-	private static final boolean CSE = false;
-	private static final boolean CP = false;
-	private static final boolean COPY = false;
-	private static final boolean DCE = true;
-=======
 	private static final boolean CSE = true;
 	private static final boolean CP = false;
 	private static final boolean COPY = false;
 	private static final boolean DCE = false;
->>>>>>> 2702978eb402ccd9f7916a58d22a38fe74432512
 
 	@BeforeEach
 	void setUpFileUtils() {
