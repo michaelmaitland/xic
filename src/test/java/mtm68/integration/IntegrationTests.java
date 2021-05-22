@@ -58,6 +58,7 @@ import mtm68.lexer.TokenFactory;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
 import mtm68.util.ArrayUtils;
+import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
 import mtm68.visit.FunctionCollector;
@@ -70,7 +71,7 @@ public class IntegrationTests {
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
 	private static final boolean INL = false;
-	private static final boolean CSE = false;
+	private static final boolean CSE = true;
 	private static final boolean CP = false;
 	private static final boolean COPY = false;
 	private static final boolean DCE = false;
@@ -247,7 +248,7 @@ public class IntegrationTests {
 	}
 	
 	/**
-	 * With optimization .716
+	 * With optimization .783
 	 */
 	@Test
 	void testCSEBenchmark() {
@@ -370,6 +371,8 @@ public class IntegrationTests {
 			
 			// Run executable and compare output to console with expected value
 			ProcessBuilder runAssem = getProcessBuilder("./a.out");
+			
+			Debug.startTime("cse");
 			Process runProc = runAssem.start();
 							
 			BufferedReader assemOut = new BufferedReader(new InputStreamReader(runProc.getInputStream()));
@@ -380,6 +383,7 @@ public class IntegrationTests {
 			String assemOutput = cb.flip().toString();
 			
 			runProc.waitFor();
+			Debug.endTime();
 			
 			//Files.delete(FileUtils.assemPath.resolve("unitTest.s"));
 			//Files.delete(pwd.resolve("a.out"));

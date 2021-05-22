@@ -2,6 +2,7 @@ package mtm68.ir;
 
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.ADD;
 import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.EQ;
+import static edu.cornell.cs.cs4120.ir.IRBinOp.OpType.LT;
 import static mtm68.ir.IRTestUtils.call;
 import static mtm68.ir.IRTestUtils.cjump;
 import static mtm68.ir.IRTestUtils.constant;
@@ -10,6 +11,8 @@ import static mtm68.ir.IRTestUtils.mem;
 import static mtm68.ir.IRTestUtils.move;
 import static mtm68.ir.IRTestUtils.op;
 import static mtm68.ir.IRTestUtils.temp;
+import static mtm68.ir.IRTestUtils.ret;
+import static mtm68.ir.IRTestUtils.jump;
 import static mtm68.util.TestUtils.assertInstanceOf;
 import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -400,6 +403,34 @@ public class CSETransformerTests {
 		assertInstanceOf(IRMove.class, res.get(4));
 		assertInstanceOf(IRLabel.class, res.get(5));
 		assertInstanceOf(IRMove.class, res.get(6));
+	}
+	
+	@Test
+	void testWhileLoop() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(temp("t1"), constant(1)),
+				move(temp("t2"), constant(2)),
+				move(temp("t3"), constant(2)),
+				move(temp("t4"), op(ADD, temp("t1"), op(ADD, temp("t2"), temp("t3")))),
+				move(temp("t5"), constant(0)), 
+				label("h"),
+				cjump(op(LT, temp("t5"), constant(10)), "l1", "l2"),
+				label("l1"),
+				move(temp("t6"), op(ADD, temp("t1"), op(ADD, temp("t2"), temp("t3")))),
+				//move(temp("t5"), op(ADD, temp("t4"), constant(1))),
+				jump("h"),
+				label("l2"),
+				ret()
+			);
+		
+		List<IRStmt> res = perform(func);
+		assertEquals(5, res.size());
+		assertInstanceOf(IRCJump.class, res.get(0));
+		assertInstanceOf(IRLabel.class, res.get(1));
+		assertInstanceOf(IRMove.class, res.get(2));
+		assertInstanceOf(IRLabel.class, res.get(3));
+		assertInstanceOf(IRMove.class, res.get(4));
 	}
 
 	private List<IRStmt> perform(List<IRStmt> stmts) throws IOException {
