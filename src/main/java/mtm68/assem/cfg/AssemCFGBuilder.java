@@ -65,7 +65,6 @@ public class AssemCFGBuilder<T> {
 
 						lastLabels.clear();
 						prevWasLabel = false;
-//						throw new InternalCompilerError("Jump target is null");
 					} else {
 						handleAfterLabel(jumpTarget);
 					}

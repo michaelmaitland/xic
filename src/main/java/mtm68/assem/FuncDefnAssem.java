@@ -42,9 +42,7 @@ public class FuncDefnAssem extends Assem {
 		List<Assem> bodyAssems = bodyAssem.getAssems(); 
 		List<Assem> result = ArrayUtils.empty();
 		
-		for(int i = 0; i < bodyAssems.size(); i++) {
-			Assem assem = bodyAssems.get(i);
-
+		for(Assem assem : bodyAssems) {
 			if(assem instanceof RetAssem) {
 				SeqAssem epilogue = Tiler.getEpilogue(calleeRegs);
 				result.add(epilogue);

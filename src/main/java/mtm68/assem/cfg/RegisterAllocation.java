@@ -1,5 +1,7 @@
 package mtm68.assem.cfg;
 
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +32,16 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.Constants;
 import mtm68.util.SetUtils;
 
+/**
+ * Performs optimal register allocation using Chaitin's algorithm.
+ * @author Scott
+ */
 public class RegisterAllocation implements RegisterAllocator{
+	
+	private static final boolean SHOW_GRAPHS = false;
+	private static final boolean CHECK_INVARIANTS = false;
+	private static final boolean PRINT_SPILLS = true;
+	private static final boolean PRINT_PROGRAM_REWRITE = false;
 	
 	private Map<String, RealReg> colors;
 	private Map<String, FunctionSpillData> funcData;
@@ -110,7 +121,7 @@ public class RegisterAllocation implements RegisterAllocator{
 		build(assems);
 		makeWorklists();
 
-		checkInvariants();
+		if(CHECK_INVARIANTS) checkInvariants();
 		
 		while(!(simplifyWorklist.isEmpty() && worklistMoves.isEmpty()
 				&& freezeWorklist.isEmpty() && spillWorklist.isEmpty())) {
@@ -172,14 +183,7 @@ public class RegisterAllocation implements RegisterAllocator{
 		liveGraph = liveness.getLiveGraph();
 		interferenceGraph = liveness.getInterferenceGraph();
 		
-		try {
-//			Writer writer = new PrintWriter(System.out);
-//			liveness.showLiveGraph(writer);
-//			System.out.println();
-//			liveness.showInterferenceGraph(writer);
-//			System.out.println();
-		} catch(Exception e) {
-		}
+		if(SHOW_GRAPHS) showGraphs(liveness);
 
 		initial = ArrayUtils.elems(interferenceGraph.getNodes()).stream()
 				.map(interferenceGraph::getDataForNode)
@@ -262,58 +266,16 @@ public class RegisterAllocation implements RegisterAllocator{
 			iterator.remove();
 		}
 	}
-	
-	private void checkInvariants() {
-		checkDegreeInvariant();
-		checkSimplifyInvariant();
-		checkFreezeInvariant();
-		checkSpillInvariant();
-	}
-	
 
-	private void checkDegreeInvariant() {
-		Set<Node> degreeNodes = new HashSet<>(simplifyWorklist);
-		degreeNodes.addAll(freezeWorklist);
-		degreeNodes.addAll(spillWorklist);
+	private void simplify() {
+		Node node = SetUtils.poll(simplifyWorklist);
+		addToSelectStack(node);
 		
-		for(Node u : degreeNodes) {
-			Set<Node> union = new HashSet<>(precolored);
-			union.addAll(degreeNodes);
-
-			int size = SetUtils.intersect(new HashSet<>(adjList.get(u)), union).size();
-			
-			if(degree(u) != size) {
-				throw new InternalCompilerError("Degree invariant violated for " + u + ". " + degree(u) + " != " + size);
-			}
-		}
-	}
-	
-	private void checkSimplifyInvariant() {
-		for(Node node : simplifyWorklist) {
-			Set<Move> intersect = SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()),
-					SetUtils.union(activeMoves, new HashSet<>(worklistMoves)));
-
-			if(degree(node) < k && intersect.isEmpty()) continue;
-			throw new InternalCompilerError("Simplify invariant violated for " + node);
+		for(Node adj : adjacent(node)) {
+			decrementDegree(adj);
 		}
 	}
 
-	private void checkFreezeInvariant() {
-		for(Node node : freezeWorklist) {
-			Set<Move> intersect = SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()),
-					SetUtils.union(activeMoves, new HashSet<>(worklistMoves)));
-
-			if(degree(node) < k && !intersect.isEmpty()) continue;
-			throw new InternalCompilerError("Freeze invariant violated for " + node);
-		}
-	}
-
-	private void checkSpillInvariant() {
-		for(Node node : spillWorklist) {
-			if(degree(node) >= k) continue;
-			throw new InternalCompilerError("Spill invariant violated for " + node);
-		}
-	}
 
 	private void coalesce() {
 		Move move = SetUtils.poll(worklistMoves);
@@ -361,35 +323,22 @@ public class RegisterAllocation implements RegisterAllocator{
 		addToSimplifyWorklist(node);
 		freezeMoves(node);
 	}
-	
-	private void freezeMoves(Node node) {
-		for(Move move : nodeMoves(node)) {
-			Node x = move.getDest();
-			Node y = move.getSrc();
-
-			Node v = null;
-
-			if(getAlias(y).equals(getAlias(node))) {
-				v = getAlias(x);
-			} else {
-				v = getAlias(y);
-			}
-			
-			activeMoves.remove(move);
-			addToFrozenMoves(move);
-			
-			if(v.getWorklist() == NodeWorklist.FREEZE && nodeMoves(v).isEmpty()) {
-				freezeWorklist.remove(v);
-				addToSimplifyWorklist(v);
-			}
-		}
-	}
-
 
 	private void selectSpill() {
-		Node spill = SetUtils.poll(spillWorklist);
-		addToSimplifyWorklist(spill);
-		freezeMoves(spill);
+		Node bestSpill = null;
+		int bestDegree = 0;
+		
+		for(Node spill : spillWorklist) {
+			int deg = degree(spill);
+			if(deg > bestDegree) {
+				bestDegree = deg;
+				bestSpill = spill;
+			}
+		}
+		
+		spillWorklist.remove(bestSpill);
+		addToSimplifyWorklist(bestSpill);
+		freezeMoves(bestSpill);
 	}
 
 	private void assignColors() {
@@ -432,12 +381,14 @@ public class RegisterAllocation implements RegisterAllocator{
 	
 
 	private List<Assem> rewriteProgram(List<Assem> assems) {
-		System.out.println("Nodes spilled, rewriting.");
-		System.out.println();
+		if(PRINT_SPILLS) {
+			System.out.println("Nodes spilled, rewriting.");
+			System.out.println();
 
-		System.out.println("Spilled Nodes\n=========");
-		spilledNodes.forEach(System.out::println);
-		System.out.println();
+			System.out.println("Spilled Nodes (" + spilledNodes.size() + ")\n=========");
+			spilledNodes.forEach(System.out::println);
+			System.out.println();
+		}
 
 		Map<String, Mem> memLocs = new HashMap<>();
 		for(Node spilled : spilledNodes) {
@@ -491,13 +442,15 @@ public class RegisterAllocation implements RegisterAllocator{
 			}
 		}
 		
-		System.out.println("Original\n========");
-		assems.forEach(System.out::println);
-		System.out.println();
-		
-		System.out.println("New program\n=======");
-		result.forEach(System.out::println);
-		System.out.println();
+		if(PRINT_PROGRAM_REWRITE) {
+			System.out.println("Original\n========");
+			assems.forEach(System.out::println);
+			System.out.println();
+			
+			System.out.println("New program\n=======");
+			result.forEach(System.out::println);
+			System.out.println();
+		}
 
 		return result;
 	}
@@ -526,6 +479,89 @@ public class RegisterAllocation implements RegisterAllocator{
 		
 		return result;
 	}
+	
+	
+	//-------------------------------------------------------------------------------- 
+	// Invariants
+	//-------------------------------------------------------------------------------- 
+	
+	private void checkInvariants() {
+		checkDegreeInvariant();
+		checkSimplifyInvariant();
+		checkFreezeInvariant();
+		checkSpillInvariant();
+	}
+	
+	private void checkDegreeInvariant() {
+		Set<Node> degreeNodes = new HashSet<>(simplifyWorklist);
+		degreeNodes.addAll(freezeWorklist);
+		degreeNodes.addAll(spillWorklist);
+		
+		for(Node u : degreeNodes) {
+			Set<Node> union = new HashSet<>(precolored);
+			union.addAll(degreeNodes);
+
+			int size = SetUtils.intersect(new HashSet<>(adjList.get(u)), union).size();
+			
+			if(degree(u) != size) {
+				throw new InternalCompilerError("Degree invariant violated for " + u + ". " + degree(u) + " != " + size);
+			}
+		}
+	}
+	
+	private void checkSimplifyInvariant() {
+		for(Node node : simplifyWorklist) {
+			Set<Move> intersect = SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()),
+					SetUtils.union(activeMoves, new HashSet<>(worklistMoves)));
+
+			if(degree(node) < k && intersect.isEmpty()) continue;
+			throw new InternalCompilerError("Simplify invariant violated for " + node);
+		}
+	}
+
+	private void checkFreezeInvariant() {
+		for(Node node : freezeWorklist) {
+			Set<Move> intersect = SetUtils.intersect(moveList.getOrDefault(node, SetUtils.empty()),
+					SetUtils.union(activeMoves, new HashSet<>(worklistMoves)));
+
+			if(degree(node) < k && !intersect.isEmpty()) continue;
+			throw new InternalCompilerError("Freeze invariant violated for " + node);
+		}
+	}
+
+	private void checkSpillInvariant() {
+		for(Node node : spillWorklist) {
+			if(degree(node) >= k) continue;
+			throw new InternalCompilerError("Spill invariant violated for " + node);
+		}
+	}
+
+	//-------------------------------------------------------------------------------- 
+
+	private void freezeMoves(Node node) {
+		for(Move move : nodeMoves(node)) {
+			Node x = move.getDest();
+			Node y = move.getSrc();
+
+			Node v = null;
+
+			if(getAlias(y).equals(getAlias(node))) {
+				v = getAlias(x);
+			} else {
+				v = getAlias(y);
+			}
+			
+			activeMoves.remove(move);
+			addToFrozenMoves(move);
+			
+			if(v.getWorklist() == NodeWorklist.FREEZE && nodeMoves(v).isEmpty()) {
+				freezeWorklist.remove(v);
+				addToSimplifyWorklist(v);
+			}
+		}
+	}
+
+
 	
 	private boolean unnecessaryMove(Assem newAssem) {
 		if(newAssem instanceof MoveAssem) {
@@ -584,15 +620,6 @@ public class RegisterAllocation implements RegisterAllocator{
 
 	private boolean isMoveRelated(Node node) {
 		return !nodeMoves(node).isEmpty();
-	}
-
-	private void simplify() {
-		Node node = SetUtils.poll(simplifyWorklist);
-		addToSelectStack(node);
-		
-		for(Node adj : adjacent(node)) {
-			decrementDegree(adj);
-		}
 	}
 
 	private void decrementDegree(Node node) {
@@ -750,6 +777,8 @@ public class RegisterAllocation implements RegisterAllocator{
 		
 		moveList.get(node).add(move);
 	}
+
+	//-------------------------------------------------------------------------------- 
 	
 	private boolean precolored(Node node) {
 		return RealReg.isRealReg(node.getId());
@@ -757,6 +786,17 @@ public class RegisterAllocation implements RegisterAllocator{
 	
 	private int degree(Node n) {
 		return degreeMap.get(n);
+	}
+
+	private void showGraphs(Liveness liveness) {
+		try {
+			Writer writer = new PrintWriter(System.out);
+			liveness.showLiveGraph(writer);
+			System.out.println();
+			liveness.showInterferenceGraph(writer);
+			System.out.println();
+		} catch(Exception e) {
+		}
 	}
 	
 	private static class Node {
