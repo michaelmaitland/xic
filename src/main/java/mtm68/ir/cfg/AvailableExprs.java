@@ -69,6 +69,7 @@ public class AvailableExprs {
 									   .map(AvailableExpr::getExpr)
 									   .collect(Collectors.toSet()));
 				
+				flowData.isTop = false;
 				changes = changes || (!inOld.equals(in) || !outOld.equals(out));
 			}
 		}
@@ -82,20 +83,21 @@ public class AvailableExprs {
 		Set<AvailableExpr> in = SetUtils.empty();
 		boolean first = true;
 		for(Node pred : node.pred()) {
-			Set<AvailableExpr> predData = graph.getDataForNode(pred)
-											   .getFlowData()
-											   .getOut();
+			AvailableData predData = graph.getDataForNode(pred)
+											   .getFlowData();
+			Set<AvailableExpr> out = predData.getOut();
 			/**
 			* The first iteration, we need to set the base set 
 			* because intersect with empty set will always be empty
 			* and there is no good way to set the initial set
 			* as the empty set
 			*/
+			if(predData.isTop) continue;
 			if(first) {
-				in = SetUtils.copy(predData);
+				in = SetUtils.copy(out);
 				first = false;
 			} else {
-				in = SetUtils.intersect(in, predData);
+				in = SetUtils.intersect(in, out);
 			}
 		}
 		
@@ -346,6 +348,7 @@ public class AvailableExprs {
 		Set<AvailableExpr> in;
 		Set<AvailableExpr> out;
 		Set<IRExpr> exprs;
+		boolean isTop = true;
 		
 		public AvailableData() {
 			in = SetUtils.empty();
