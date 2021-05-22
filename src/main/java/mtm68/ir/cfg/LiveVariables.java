@@ -221,7 +221,7 @@ public class LiveVariables {
 	}
 	
 	public void showGraph(Writer writer) throws IOException {
-		graph.show(writer, "AvailableExpressions", true, this::showAvailable);
+		graph.show(writer, "LiveVars", true, this::showAvailable);
 	}
 	
 	public IRCFGBuilder<LiveData> getBuilder() {

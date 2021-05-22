@@ -14,17 +14,18 @@ import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import mtm68.assem.cfg.Graph;
 import mtm68.assem.cfg.Graph.Node;
+import mtm68.ir.cfg.AvailableCopies.AvailableCopy;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.util.SetUtils;
 
-public class AvailableCopies {
+public class ReachingDefns {
 
-	private Graph<IRData<AvailableCopyData>> graph;
-	private IRCFGBuilder<AvailableCopyData> builder;
+	private Graph<IRData<ReachingData>> graph;
+	private IRCFGBuilder<ReachingData> builder;
 	
 	private IRFuncDefn ir;
 
-	public AvailableCopies(IRFuncDefn ir) {
+	public ReachingDefns(IRFuncDefn ir) {
 		builder = new IRCFGBuilder<>();
 		this.ir = ir;
 	}
@@ -34,7 +35,7 @@ public class AvailableCopies {
 		IRStmt body = ir.body();
 	    List<IRStmt> stmts = ((IRSeq)body).stmts();
 
-		graph = builder.buildIRCFG(stmts, AvailableCopyData::new);
+		graph = builder.buildIRCFG(stmts, ReachingData::new);
 		List<Node> nodes = graph.getNodes();
 		
 		boolean changes = true;
@@ -42,14 +43,14 @@ public class AvailableCopies {
 			changes = false;
 			
 			for(Node node : nodes) {
-				IRData<AvailableCopyData> data = graph.getDataForNode(node);
-				AvailableCopyData flowData = data.getFlowData();
+				IRData<ReachingData> data = graph.getDataForNode(node);
+				ReachingData flowData = data.getFlowData();
 				
-				Set<AvailableCopy> inOld = flowData.getIn();
-				Set<AvailableCopy> outOld = flowData.getOut();
+				Set<ReachingDefn> inOld = flowData.getIn();
+				Set<ReachingDefn> outOld = flowData.getOut();
 				
-				Set<AvailableCopy> in = in(node);
-				Set<AvailableCopy> out = out(node);
+				Set<ReachingDefn> in = in(node);
+				Set<ReachingDefn> out = out(node);
 				
 				flowData.setIn(in);
 				flowData.setOut(out);
@@ -64,14 +65,14 @@ public class AvailableCopies {
 	 * The set of definitions reaching a node.
 	 * in[n] = definitions reaching on all edges into n.
 	 */
-	private Set<AvailableCopy> in(Node node) {
-		Set<AvailableCopy> in = SetUtils.empty();
+	private Set<ReachingDefn> in(Node node) {
+		Set<ReachingDefn> in = SetUtils.empty();
 		boolean first = true;
 		for(Node pred : node.pred()) {
-			AvailableCopyData predData = graph.getDataForNode(pred)
+			ReachingData predData = graph.getDataForNode(pred)
 											   .getFlowData();
 			
-			Set<AvailableCopy> out = predData.getOut();
+			Set<ReachingDefn> out = predData.getOut();
 			/**
 			* The first iteration, we need to set the base set 
 			* because intersect with empty set will always be empty
@@ -94,13 +95,13 @@ public class AvailableCopies {
 	 * The set of available expressions on edges leaving node n.
 	 * out[n] = gen[n] U (in(n) - kill(n))
 	 */
-	 private Set<AvailableCopy> out(Node n) {
+	 private Set<ReachingDefn> out(Node n) {
 
-		Set<AvailableCopy> gen = gen(n);
-		Set<AvailableCopy> in = in(n);
-		Set<AvailableCopy> kill = kill(n, in);
+		Set<ReachingDefn> gen = gen(n);
+		Set<ReachingDefn> in = in(n);
+		Set<ReachingDefn> kill = kill(n, in);
 		
-		Set<AvailableCopy> difference = SetUtils.difference(in, kill);
+		Set<ReachingDefn> difference = SetUtils.difference(in, kill);
 		 
 		return SetUtils.union(gen , difference);
 	 }
@@ -112,41 +113,35 @@ public class AvailableCopies {
 	 * gen(x <- y) = node 
 	 * else 	   = {}
 	 */
-	private Set<AvailableCopy> gen(Node node) {
+	private Set<ReachingDefn> gen(Node node) {
 		IRStmt ir = graph.getDataForNode(node).getIR();
 
-		if (hasXGetsYForm(ir)) {
-			return genXGetsY((IRMove)ir, node);
+		if (hasXGetsEForm(ir)) {
+			return genXGetsE((IRMove)ir, node);
 
 		} else {
 			return SetUtils.empty();
 		}
 	}
-
-	private Set<AvailableCopy> genXGetsY(IRMove mov, Node d) {
+	
+	private Set<ReachingDefn> genXGetsE(IRMove mov, Node d) {
 		IRTemp x = (IRTemp)mov.target();
-		IRTemp y = (IRTemp)mov.source();
 
-		if(y.name().startsWith("_RET"))
-			return SetUtils.empty();
-		
-		if(y.name().startsWith("_ARG"))
-			return SetUtils.empty();
-		
-		AvailableCopy defn = new AvailableCopy(x, y, d);
+		ReachingDefn defn = new ReachingDefn(x, d);
 
 		return SetUtils.elems(defn);
 	}
 
 	/**
-	 * Expressions killed by a node that has facts l.
+	 * Definitions killed by a node that has facts l.
 	 * 
 	 * For example,
-	 * kill(x <- e)    = x = z, z = x forall z
+	 * kill(x <- e)    = defs(x)
 	 * else		       = {}	
 	 * 
+	 * Where defs(x) denotes set of nodes that define variable x
 	 */
-	private Set<AvailableCopy> kill(Node node, Set<AvailableCopy> l) {
+	private Set<ReachingDefn> kill(Node node, Set<ReachingDefn> l) {
 		IRStmt ir = graph.getDataForNode(node).getIR();
 
 		if (hasXGetsEForm(ir)) {
@@ -158,43 +153,37 @@ public class AvailableCopies {
 	}
 	
 	/**
-	 * The subset of l that contains IRTemp t.
+	 * The subset of l that defines t
 	 * @param ir of the form IRMove(IRTemp t, IRExpr)
 	 */
-	private Set<AvailableCopy> killXGetsE(IRMove ir, Set<AvailableCopy> l) {
+	private Set<ReachingDefn> killXGetsE(IRMove ir, Set<ReachingDefn> l) {
 		IRTemp temp = (IRTemp)ir.target();
 		return l.stream()
-				.filter(r -> r.x.equals(temp) || r.y.equals(temp))
+				.filter(r -> r.defn.equals(temp))
 				.collect(Collectors.toSet());
 	}
 
-	private boolean hasXGetsYForm(IRStmt ir) {
-		return ir instanceof IRMove 
-				&& ((IRMove)ir).target() instanceof IRTemp
-				&& ((IRMove)ir).source() instanceof IRTemp;
-	}
-	
 	private boolean hasXGetsEForm(IRStmt ir) {
 		return ir instanceof IRMove 
 				&& ((IRMove)ir).target() instanceof IRTemp
 				&& ((IRMove)ir).source() instanceof IRExpr;
 	}
 
-	public Graph<IRData<AvailableCopyData>> getGraph() {
+	public Graph<IRData<ReachingData>> getGraph() {
 		return graph;
 	}
 	
 	public void showGraph(Writer writer) throws IOException {
-		graph.show(writer, "AvailableCopies", true, this::showAvailable);
+		graph.show(writer, "ReachingDefns", true, this::showAvailable);
 	}
 	
-	public IRCFGBuilder<AvailableCopyData> getBuilder() {
+	public IRCFGBuilder<ReachingData> getBuilder() {
 		return builder;
 	}
 
-	private String showAvailable(IRData<AvailableCopyData> data) {
-		Set<AvailableCopy> in = data.getFlowData().getIn();
-		Set<AvailableCopy> out = data.getFlowData().getOut();
+	private String showAvailable(IRData<ReachingData> data) {
+		Set<ReachingDefn> in = data.getFlowData().getIn();
+		Set<ReachingDefn> out = data.getFlowData().getOut();
 		IRStmt ir = data.getIR();
 
 		StringBuilder sb = new StringBuilder();
@@ -227,42 +216,39 @@ public class AvailableCopies {
 		return sb.toString();
 	}
 	
-	public static class AvailableCopyData {
-		Set<AvailableCopy> in;
-		Set<AvailableCopy> out;
+	public static class ReachingData {
+		Set<ReachingDefn> in;
+		Set<ReachingDefn> out;
 		boolean isTop = true;
 		
-		public AvailableCopyData() {
+		public ReachingData() {
 			in = SetUtils.empty();
 			out = SetUtils.empty();
 		}
 
-		public Set<AvailableCopy> getIn() {
+		public Set<ReachingDefn> getIn() {
 			return in;
 		}
 
-		public void setIn(Set<AvailableCopy> in) {
+		public void setIn(Set<ReachingDefn> in) {
 			this.in = in;
 		}
 
-		public Set<AvailableCopy> getOut() {
+		public Set<ReachingDefn> getOut() {
 			return out;
 		}
 
-		public void setOut(Set<AvailableCopy> out) {
+		public void setOut(Set<ReachingDefn> out) {
 			this.out = out;
 		}
 	}
 
-	public static class AvailableCopy {
-		IRTemp x;
-		IRTemp y;
+	public static class ReachingDefn {
 		Node definer;
+		IRTemp defn;
 		
-		// Node n defines x = y
-		public AvailableCopy(IRTemp x, IRTemp y, Node definer) {
-			this.x = x;
-			this.y = y;
+		public ReachingDefn(IRTemp defn, Node definer) {
+			this.defn = defn;
 			this.definer = definer;
 		}
 		
@@ -273,22 +259,14 @@ public class AvailableCopies {
 			this.definer = definer;
 		}
 		
-		public IRTemp getX() {
-			return x;
+		public IRTemp getDefn() {
+			return defn;
 		}
 
-		public void setX(IRTemp x) {
-			this.x = x;
+		public void setDefn(IRTemp defn) {
+			this.defn = defn;
 		}
-
-		public IRTemp getY() {
-			return y;
-		}
-
-		public void setY(IRTemp y) {
-			this.y = y;
-		}
-
+		
 		public String toString() {
 			return definer.getNodeId() + "";
 		}
@@ -298,8 +276,6 @@ public class AvailableCopies {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((definer == null) ? 0 : definer.hashCode());
-			result = prime * result + ((x == null) ? 0 : x.hashCode());
-			result = prime * result + ((y == null) ? 0 : y.hashCode());
 			return result;
 		}
 
@@ -311,21 +287,11 @@ public class AvailableCopies {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			AvailableCopy other = (AvailableCopy) obj;
+			ReachingDefn other = (ReachingDefn) obj;
 			if (definer == null) {
 				if (other.definer != null)
 					return false;
 			} else if (!definer.equals(other.definer))
-				return false;
-			if (x == null) {
-				if (other.x != null)
-					return false;
-			} else if (!x.equals(other.x))
-				return false;
-			if (y == null) {
-				if (other.y != null)
-					return false;
-			} else if (!y.equals(other.y))
 				return false;
 			return true;
 		}

@@ -5,7 +5,7 @@ main(args : int[][]){
 }
 
 outOfBounds() : int {
-	x : int[2];
-	x[5] = 1;
-	return 2;
+	x : int[2]
+	x[5] = 1
+	return 2
 }
