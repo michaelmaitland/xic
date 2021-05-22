@@ -82,9 +82,7 @@ public class DeadCodeTransformer {
 		if(!isMove(stmt)) return;
 		IRMove mov = (IRMove)stmt;
 		
-		if(!isTemp(mov.target()) || !isMem(mov.target())) return;
-		
-		if(mov.source().doesContainsExprWithSideEffect()) return;
+		if(mov.source().doesContainsExprWithSideEffect() || mov.target().doesContainsExprWithSideEffect()) return;
 
 		Set<LiveVar> liveOut = data.getFlowData().getOut();
 		
@@ -95,14 +93,6 @@ public class DeadCodeTransformer {
 		}
 	}
 
-	private boolean isMem(IRNode n) {
-		return n instanceof IRMem;
-	}
-
-	private boolean isTemp(IRNode n) {
-		return n instanceof IRTemp;
-	}
-	
 	private boolean isMove(IRNode n) {
 		return n instanceof IRMove;
 	}
