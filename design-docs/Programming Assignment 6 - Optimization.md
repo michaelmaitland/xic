@@ -23,6 +23,7 @@ The following are choices we made regarding specification:
 
 We decided that, if --optir or --optcfg were passed as parameters and errors occur in the lexing, parsing, or typechecking stage, no .dot files would be outputted. This did not seem necessary as a .s file will always be outputted with the error message. Therefore, this would be wasteful saving.
 
+Also, if -O is used, then all optimizations will be turned off regardless of the presence of other -O<opt> parameters.
 ## Design and Implementation 
 
 ### Architecture ###
