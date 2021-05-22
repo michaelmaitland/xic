@@ -246,6 +246,14 @@ public class IntegrationTests {
 	void testRecRetSpace() {
 		generateAndAssertOutput("rec_retspace.xi", "c1: 4\nc2: 8\nc3: 12\nc4: 16\n");
 	}
+	
+	/**
+	 * With optimization .716
+	 */
+	@Test
+	void testCSEBenchmark() {
+		generateAndAssertOutput("cse.xi", "done");
+	}
 	 
 	// Must be run manually to have meaning
 	@Test
