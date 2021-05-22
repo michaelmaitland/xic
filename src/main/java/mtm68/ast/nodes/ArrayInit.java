@@ -1,8 +1,6 @@
 package mtm68.ast.nodes;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRESeq;
@@ -71,19 +69,4 @@ public class ArrayInit extends Expr {
 
         return copyAndSetIRExpr(eseq);
     }
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		ArrayInit init = this.copy();
-		
-		List<Expr> newItems = new ArrayList<>();
-		
-		for(Expr item : items) {
-			newItems.add((Expr)item.renameVars(varMap));
-		}
-		
-		init.items = newItems;
-		
-		return init;
-	}
 }

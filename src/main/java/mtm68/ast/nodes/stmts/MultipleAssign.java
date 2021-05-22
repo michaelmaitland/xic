@@ -2,7 +2,6 @@ package mtm68.ast.nodes.stmts;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -141,26 +140,6 @@ public class MultipleAssign extends Assign {
 		}
 
 		return copyAndSetIRStmt(inf.IRSeq(stmts));
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		MultipleAssign ma = this.copy();
-		
-		List<Optional<SimpleDecl>> newDecls = new ArrayList<>();
-		
-		for(Optional<SimpleDecl> optDecl : decls) {
-			if(optDecl.isPresent()) {
-				SimpleDecl newDecl = (SimpleDecl) optDecl.get().renameVars(varMap);
-				newDecls.add(Optional.of(newDecl));
-			}
-			else newDecls.add(optDecl);
-		}
-		
-		ma.decls = newDecls;
-		ma.rhs = (FExpr) rhs.renameVars(varMap);
-		
-		return ma;
 	}
 	
 	@Override

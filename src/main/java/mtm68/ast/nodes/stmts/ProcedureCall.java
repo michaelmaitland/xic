@@ -1,7 +1,6 @@
 package mtm68.ast.nodes.stmts;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
@@ -79,13 +78,6 @@ public class ProcedureCall extends Statement {
 		IRCallStmt call = inf.IRCallStmt(name, irArgs);
 
 		return copyAndSetIRStmt(call);
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		ProcedureCall proc = this.copy();
-		proc.fexp = (FExpr) fexp.renameVars(varMap);
-		return proc;
 	}
 	
 	@Override

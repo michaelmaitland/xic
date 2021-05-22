@@ -1,7 +1,6 @@
 package mtm68.ast.nodes;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRESeq;
@@ -51,10 +50,5 @@ public class StringLiteral extends Literal<String>{
 		
 		IRESeq eseq = cv.allocateAndInitArray(items);
 		return copyAndSetIRExpr(eseq);
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		return this;
 	}
 }

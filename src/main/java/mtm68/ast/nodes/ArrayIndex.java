@@ -1,7 +1,5 @@
 package mtm68.ast.nodes;
 
-import java.util.Map;
-
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -80,15 +78,5 @@ public class ArrayIndex extends Expr {
 		IRESeq eseq = inf.IRESeq(seq, offsetIntoArr);
 
 		return copyAndSetIRExpr(eseq);
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		ArrayIndex arrIdx = this.copy();
-		
-		arrIdx.arr = (Expr) arr.renameVars(varMap);
-		arrIdx.index = (Expr) index.renameVars(varMap);
-		
-		return arrIdx;
 	}
 }

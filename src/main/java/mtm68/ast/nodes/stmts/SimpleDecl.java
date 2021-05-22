@@ -1,14 +1,11 @@
 package mtm68.ast.nodes.stmts;
 
-import java.util.Map;
-
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
-import mtm68.util.FreshTempGenerator;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -76,18 +73,5 @@ public class SimpleDecl extends Decl {
 		} else if (!type.equals(other.type))
 			return false;
 		return true;
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		SimpleDecl decl = this.copy();
-		
-		if(!varMap.containsKey(id)) {
-			varMap.put(id, FreshTempGenerator.getFreshTemp());
-		}
-		
-		decl.id = varMap.get(id);
-		
-		return decl;
 	}
 }

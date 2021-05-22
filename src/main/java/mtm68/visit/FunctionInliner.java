@@ -138,7 +138,9 @@ public class FunctionInliner extends Visitor {
 	
 	public Block transformArgsAndBody(FExpr fexp) {
 		FunctionDefn fDefn = functionDefns.get(fexp.getId());
-		fDefn = (FunctionDefn) fDefn.renameVars(new HashMap<>());
+		VariableRenamer vr = new VariableRenamer();
+		
+		fDefn = fDefn.accept(vr);
 		
 		List<Statement> stmts = new ArrayList<>();
 		

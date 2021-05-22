@@ -1,7 +1,5 @@
 package mtm68.ast.nodes;
 
-import java.util.Map;
-
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -61,14 +59,5 @@ public class ArrayLength extends Expr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		IRMem lengthSlot = cv.getOffsetIntoArr(exp.getIRExpr(), inf.IRConst(-1), true);
 		return copyAndSetIRExpr(lengthSlot);
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		ArrayLength arrLength = this.copy();
-		
-		arrLength.exp = (Expr)exp.renameVars(varMap);
-		
-		return arrLength;
 	}
 }

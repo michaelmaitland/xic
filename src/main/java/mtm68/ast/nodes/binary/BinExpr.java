@@ -1,7 +1,5 @@
 package mtm68.ast.nodes.binary;
 
-import java.util.Map;
-
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -88,14 +86,5 @@ public class BinExpr extends Expr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		IRBinOp node = inf.IRBinOp(op.convertToOpType(), left.getIRExpr(), right.getIRExpr());
 		return copyAndSetIRExpr(node);
-	}
-	
-	@Override
-	public Node renameVars(Map<String, String> varMap) {
-		BinExpr bExpr = this.copy();
-		bExpr.left = (Expr) left.renameVars(varMap);
-		bExpr.right = (Expr) right.renameVars(varMap);
-		
-		return bExpr;
 	}
 }

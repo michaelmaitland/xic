@@ -36,11 +36,11 @@ import edu.cornell.cs.cs4120.ir.interpret.IRSimulator.Trap;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
-import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import edu.cornell.cs.cs4120.util.CodeWriterSExpPrinter;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.FileType;
 import mtm68.Optimizer;
 import mtm68.SymbolTableManager;
@@ -50,8 +50,6 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
-import mtm68.ir.cfg.ConstantPropTransformer;
-import mtm68.ir.cfg.DeadCodeTransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
@@ -317,7 +315,7 @@ public class IntegrationTests {
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
 		IRNode tiled = tiler.visit(root);
 		
-		//System.out.println(tiled.getAssem());
+		System.out.println(tiled.getAssem());
 		
 		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
 		
@@ -463,7 +461,16 @@ public class IntegrationTests {
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
 		
+		SExpPrinter printer = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+		irRoot.printSExp(printer);
+		printer.flush();
+		
 		irRoot = Optimizer.optimizeIR(irRoot);
+		
+		System.out.println("====================================");
+		SExpPrinter printer2 = new CodeWriterSExpPrinter(new PrintWriter(System.out));
+		irRoot.printSExp(printer2);
+		printer2.flush();
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
