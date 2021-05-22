@@ -74,7 +74,7 @@ public class IntegrationTests {
 	private static final boolean CSE = true;
 	private static final boolean CP = false;
 	private static final boolean COPY = false;
-	private static final boolean DCE = false;
+	private static final boolean DCE = true;
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -253,6 +253,11 @@ public class IntegrationTests {
 	@Test
 	void testCSEBenchmark() {
 		generateAndAssertOutput("cse.xi", "done");
+	}
+	
+	@Test
+	void testCSE1Benchmark() {
+		generateAndAssertOutput("cse_1.xi", "");
 	}
 	 
 	// Must be run manually to have meaning
