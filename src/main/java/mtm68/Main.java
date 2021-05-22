@@ -32,7 +32,9 @@ import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
 import mtm68.Optimizer.Phase;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
-import mtm68.assem.visit.TrivialRegisterAllocator;
+import mtm68.assem.RegisterAllocator;
+import mtm68.assem.cfg.RegisterAllocation;
+import mtm68.assem.operand.RealReg;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
@@ -263,9 +265,9 @@ public class Main {
 		Tiler tiler = new Tiler(new IRNodeFactory_c());
 		IRNode tiled = tiler.visit(irRoot);
 				
-		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
 		
-		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+		return regAllocator.allocateRegisters((CompUnitAssem) tiled.getAssem()).flattenedProgram();
 	}
 
 	private boolean shouldOptimize() {

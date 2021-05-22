@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import mtm68.assem.Assem;
 import mtm68.assem.JumpAssem;
@@ -22,27 +23,53 @@ public class AssemCFGBuilder<T> {
 	private boolean prevWasLabel = false;
 	private boolean prevWasUnconditionalJump = false;
 	private boolean prevWasRet = false;
-	private String lastLabel;
+	private List<String> lastLabels;
 	
 	private Map<Loc, Node> locationMap;
 	private Map<Loc, List<Node>> waitingJumps;
+	private Map<Loc, List<Loc>> waitingLabels;
 	
 	public AssemCFGBuilder() {
 		graph = new Graph<>();
 		locationMap = new HashMap<>();
 		waitingJumps = new HashMap<>();
+		waitingLabels = new HashMap<>();
+
+		lastLabels = ArrayUtils.empty();
 	}
 	
 	public Graph<AssemData<T>> buildAssemCFG(List<Assem> assems, Supplier<T> flowDataConstructor) {
 		for(Assem assem : assems) {
 			
-			if(isJump(assem)) {
-				handleJump((JumpAssem)assem);
-				continue;
-			}
-			
 			if(isLabel(assem)) {
 				handleLabel((LabelAssem)assem);
+				continue;
+			}
+
+			if(isJump(assem)) {
+				JumpAssem jump = (JumpAssem)assem;
+				handleJump(jump);
+				
+				// A label followed by an unconditional jump should
+				// be connected to the unconditional jumps target
+				if(jump.isUnconditional() && prevWasLabel) {
+					Node jumpTarget = locationMap.get(jump.getLoc());
+					
+					
+					if(jumpTarget == null) {
+						List<Loc> waiting = lastLabels.stream()
+							.map(Loc::new)
+							.collect(Collectors.toList());
+
+						waitingLabels.put(jump.getLoc(), waiting);
+
+						lastLabels.clear();
+						prevWasLabel = false;
+					} else {
+						handleAfterLabel(jumpTarget);
+					}
+				}
+				
 				continue;
 			}
 
@@ -50,10 +77,7 @@ public class AssemCFGBuilder<T> {
 			curr = graph.createNode(data);
 			
 			if(prevWasLabel) {
-				Loc loc = new Loc(lastLabel);
-				locationMap.put(loc, curr);
-				resolveWaitingJumps(loc);
-				prevWasLabel = false;
+				handleAfterLabel(curr);
 			} 
 			if(prev != null && !prevWasUnconditionalJump && !prevWasRet){
 				graph.addEdge(prev, curr);
@@ -64,9 +88,23 @@ public class AssemCFGBuilder<T> {
 			prevWasRet = graph.getDataForNode(prev).getAssem() instanceof RetAssem;
 		}
 		
-		if(waitingJumps.size() != 0) throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
+		if(waitingJumps.size() != 0) 
+			throw new InternalCompilerError("Still have jumps that need resolving: " + waitingJumps);
+
+		if(waitingLabels.size() != 0) 
+			throw new InternalCompilerError("Still have labels that need resolving: " + waitingLabels);
 		
 		return graph;
+	}
+	
+	private void handleAfterLabel(Node nodeAtLoc) {
+		for(String label : lastLabels) {
+			Loc loc = new Loc(label);
+			locationMap.put(loc, nodeAtLoc);
+			resolveWaitingJumps(loc);
+		}
+		prevWasLabel = false;
+		lastLabels.clear();
 	}
 	
 	private void handleJump(JumpAssem assem) {
@@ -99,10 +137,18 @@ public class AssemCFGBuilder<T> {
 			waitingJumps.get(loc).forEach(n -> graph.addEdge(n, jumpTo));
 			waitingJumps.remove(loc);
 		}
+		
+		if(waitingLabels.containsKey(loc)) {
+			waitingLabels.get(loc).forEach(l -> {
+				locationMap.put(l, jumpTo);
+				resolveWaitingJumps(l);
+			});
+			waitingLabels.remove(loc);
+		}
 	}
 
 	private void handleLabel(LabelAssem assem) {
-		lastLabel = assem.getName();
+		lastLabels.add(assem.getName());
 		prevWasLabel = true;
 	}
 	

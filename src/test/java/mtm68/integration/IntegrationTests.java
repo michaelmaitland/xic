@@ -36,7 +36,6 @@ import edu.cornell.cs.cs4120.ir.interpret.IRSimulator.Trap;
 import edu.cornell.cs.cs4120.ir.visit.CFGVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckCanonicalIRVisitor;
 import edu.cornell.cs.cs4120.ir.visit.CheckConstFoldedIRVisitor;
-import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.ir.visit.Tiler;
 import edu.cornell.cs.cs4120.ir.visit.UnusedLabelVisitor;
@@ -46,12 +45,12 @@ import mtm68.Optimizer;
 import mtm68.SymbolTableManager;
 import mtm68.assem.Assem;
 import mtm68.assem.CompUnitAssem;
-import mtm68.assem.visit.TrivialRegisterAllocator;
+import mtm68.assem.RegisterAllocator;
+import mtm68.assem.cfg.RegisterAllocation;
+import mtm68.assem.operand.RealReg;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
-import mtm68.ir.cfg.ConstantPropTransformer;
-import mtm68.ir.cfg.DeadCodeTransformer;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
 import mtm68.lexer.TokenFactory;
@@ -74,7 +73,6 @@ public class IntegrationTests {
 	private static final boolean CP = true;
 	private static final boolean COPY = true;
 	private static final boolean DCE = true;
-
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -272,6 +270,11 @@ public class IntegrationTests {
 	void testIdentity() {
 		generateAndAssertOutput("inline.xi", "");
 	}
+
+	@Test
+	void testRegisterPressure() {
+		generateAndAssertOutput("register_pressure.xi", "351");
+	}
 	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
@@ -327,9 +330,15 @@ public class IntegrationTests {
 		
 		//System.out.println(tiled.getAssem());
 		
-		TrivialRegisterAllocator regAllocator = new TrivialRegisterAllocator();
+//		RegisterAllocator regAllocator = new TrivialRegisterAllocator();
+		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
+
 		
-		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+//		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
+		CompUnitAssem program = (CompUnitAssem) tiled.getAssem();
+//		System.out.println("Abstract assembly");
+//		System.out.println(program);
+		return regAllocator.allocateRegisters(program).flattenedProgram();
 	}
 	
 	private void runAndAssertAssem(List<Assem> assems, String expected) {

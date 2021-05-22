@@ -101,19 +101,9 @@ public class IRFuncDefn extends IRNode_c {
 	
 	@Override
 	public IRNode tile(Tiler t) {
-		
-		// only care about unique temps
-		int numTemps = (int)body.getAssem().getReplaceableRegs()
-				.stream()
-				.map(ReplaceableReg::getName)
-				.distinct()
-				.count();
-
-		SeqAssem prologue = t.getPrologue(name, numArgs, numTemps);
 		SeqAssem bodyAssem = (SeqAssem)body.getAssem();
-		SeqAssem funcAssem = new SeqAssem(prologue, bodyAssem);
 
-		FuncDefnAssem assem = new FuncDefnAssem(name, funcAssem);
+		FuncDefnAssem assem = new FuncDefnAssem(name, numArgs, bodyAssem);
 		return this.copyAndSetAssem(assem);
 	}
 
