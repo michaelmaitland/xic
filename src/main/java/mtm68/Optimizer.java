@@ -14,7 +14,9 @@ import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
 import mtm68.assem.cfg.Graph;
 import mtm68.ast.nodes.Program;
 import mtm68.ir.cfg.CSETransformer;
+import mtm68.ir.cfg.ConstantPropTransformer;
 import mtm68.ir.cfg.CopyPropTransformer;
+import mtm68.ir.cfg.DeadCodeTransformer;
 import mtm68.ir.cfg.IRCFGBuilder;
 import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.util.FileUtils;
@@ -22,6 +24,8 @@ import mtm68.util.SetUtils;
 import mtm68.visit.FunctionInliner;
 
 public class Optimizer {
+	private static final int ITERS = 5;
+	
 	private static Set<SupportedOpt> optsToPerform = new HashSet<>();
 	private static IRNodeFactory nodeFactory;
 	private static Set<Phase> irPhases = new HashSet<>();
@@ -50,28 +54,32 @@ public class Optimizer {
 		Set<SupportedOpt> opts = SetUtils.intersect(optsToPerform, irOpts);
 				
 		writeInitial(root);
+	
+		IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
+		if(opts.contains(SupportedOpt.CF)) {
+			root = constFolder.visit(root);
+		}
 		
-		List<SupportedOpt> optList = new ArrayList<>(opts);
-		Collections.sort(optList); 
-		
-		for(SupportedOpt opt : opts) {
-			switch(opt) {
-			case CF:
-				IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
-				root = constFolder.visit(root);
-				break;
-			case CSE:
+		for(int i = 0; i < ITERS; i++) {
+			if(opts.contains(SupportedOpt.CSE)) {
 				CSETransformer cseTransformer = new CSETransformer((IRCompUnit)root, nodeFactory);
 				root = cseTransformer.doCSE();
-				break;
-			case CP:
+			}
+			if(opts.contains(SupportedOpt.COPY)) {
 				CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)root, nodeFactory);
 				root = cpTransformer.doCopyProp();
-				break;
-			default:
-				break;
 			}
-		}		
+			if(opts.contains(SupportedOpt.CP)) {
+				ConstantPropTransformer constProp = new ConstantPropTransformer((IRCompUnit)root, nodeFactory);
+				root = constProp.doConstantProp();
+			}
+			if(opts.contains(SupportedOpt.DCE)) {
+				DeadCodeTransformer dcTransformer = new DeadCodeTransformer((IRCompUnit)root, nodeFactory);
+				root = dcTransformer.doDeadCodeRemoval();
+			}
+		}
+		
+		if(opts.contains(SupportedOpt.CF)) root = constFolder.visit(root);
 		
 		writeFinal(root);
 		
@@ -122,8 +130,16 @@ public class Optimizer {
 		optsToPerform.add(SupportedOpt.INL);
 	}
 	
+	public static void addCOPY() {
+		optsToPerform.add(SupportedOpt.COPY);
+	}
+	
 	public static void addCP() {
 		optsToPerform.add(SupportedOpt.CP);
+	}
+	
+	public static void addDCE() {
+		optsToPerform.add(SupportedOpt.DCE);
 	}
 	
 	public static void addAll() {
@@ -151,6 +167,8 @@ public class Optimizer {
 	public static enum SupportedOpt{
 		CF,
 		CSE,
+		COPY,
+		DCE,
 		CP,
 		INL;
 		
@@ -164,7 +182,7 @@ public class Optimizer {
 		}
 		
 		public static Set<SupportedOpt> getIROpts(){
-			return SetUtils.elems(CF, CSE, CP);
+			return SetUtils.elems(CF, CSE, COPY);
 		}
 		
 		public static Set<SupportedOpt> getASTOpts(){

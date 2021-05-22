@@ -71,7 +71,10 @@ public class IntegrationTests {
 	
 	private static final boolean INL = true;
 	private static final boolean CSE = true;
-	private static final boolean CP = false;
+	private static final boolean CP = true;
+	private static final boolean COPY = true;
+	private static final boolean DCE = true;
+
 
 	@BeforeEach
 	void setUpFileUtils() {
@@ -450,7 +453,6 @@ public class IntegrationTests {
 		
 		NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(filename, nodeFactory, new ArrayList<>(funcTable.values()));
 		Lowerer lowerer = new Lowerer(nodeFactory);
-		IRConstantFolder constFolder = new IRConstantFolder(nodeFactory);
 		CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
 		UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
 		
@@ -458,28 +460,10 @@ public class IntegrationTests {
 		program.getIrCompUnit().appendFunc(irConverter.allocLayer());
 		
 		IRNode irRoot = lowerer.visit(program.getIrCompUnit());
-		irRoot = constFolder.visit(irRoot);
 		irRoot = cfgVisitor.visit(irRoot);
 		irRoot = unusedLabelVisitor.visit(irRoot);
 		
 		irRoot = Optimizer.optimizeIR(irRoot);
-		
-		DeadCodeTransformer dcTransformer = new DeadCodeTransformer((IRCompUnit)irRoot, nodeFactory);
-		irRoot = dcTransformer.doDeadCodeRemoval();
-		
-		ConstantPropTransformer constProp = new ConstantPropTransformer((IRCompUnit)irRoot, nodeFactory);
-		irRoot = constProp.doConstantProp();
-		
-		irRoot = constFolder.visit(irRoot);
-//		if(CSE) {
-//			CSETransformer cseTransformer = new CSETransformer((IRCompUnit)irRoot, nodeFactory);
-//			irRoot = cseTransformer.doCSE();
-//		}
-//		
-//		if(CP){
-//			CopyPropTransformer cpTransformer = new CopyPropTransformer((IRCompUnit)irRoot, nodeFactory);
-//			irRoot = cpTransformer.doCopyProp();
-//		}
 		
 		CheckCanonicalIRVisitor canonVisitor = new CheckCanonicalIRVisitor();
 		CheckConstFoldedIRVisitor constFoldVisitor = new CheckConstFoldedIRVisitor();
@@ -497,6 +481,8 @@ public class IntegrationTests {
 		if(CSE) Optimizer.addCSE();
 		if(CP) Optimizer.addCP();
 		if(INL) Optimizer.addINL();
+		if(COPY) Optimizer.addCOPY();
+		if(DCE) Optimizer.addDCE();
 	}
 	
 	private enum OSType{

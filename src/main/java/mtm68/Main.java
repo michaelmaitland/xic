@@ -101,10 +101,16 @@ public class Main {
 	@Option(name = "-Ocf", usage = "enable constant folding")
 	private boolean doCF;
 	
+	@Option(name = "-Ocopy", usage = "enable copy propagation")
+	private boolean doCOPY;
+	
+	@Option(name = "-Odce", usage = "enable dead code elimination")
+	private boolean doDCE;
+	
 	@Option(name = "-Ocse", usage = "enable common subexpression elimination")
 	private boolean doCSE;
 	
-	@Option(name = "-Ocp", usage = "enable copy propagation")
+	@Option(name = "-Ocp", usage = "enable constant propagation")
 	private boolean doCP;
 	
 	@Option(name = "-Oinl", usage = "enable function inlining")
@@ -233,6 +239,14 @@ public class Main {
 			}
 			if(doCP) {
 				Optimizer.addCP();
+				addAllOpts = false;
+			}
+			if(doCOPY) {
+				Optimizer.addCOPY();
+				addAllOpts = false;
+			}
+			if(doDCE) {
+				Optimizer.addDCE();
 				addAllOpts = false;
 			}
 			if(doINL) {
