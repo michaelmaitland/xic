@@ -143,7 +143,7 @@ public class IRMem extends IRExpr_c {
 	@Override
 	public IRNode decorateContainsExprWithSideEffect(IRContainsExprWithSideEffect irContainsExprWithSideEffect) {
 		IRMem copy = copy();
-		copy.setContainsExprWithSideEffect(expr.doesContainsExprWithSideEffect());
+		copy.setContainsExprWithSideEffect(true);
 		return copy;
 	}
 

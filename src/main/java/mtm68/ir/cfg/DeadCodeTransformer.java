@@ -6,6 +6,7 @@ import java.util.Set;
 
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -81,18 +82,21 @@ public class DeadCodeTransformer {
 		if(!isMove(stmt)) return;
 		IRMove mov = (IRMove)stmt;
 		
-		if(!isTemp(mov.target())) return;
-		IRTemp temp = (IRTemp)mov.target();
+		if(!isTemp(mov.target()) || !isMem(mov.target())) return;
 		
 		if(mov.source().doesContainsExprWithSideEffect()) return;
 
 		Set<LiveVar> liveOut = data.getFlowData().getOut();
 		
-		boolean isAlive = liveOut.stream().anyMatch(l ->  l.a.equals(temp));
+		boolean isAlive = liveOut.stream().anyMatch(l ->  l.a.equals(mov.target()));
 		
 		if(!isAlive) {
 			data.setIR(f.IRSeq());
 		}
+	}
+
+	private boolean isMem(IRNode n) {
+		return n instanceof IRMem;
 	}
 
 	private boolean isTemp(IRNode n) {

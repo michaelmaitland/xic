@@ -7,12 +7,13 @@ import static mtm68.ir.IRTestUtils.cjump;
 import static mtm68.ir.IRTestUtils.constant;
 import static mtm68.ir.IRTestUtils.jump;
 import static mtm68.ir.IRTestUtils.label;
+import static mtm68.ir.IRTestUtils.mem;
 import static mtm68.ir.IRTestUtils.move;
 import static mtm68.ir.IRTestUtils.op;
 import static mtm68.ir.IRTestUtils.ret;
 import static mtm68.ir.IRTestUtils.temp;
-import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
 import static mtm68.util.TestUtils.assertInstanceOf;
+import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory_c;
 import edu.cornell.cs.cs4120.ir.IRReturn;
@@ -50,6 +52,21 @@ public class DeadCodeTests {
 		IRTemp t1 = assertInstanceOfAndReturn(IRTemp.class, m1.target());
 		assertEquals("t1", t1.name());
 
+		assertInstanceOf(IRReturn.class, res.get(1));
+	}
+	
+	@Test
+	void memAccess() throws IOException {
+		
+		List<IRStmt> func = ArrayUtils.elems(
+				move(mem(temp("t1")),  constant(0)),
+				ret(temp("t2"))
+			);
+		List<IRStmt> res = perform(func);
+		
+		assertEquals(2, res.size());
+		IRMove m1 = assertInstanceOfAndReturn(IRMove.class, res.get(0));
+		assertInstanceOf(IRMem.class, m1.target());
 		assertInstanceOf(IRReturn.class, res.get(1));
 	}
 

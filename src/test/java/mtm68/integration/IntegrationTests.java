@@ -164,6 +164,11 @@ public class IntegrationTests {
 	}
 	
 	@Test
+	void testArrOutOfBounds2() {
+		generateAndAssertError("arr_out_of_bounds2.xi", "Out of bounds!");
+	}
+	
+	@Test
 	void testBoolArray() {
 		generateAndAssertOutput("bool_array.xi", "Success!\n");
 	}
