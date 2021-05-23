@@ -62,6 +62,18 @@ The key classes and packages we created or updated for this assignment are the f
 - mtm68.visit.FunctionInliner
     - This class carried out the function inlining at the AST level. It would modify SingleAssign, MultipleAssign, and ProcedureCall nodes to become a sequence of statements that included the function body and appropriate assignments for args and rets.
 
+- mtm68.assem.cfg.AssemCFGBuilder
+    - This class builds control flow graphs from abstract assembly code.
+
+- mtm68.assem.cfg.Graph
+    - This class is used as a data structure for reprsenting directed graphs. It's used in several data flow analyses.
+
+- mtm68.assem.cfg.Liveness
+    - This class performs live variable analysis at the assembly level used for register allocation. 
+
+- mtm68.assem.cfg.RegisterAllocation
+    - This class performs optimal register allocation with move coalescing.
+
 
 ### Code Design ###
 
@@ -75,7 +87,7 @@ The key classes and packages we created or updated for this assignment are the f
 
 - Our transformer classes would take an IR, convert to CFG, get the needed analysis, do the transformation, and convert back to IR. This made it very easy to test since we could pass in IR and assert against the output IR. All the transformations had the same form which makes it easy to read, reason, and add in new transformations.
 
-- **[SCOTT REG ALLOCATION/MOVE COALESCING]**
+- To implement optimal register allocation, we heavily relied on the pseudo-code found in Appel's book. The explanation and code provided in the register allocation chapter was immensely helpful when it came to doing our own implementation. As a result, our implementation is very similar to the one presented in the book adapted to our classes and assembly model.
 
 
 ### Programming ###
@@ -98,10 +110,11 @@ The key classes and packages we created or updated for this assignment are the f
         * Constant prop + tests
         * live vars + tests
         * IRCFGBuilder
-        * Benchmark programs
     - **Bass:**
         * AssemCFGBuilder
         * Register Allocation
+        * Live vars (assem level)
+        * Benchmark programs
 
         
  - We used our previous code for lexing, parsing, typechecking, and code generation. Fortunately, we have been on top of correcting our errors after each assignment so there were very few changes that needed to be made to this code.
