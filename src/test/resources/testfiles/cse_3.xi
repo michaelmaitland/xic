@@ -10,7 +10,7 @@ main(args: int[][]) {
   h : int = (g*b*b*b)/(g+1)
 
   i : int = 0;
-  while(i < 300000000){
+  while(i < 150000000){
 	j : int = (g*b*b*b)/(g+1)
 	z: int = (g*b*b*b) + 2
     i = i + 1
