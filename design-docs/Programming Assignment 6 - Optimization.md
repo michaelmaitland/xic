@@ -118,6 +118,10 @@ When we ran into bugs in our integration tests, we would write a simpler program
 
 It should also be said that we utilized the xth test suite to make sure our output was compliant with the autograder's expectations.
 
+## Benchmarking
+
+In our IntegrationTests, you can see unit tests that are made specifically for our benchmarking (duplicate xi programs were correctly placed in the benchmarks directory). We created 3 per optimization and timed both unoptimized and optimized results. We observed that, in each case, our optimized code had faster performance. The only optimizations we do not have benchmarks for are copy propagation and constant propagation. These two optimizations generally require other optimizations for their potential to be actualized. They create dead code which can be removed by dead code removal to speed up the code. Therefore, we believe isolated benchmarks do not make much sense. 
+
 ## Work plan
 We found the requirements to be fairly parallelizable once we sorted out the foundational design. Scott was able to tackle the register allocation at the assembly level. Mike and Mike diviied up optimizations to complete and worked closely to design the infrastructure surrounding the optimizations.
 

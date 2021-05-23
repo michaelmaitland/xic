@@ -50,6 +50,7 @@ import mtm68.assem.CompUnitAssem;
 import mtm68.assem.RegisterAllocator;
 import mtm68.assem.cfg.RegisterAllocation;
 import mtm68.assem.operand.RealReg;
+import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
@@ -71,9 +72,10 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
+	private static final boolean REG = false;
 	private static final boolean CF = false;
-	private static final boolean INL = false;
-	private static final boolean CSE = true;
+	private static final boolean INL = true;
+	private static final boolean CSE = false;
 	private static final boolean CP = false;
 	private static final boolean COPY = false;
 	private static final boolean DCE = false;
@@ -272,20 +274,21 @@ public class IntegrationTests {
 		generateAndAssertOutput("register_pressure.xi", "351");
 	}
 	
-	//2.330 vs 0.429
+	//2.625 vs 0.725
 	@Test
 	@Disabled
 	void testCSE1Benchmark() {
 		generateAndAssertOutput("cse_1.xi", "");
 	}
 	
-	//2.864 vs 1.035
+	//2.800 vs 1.905
 	@Test
+	@Disabled
 	void testCSE2Benchmark() {
 		generateAndAssertOutput("cse_2.xi", "");
 	}
 	
-	//2.391 vs 0.199
+	//2.485 vs 0.428
 	@Test
 	@Disabled
 	void testCSE3Benchmark() {
@@ -298,21 +301,21 @@ public class IntegrationTests {
 		generateAndAssertOutput("dce_1.xi", "");
 	}
 	
-	//1.430 vs 0.326
+	//2.441 vs 1.148
 	@Test
 	@Disabled
 	void testINL1Benchmark() {
 		generateAndAssertOutput("inl_1.xi", "2");
 	}
 	
-	//1.523 vs 0.355
+	//2.689 vs 1.066
 	@Test
 	@Disabled
 	void testINL2Benchmark() {
 		generateAndAssertOutput("inl_2.xi", "");
 	}
 	
-	//1.417 vs 0.355
+	//2.417 vs 1.194
 	@Test
 	@Disabled
 	void testINL3Benchmark() {
@@ -379,8 +382,8 @@ public class IntegrationTests {
 //		System.out.println(tiled.getAssem());
 		
 //		RegisterAllocator regAllocator = new TrivialRegisterAllocator();
-		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
-
+		RegisterAllocator regAllocator = REG ? new RegisterAllocation(RealReg.COLORS)
+			: new TrivialRegisterAllocator();
 		
 //		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
 		CompUnitAssem program = (CompUnitAssem) tiled.getAssem();
