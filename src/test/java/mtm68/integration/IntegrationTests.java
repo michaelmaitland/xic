@@ -50,6 +50,7 @@ import mtm68.assem.CompUnitAssem;
 import mtm68.assem.RegisterAllocator;
 import mtm68.assem.cfg.RegisterAllocation;
 import mtm68.assem.operand.RealReg;
+import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
 import mtm68.exception.SemanticException;
@@ -71,6 +72,7 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
+	private static final boolean REG = true;
 	private static final boolean CF = false;
 	private static final boolean INL = false;
 	private static final boolean CSE = true;
@@ -379,8 +381,8 @@ public class IntegrationTests {
 //		System.out.println(tiled.getAssem());
 		
 //		RegisterAllocator regAllocator = new TrivialRegisterAllocator();
-		RegisterAllocator regAllocator = new RegisterAllocation(RealReg.COLORS);
-
+		RegisterAllocator regAllocator = REG ? new RegisterAllocation(RealReg.COLORS)
+			: new TrivialRegisterAllocator();
 		
 //		return regAllocator.allocate((CompUnitAssem) tiled.getAssem());
 		CompUnitAssem program = (CompUnitAssem) tiled.getAssem();
