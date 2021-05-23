@@ -72,13 +72,13 @@ public class IntegrationTests {
 	private static final int BUFFER_SIZE = 1024;
 	private static final String ASSEM_PATH = "src/test/resources/runtime/release";
 	
-	private static final boolean REG = false;
-	private static final boolean CF = false;
+	private static final boolean REG = true;
+	private static final boolean CF = true;
 	private static final boolean INL = true;
-	private static final boolean CSE = false;
-	private static final boolean CP = false;
-	private static final boolean COPY = false;
-	private static final boolean DCE = false;
+	private static final boolean CSE = true;
+	private static final boolean CP = true;
+	private static final boolean COPY = true;
+	private static final boolean DCE = true;
 
 	@BeforeEach
 	void setUpFileUtils() {

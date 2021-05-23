@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRMove;
@@ -151,6 +152,9 @@ public class AvailableCopies {
 
 		if (hasXGetsEForm(ir)) {
 			return killXGetsE((IRMove)ir, l);
+			
+		} else if(ir instanceof  IRCallStmt) {
+			return l;
 
 		} else {
 			return SetUtils.empty();
