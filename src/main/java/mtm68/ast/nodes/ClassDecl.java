@@ -1,0 +1,104 @@
+package mtm68.ast.nodes;
+
+import java.util.List;
+
+import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.Type;
+import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.TypeChecker;
+import mtm68.visit.Visitor;
+
+public class ClassDecl extends Node {
+	
+	private String id;
+	private Type superType;
+	private List<FunctionDecl> methodDecls;
+
+	public ClassDecl(String id, Type superType, List<FunctionDecl> methodDecls) {
+		this.id = id;
+		this.superType = superType;
+		this.methodDecls = methodDecls;
+	}
+	
+	public ClassDecl(String id, List<FunctionDecl> methodDecls) {
+		this.id = id;
+		this.methodDecls= methodDecls;
+	}
+
+	public String getId() {
+		return id;
+	}
+	
+	@Override
+	public String toString() {
+		return "ClassDecl [id=" + id + ", superType=" + superType 
+				+ ", methodDecls=" + methodDecls + "]";
+	}
+
+	@Override
+	public void prettyPrint(SExpPrinter p) {
+		p.printAtom(id);
+		
+		// Super Type
+		p.printAtom(superType.getPP());
+
+		// Methods
+		p.startList();
+		for(FunctionDecl m : methodDecls) m.prettyPrint(p);
+		p.endList(); 
+	}
+	
+	@Override
+	public Node visitChildren(Visitor v) {
+		List<FunctionDecl> newMethodDecls = acceptList(this.methodDecls, v);
+
+		if(newMethodDecls != methodDecls) {
+			ClassDecl decl = copy();
+			decl.methodDecls = newMethodDecls;
+			return decl;
+		} 
+
+		return this;
+	}
+
+	@Override
+	public Node typeCheck(TypeChecker tc) {
+		// TODO
+		return this;
+	}
+	
+	@Override
+	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		// TODO
+		return this;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ClassDecl other = (ClassDecl) obj;
+		if (methodDecls == null) {
+			if (other.methodDecls!= null)
+				return false;
+		} else if (!methodDecls.equals(other.methodDecls))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (superType == null) {
+			if (other.superType!= null)
+				return false;
+		} else if (!superType.equals(other.superType))
+			return false;
+
+		return true;
+	}
+}
