@@ -2,6 +2,10 @@ package mtm68.lexer;
 
 public enum TokenType {
 	// Reserved
+	CLASS,
+	EXTENDS,
+	THIS,
+	NEW,
 	USE,
 	IF,
 	WHILE,

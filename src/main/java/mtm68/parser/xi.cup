@@ -64,6 +64,12 @@ terminal OPEN_SQUARE, CLOSE_SQUARE, OPEN_PAREN, CLOSE_PAREN, OPEN_CURLY, CLOSE_C
 	EXCLAMATION, COLON, SEMICOLON, COMMA, EQ, UNDERSCORE;
 terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, OR, UMINUS; 
 
+// May change to become nonterminals later, but required to define them as either
+// a terminal or nonterminal to get SourceFileLexerTests to work since
+// TokenFactory.newToken() makes a call to TokenTypeToSymConverter.convert().
+// The sym for these new keywords don't exist unless defined in this file.
+terminal CLASS, EXTENDS, THIS, NEW;
+
 // You might want to add types to these declarations.
 nonterminal Program prog;
 nonterminal Root top;
