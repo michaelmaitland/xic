@@ -28,14 +28,12 @@ public class InterfaceBody extends Node {
 		this(ArrayUtils.empty(), ArrayUtils.empty());
 	}
 	
-	public InterfaceBody addFunctionDecl(FunctionDecl fDecl) {
+	public void addFunctionDecl(FunctionDecl fDecl) {
 		functionDecls.add(fDecl);
-		return this;
 	}
 
-	public InterfaceBody addClassDecl(ClassDecl cDecl) {
+	public void addClassDecl(ClassDecl cDecl) {
 		classDecls.add(cDecl);
-		return this;
 	}
 
 	public List<FunctionDecl> getFunctionDecls() {

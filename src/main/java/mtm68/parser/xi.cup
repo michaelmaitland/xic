@@ -144,8 +144,8 @@ interface ::= use_star:us fdecl_or_cdecl_star:fcs {: RESULT = new Interface(us, 
 ;
     
 fdecl_or_cdecl_star ::= /* epsilon */ {: RESULT = new InterfaceBody(); :}
-    | fdecl_or_cdecl_star:fcs fdecl:fd {: RESULT = fcs.addFunctionDecl(fd); :}
-    | fdecl_or_cdecl_star:fcs cdecl:cd {: RESULT = fcs.addClassDecl(cd); :}
+    | fdecl_or_cdecl_star:fcs fdecl:fd {: RESULT = fcs; fcs.addFunctionDecl(fd); :}
+    | fdecl_or_cdecl_star:fcs cdecl:cd {: RESULT = fcs; fcs.addClassDecl(cd); :}
     ;
 
 use ::= USE ID:id opt_semi {: RESULT = new Use(id); :}
