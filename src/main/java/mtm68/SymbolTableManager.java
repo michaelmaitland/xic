@@ -71,7 +71,7 @@ public class SymbolTableManager {
 	public void generateSymbolTableFromAST(String useId, Interface root) {
 		Map<String, FunctionDecl> symTable = new HashMap<>();
 		
-		for(FunctionDecl decl : root.getFunctionDecls())
+		for(FunctionDecl decl : root.getBody().getFunctionDecls())
 			symTable.put(decl.getId(), decl);
 		
 		useIdToSymTable.put(useId, symTable);

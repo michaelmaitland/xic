@@ -4,7 +4,6 @@ import java.util.List;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -12,10 +11,10 @@ import mtm68.visit.Visitor;
 public class ClassDecl extends Node {
 	
 	private String id;
-	private Type superType;
+	private String superType;
 	private List<FunctionDecl> methodDecls;
 
-	public ClassDecl(String id, Type superType, List<FunctionDecl> methodDecls) {
+	public ClassDecl(String id, String superType, List<FunctionDecl> methodDecls) {
 		this.id = id;
 		this.superType = superType;
 		this.methodDecls = methodDecls;
@@ -30,6 +29,14 @@ public class ClassDecl extends Node {
 		return id;
 	}
 	
+	public String getSuperType() {
+		return superType;
+	}
+
+	public List<FunctionDecl> getMethodDecls() {
+		return methodDecls;
+	}
+
 	@Override
 	public String toString() {
 		return "ClassDecl [id=" + id + ", superType=" + superType 
@@ -41,7 +48,7 @@ public class ClassDecl extends Node {
 		p.printAtom(id);
 		
 		// Super Type
-		p.printAtom(superType.getPP());
+		p.printAtom(superType);
 
 		// Methods
 		p.startList();
