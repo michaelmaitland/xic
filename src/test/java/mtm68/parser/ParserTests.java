@@ -30,6 +30,7 @@ import static mtm68.lexer.TokenType.STRING;
 import static mtm68.lexer.TokenType.SUB;
 import static mtm68.lexer.TokenType.TRUE;
 import static mtm68.lexer.TokenType.UNDERSCORE;
+import static mtm68.lexer.TokenType.USE;
 import static mtm68.lexer.TokenType.WHILE;
 import static mtm68.lexer.TokenType.XI;
 import static mtm68.util.ArrayUtils.concat;
@@ -156,7 +157,7 @@ public class ParserTests {
 	
 	@Test
 	void interfaceWithSingleClassDeclNoSuper() throws Exception {
-		// f(a:int):bool[]
+		// class A {}
 		List<Token> tokens = elems(
 				token(CLASS),
 				token(ID, "A"),
@@ -173,8 +174,8 @@ public class ParserTests {
 	}	
 
 	@Test
-	void interfaceWithSingleClassDeclWithSUper() throws Exception {
-		// f(a:int):bool[]
+	void interfaceWithSingleClassDeclWithSuper() throws Exception {
+		// class A extends B {}
 		List<Token> tokens = elems(
 				token(CLASS),
 				token(ID, "A"),
@@ -194,7 +195,9 @@ public class ParserTests {
 	
 	@Test
 	void interfaceWithSingleClassDeclWithMethod() throws Exception {
-		// f(a:int):bool[]
+		// class A {
+		//   f(a:int):bool[]
+		// }
 		List<Token> tokens = elems(
 				token(CLASS),
 				token(ID, "A"),
@@ -226,7 +229,10 @@ public class ParserTests {
 	
 	@Test
 	void interfaceWithSingleClassDeclWithMultipleMethods() throws Exception {
-		// f(a:int):bool[]
+		// class A {
+		//   f(a:int):bool[]
+		//   g(a:int):int, bool
+		// }
 		List<Token> tokens = elems(
 				token(CLASS),
 				token(ID, "A"),
@@ -262,6 +268,136 @@ public class ParserTests {
 		assertEquals(2, declTwo.getReturnTypes().size());
 		assertEquals(0, declTwo.getArgs().size());
 	}	
+	
+	//-------------------------------------------------------------------------------- 
+	//- Interface
+	//-------------------------------------------------------------------------------- 
+	@Test
+	void interfaceSingleUse() throws Exception {
+		// use A
+		List<Token> tokens = elems(
+				token(USE),
+				token(ID, "A")
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getUses().size());
+	} 
+	
+	@Test
+	void interfaceMultipleUse() throws Exception {
+		// use A;
+		// use B
+		List<Token> tokens = elems(
+				token(USE),
+				token(ID, "A"),
+				token(SEMICOLON),
+				token(USE),
+				token(ID, "B")
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(2, i.getUses().size());
+	} 
+	
+	@Test
+	void interfaceFunctionAndClass() throws Exception {
+		// f(a:int):bool[]
+		// class A{}
+		List<Token> tokens = elems(
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		assertEquals(1, i.getBody().getFunctionDecls().size());
+	} 
+	
+	@Test
+	void interfaceClassAndFunction() throws Exception {
+		// class A {}
+		// f(a:int):bool[]
+		List<Token> tokens = elems(
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		assertEquals(1, i.getBody().getFunctionDecls().size());
+	} 
+	
+	@Test
+	void interfaceUseClassAndFunctionMedley() throws Exception {
+		// use A;
+		// use B;
+		// class A {}
+		// f(a:int):bool[]
+		// class C
+		// g(a:int):int[]
+		List<Token> tokens = elems(
+				token(USE),
+				token(ID, "A"),
+				token(SEMICOLON),
+				token(USE),
+				token(ID, "B"),
+				token(SEMICOLON),
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(CLASS),
+				token(ID, "B"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(CLASS),
+				token(ID, "C"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(ID, "g"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(INT)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(3, i.getBody().getClassDecls().size());
+		assertEquals(2, i.getBody().getFunctionDecls().size());
+	} 
 
 	//-------------------------------------------------------------------------------- 
 	//- Assign Statement 

@@ -22,6 +22,14 @@ public class Interface extends Node implements Root {
 		this.body = body;
 	}
 
+	public List<Use> getUses() {
+		return uses;
+	}
+	
+	public InterfaceBody getBody() {
+		return body;
+	}
+
 	@Override
 	public String toString() {
 		return "Interface [uses=" + uses + ", body=" + body + "]";
@@ -67,9 +75,5 @@ public class Interface extends Node implements Root {
 	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory inf) {
 		// TODO
 		return this;
-	}
-
-	public InterfaceBody getBody() {
-		return body;
 	}
 }
