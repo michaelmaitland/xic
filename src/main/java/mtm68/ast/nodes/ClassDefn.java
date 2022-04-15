@@ -1,7 +1,5 @@
 package mtm68.ast.nodes;
 
-import java.util.List;
-
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -10,55 +8,53 @@ import mtm68.visit.Visitor;
 
 public class ClassDefn extends Node {
 	
-	private ClassDecl classDecl;
-//	private ClassDefn superDefn; // TODO: do we need this? We shall see.
-	private List<FunctionDefn> methodDefns;
-	private List<Var> fields;
+	private String id;
+	private String superType;
+	private ClassBody body;
 	
-	public ClassDefn(ClassDecl classDecl, List<FunctionDefn> methodDefns,
-			List<Var> fields) {
-		this.classDecl = classDecl;
-		this.methodDefns = methodDefns;
-		this.fields = fields;
+	public ClassDefn(String id, String superType, ClassBody body) {
+		this.id = id;
+		this.superType = superType;
+		this.body = body;
+	}
+	
+	public ClassDefn(String id, ClassBody body) {
+		this(id, null, body);
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getSuperType() {
+		return superType;
+	}
+
+	public ClassBody getBody() {
+		return body;
 	}
 
 	@Override
 	public String toString() {
-		return "ClassDefn [classDecl=" + classDecl+ ", methodDefns=" + methodDefns 
-				+ ", fields=" + fields + "]";
+		return "ClassDefn [id=" + id + ", superType=" + superType + ", body=" + body + "]";
 	}
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startList();
-		classDecl.prettyPrint(p);
-		
-		// Method Definitions
-		p.startList();
-		for(FunctionDefn methodDefn : methodDefns) methodDefn.prettyPrint(p);
-		p.endList();
-
-		// Fields
-		p.startList();
-		for(Var field : fields) field.prettyPrint(p);
-		p.endList();
-
+		p.printAtom(id);
+		p.printAtom(superType);
+		body.prettyPrint(p);
 		p.endList();
 	}
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		ClassDecl newClassDecl = classDecl.accept(v);
-		List<FunctionDefn> newMethodDefns = acceptList(methodDefns, v);
-		List<Var> newFields = acceptList(fields, v);
+		ClassBody newBody = body.accept(v);
 		
-		if(newClassDecl!= classDecl 
-		|| newMethodDefns != methodDefns 
-		|| newFields != fields) {
+		if(newBody != body) {
 			ClassDefn defn = copy();
-			defn.classDecl = newClassDecl;
-			defn.methodDefns = newMethodDefns;
-			defn.fields = newFields;
+			defn.body = newBody;
 			return defn;
 		}
 		return this;

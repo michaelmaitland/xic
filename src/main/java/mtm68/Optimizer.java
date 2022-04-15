@@ -2,7 +2,6 @@ package mtm68;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,14 +10,11 @@ import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRNode;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.visit.IRConstantFolder;
-import mtm68.assem.cfg.Graph;
 import mtm68.ast.nodes.Program;
 import mtm68.ir.cfg.CSETransformer;
 import mtm68.ir.cfg.ConstantPropTransformer;
 import mtm68.ir.cfg.CopyPropTransformer;
 import mtm68.ir.cfg.DeadCodeTransformer;
-import mtm68.ir.cfg.IRCFGBuilder;
-import mtm68.ir.cfg.IRCFGBuilder.IRData;
 import mtm68.util.FileUtils;
 import mtm68.util.SetUtils;
 import mtm68.visit.FunctionInliner;
@@ -38,7 +34,7 @@ public class Optimizer {
 		for(SupportedOpt opt : opts) {
 			switch(opt) {
 			case INL:
-				FunctionInliner fl = new FunctionInliner(program.getFunctionDefns());
+				FunctionInliner fl = new FunctionInliner(program.getBody().getFunctionDefns());
 				program = program.accept(fl);
 				break;
 			default:

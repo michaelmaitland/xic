@@ -46,7 +46,7 @@ public class InterfaceBody extends Node {
 
 	@Override
 	public String toString() {
-		return "Interface [fDecls=" + functionDecls + ", cDecls=" + classDecls + "]";
+		return "InterfaceBody [fDecls=" + functionDecls + ", cDecls=" + classDecls + "]";
 	}
 
 	@Override

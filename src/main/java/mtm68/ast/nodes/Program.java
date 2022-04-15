@@ -15,25 +15,30 @@ import mtm68.visit.Visitor;
 public class Program extends Node implements Root {
 	
 	private List<Use> useStmts;
-	private List<FunctionDefn> functionDefns;
+	private ProgramBody body;
 	private IRCompUnit irCompUnit;
 
+	public Program(List<Use> useStmts, ProgramBody body) {
+		this.useStmts = useStmts;
+		this.body = body;
+	}
+	
 	public Program(List<Use> useStmts, List<FunctionDefn> fDefns) {
 		this.useStmts = useStmts;
-		this.functionDefns = fDefns;
+		this.body = new ProgramBody(fDefns, null);
 	}
 
 	public List<Use> getUseStmts() {
 		return useStmts;
 	}
 	
-	public List<FunctionDefn> getFunctionDefns() {
-		return functionDefns;
+	public ProgramBody getBody() {
+		return body;
 	}
 
 	@Override
 	public String toString() {
-		return "Program [useStmts=" + useStmts + ", fDefns=" + functionDefns + "]";
+		return "Program [useStmts=" + useStmts + ", body=" + body+ "]";
 	}
 	
 	public IRCompUnit getIrCompUnit() {
@@ -49,11 +54,7 @@ public class Program extends Node implements Root {
 		for(Use use : useStmts) use.prettyPrint(p);
 		p.endList();
 		
-		// Func Decls
-		
-		p.startUnifiedList();
-		for(FunctionDefn defn : functionDefns) defn.prettyPrint(p);
-		p.endList();
+		body.prettyPrint(p);
 		
 		p.endList();
 	}
@@ -61,12 +62,12 @@ public class Program extends Node implements Root {
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<Use> newUseStmts = acceptList(useStmts, v);
-		List<FunctionDefn> newFunctionDefns = acceptList(functionDefns, v);
+		ProgramBody newBody = body.accept(v);
 
-		if(newUseStmts != useStmts || newFunctionDefns != functionDefns) {
+		if(newUseStmts != useStmts || newBody != body) {
 			Program prog = copy();
 			prog.useStmts = newUseStmts;
-			prog.functionDefns = newFunctionDefns;
+			prog.body = newBody;
 			return prog;
 		} 
 		return this;
@@ -79,7 +80,7 @@ public class Program extends Node implements Root {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		Map<String, IRFuncDefn> irFuncDefns = functionDefns.stream()
+		Map<String, IRFuncDefn> irFuncDefns = body.getFunctionDefns().stream()
 			.map(FunctionDefn::getIRFuncDefn)
 			.collect(Collectors.toMap(IRFuncDefn::name, v -> v));
 

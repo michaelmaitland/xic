@@ -72,14 +72,13 @@ terminal CLASS, EXTENDS, THIS, NEW;
 
 // You might want to add types to these declarations.
 nonterminal Program prog;
+nonterminal ProgramBody fdefn_or_cdefn_plus;
 nonterminal Root top;
 nonterminal Interface interface;
 nonterminal InterfaceBody fdecl_or_cdecl_star;
 nonterminal Use use;
 nonterminal List<Use> use_star;
 nonterminal List<FunctionDecl> fdecl_star;
-nonterminal List<FunctionDefn> fdefn_plus;
-nonterminal List<FunctionDefn> fdefn_star;
 nonterminal Expr exp;
 nonterminal Expr exp0;
 nonterminal FExpr fexp;
@@ -104,6 +103,8 @@ nonterminal List<Type> f_type;
 nonterminal FunctionDecl fdecl;
 nonterminal FunctionDefn fdefn;
 nonterminal ClassDecl cdecl;
+nonterminal ClassDefn cdefn;
+nonterminal ClassBody decl_or_fdefn_star;
 nonterminal Statement stmt;
 nonterminal Statement stmt_semi;
 nonterminal List<Statement> stmt_list;
@@ -137,17 +138,12 @@ top ::= XI prog:p       {: RESULT = p; :}
     | IXI interface:i   {: RESULT = i; :}
     ;
 
-prog ::= use_star:us fdefn_plus:ds   {: RESULT = new Program(us, ds); :}
+prog ::= use_star:us fdefn_or_cdefn_plus:ds   {: RESULT = new Program(us, ds); :}
 ;
 
 interface ::= use_star:us fdecl_or_cdecl_star:fcs {: RESULT = new Interface(us, fcs); :}
 ;
     
-fdecl_or_cdecl_star ::= /* epsilon */ {: RESULT = new InterfaceBody(); :}
-    | fdecl_or_cdecl_star:fcs fdecl:fd {: RESULT = fcs; fcs.addFunctionDecl(fd); :}
-    | fdecl_or_cdecl_star:fcs cdecl:cd {: RESULT = fcs; fcs.addClassDecl(cd); :}
-    ;
-
 use ::= USE ID:id opt_semi {: RESULT = new Use(id); :}
 ;
 
@@ -159,12 +155,16 @@ fdecl_star ::= /* epsilon */   {: RESULT = ArrayUtils.empty(); :}
     | fdecl_star:ds fdecl:d    {: RESULT = ArrayUtils.append(ds, d); :}
     ;
     
-fdefn_plus ::= fdefn:d        {: RESULT = ArrayUtils.singleton(d); :}
-    | fdefn_plus:ds fdefn:d   {: RESULT = ArrayUtils.append(ds, d); :}
+fdefn_or_cdefn_plus ::= cdefn:cd       {: RESULT = ProgramBody.withClassDefn(cd); :}
+    | fdefn:fd                         {: RESULT = ProgramBody.withFunctionDefn(fd); :}
+    | fdefn_or_cdefn_plus:fcp fdefn:fd {: RESULT = fcp; fcp.addFunctionDefn(fd); :}
+    | fdefn_or_cdefn_plus:fcp cdefn:cd {: RESULT = fcp; fcp.addClassDefn(cd); :}
     ;
-    
-//fdefn_star ::= /* epsilon */  {: RESULT = ArrayUtils.empty(); :}
-//   | fdefn_star:ds fdefn:d   {: RESULT = ArrayUtils.append(ds, d); :}
+
+fdecl_or_cdecl_star ::= /* epsilon */  {: RESULT = new InterfaceBody(); :}
+    | fdecl_or_cdecl_star:fcs fdecl:fd {: RESULT = fcs; fcs.addFunctionDecl(fd); :}
+    | fdecl_or_cdecl_star:fcs cdecl:cd {: RESULT = fcs; fcs.addClassDecl(cd); :}
+    ;
 
 exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
     | exp:e1 AND exp:e2            {: RESULT = new And(e1, e2); :}
@@ -301,12 +301,22 @@ f_type ::= /* epsilon */   {: RESULT = ArrayUtils.empty(); :}
 fdecl ::= ID:id OPEN_PAREN decl_list:args CLOSE_PAREN f_type:rets  {: RESULT = new FunctionDecl(id, args, rets); :}
 ;
 
+fdefn ::= fdecl:d block:b  {: RESULT = new FunctionDefn(d, b); :}
+;
+
 cdecl ::= CLASS ID:a OPEN_CURLY fdecl_star:fd CLOSE_CURLY  {: RESULT = new ClassDecl(a, fd); :}
     | CLASS ID:a EXTENDS ID:b OPEN_CURLY fdecl_star:fd CLOSE_CURLY {: RESULT = new ClassDecl(a, b, fd); :}
     ;
 
-fdefn ::= fdecl:d block:b  {: RESULT = new FunctionDefn(d, b); :}
-;
+cdefn ::= CLASS ID:a OPEN_CURLY decl_or_fdefn_star:df CLOSE_CURLY {: RESULT = new ClassDefn(a, df); :}
+    |  CLASS ID:a EXTENDS ID:b OPEN_CURLY decl_or_fdefn_star:df CLOSE_CURLY {: RESULT = new ClassDefn(a, b, df); :}
+    ;
+    
+decl_or_fdefn_star ::= /* epsilon */	  {: RESULT = new ClassBody(); :}
+    | decl_or_fdefn_star:df decl:d		  {: RESULT = df; df.addField(d); :}
+    | decl_or_fdefn_star:df ext_decl:d	  {: RESULT = df; df.addField(d); :}
+    | decl_or_fdefn_star:df fdefn:f       {: RESULT = df; df.addMethod(f); :}
+    ;
 
 stmt ::= assignment:s               {: RESULT = s; :}
     | IF exp:e stmt:s               {: RESULT = new If(e, s); :}
