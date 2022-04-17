@@ -68,7 +68,7 @@ terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, 
 // a terminal or nonterminal to get SourceFileLexerTests to work since
 // TokenFactory.newToken() makes a call to TokenTypeToSymConverter.convert().
 // The sym for these new keywords don't exist unless defined in this file.
-terminal CLASS, EXTENDS, THIS, NEW;
+terminal CLASS, EXTENDS, THIS, NEW, DOT;
 
 // You might want to add types to these declarations.
 nonterminal Program prog;
@@ -193,7 +193,7 @@ exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
     | CHARACTER:c                  {: RESULT = new CharLiteral(c); :}
     | STRING:s                     {: RESULT = new StringLiteral(s); :}
     | LENGTH OPEN_PAREN exp:e CLOSE_PAREN {: RESULT = new ArrayLength(e); :}
-    | NEW exp:e                    {: RESULT = new New(e); :}
+    | NEW ID:id DOT fexp:e         {: RESULT = new New(id, e); :}
     ;
 
 fexp ::= ID:id OPEN_PAREN exp_star:args CLOSE_PAREN     {: RESULT = new FExpr(id, args); :} 

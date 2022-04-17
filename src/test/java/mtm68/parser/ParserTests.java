@@ -9,6 +9,7 @@ import static mtm68.lexer.TokenType.CLOSE_SQUARE;
 import static mtm68.lexer.TokenType.COLON;
 import static mtm68.lexer.TokenType.COMMA;
 import static mtm68.lexer.TokenType.DIV;
+import static mtm68.lexer.TokenType.DOT;
 import static mtm68.lexer.TokenType.ELSE;
 import static mtm68.lexer.TokenType.EOF;
 import static mtm68.lexer.TokenType.EQ;
@@ -21,6 +22,7 @@ import static mtm68.lexer.TokenType.IXI;
 import static mtm68.lexer.TokenType.LT;
 import static mtm68.lexer.TokenType.MOD;
 import static mtm68.lexer.TokenType.MULT;
+import static mtm68.lexer.TokenType.NEW;
 import static mtm68.lexer.TokenType.OPEN_CURLY;
 import static mtm68.lexer.TokenType.OPEN_PAREN;
 import static mtm68.lexer.TokenType.OPEN_SQUARE;
@@ -57,6 +59,7 @@ import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Negate;
+import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.StringLiteral;
 import mtm68.ast.nodes.Var;
@@ -1317,6 +1320,50 @@ public class ParserTests {
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getFields().size());
 		assertEquals(1, defn.getBody().getMethodDefns().size());
+	}
+	
+	
+	   //--------------------------------------------------------------------------------
+	   //- new keyword
+	   //--------------------------------------------------------------------------------
+	
+	
+	@Test
+	void singleAssignNew() throws Exception {
+	    // x = new A.init()
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(EQ),
+				token(NEW),
+				token(ID, "A"),
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+	
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(Var.class, assignStmt.getLhs());
+		assertInstanceOf(New.class, assignStmt.getRhs());
+	}
+	
+	@Test
+	void returnNew() throws Exception {
+		// return new A.init()
+		List<Token> tokens = elems(
+				token(RETURN), 
+				token(NEW), 
+				token(ID, "A"), 
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+
+		Optional<Return> retStmt = returnStatement(prog);
+		assertTrue(retStmt.isPresent());
+		assertEquals(1, retStmt.get().getRetList().size());
+	    assertInstanceOf(New.class, retStmt.get().getRetList().get(0));
 	}
 	
 	private void assertSyntaxError(TokenType expected, ParserError actual) {

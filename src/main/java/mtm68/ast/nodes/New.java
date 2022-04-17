@@ -6,32 +6,36 @@ import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
-public class New extends UnExpr {
+public class New extends Expr {
+	
+	private String className;
+	private FExpr fExpr;
 
-	public New(Expr expr) {
-		super(expr);
+	public New(String className, FExpr fExpr) {
+		this.className = className;
+		this.fExpr = fExpr;
 	}
 	
 	@Override
 	public String toString() {
-		return "(new " + expr.toString() + ")";
+		return "new " + className + fExpr.toString() + "";
 	}
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startList();
-		p.printAtom("new");
-		expr.prettyPrint(p);
+		p.printAtom("new " + className);
+		fExpr.prettyPrint(p);
 		p.endList();
 	}
 
 	@Override
 	public Node visitChildren(Visitor v) {
-		Expr newExpr = expr.accept(v);
-		if (newExpr != expr) {
-			New newNot = copy();
-			newNot.expr = newExpr;
-			return newNot;
+		FExpr newFExpr = fExpr.accept(v);
+		if (newFExpr != fExpr) {
+			New newNew = copy();
+			newNew.fExpr = newFExpr;
+			return newNew;
         } else {
             return this; 
         }	

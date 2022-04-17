@@ -36,6 +36,7 @@ public enum TokenType {
 	COMMA(","),
     EQ("="),
     UNDERSCORE("_"),
+    DOT("."),
 	
 	// Operators
 	ADD("+"),

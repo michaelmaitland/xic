@@ -32,6 +32,7 @@ public class sym {
   public static final int IF = 9;
   public static final int EXCLAMATION = 24;
   public static final int THIS = 47;
+  public static final int DOT = 49;
   public static final int ID = 2;
   public static final int EOF = 0;
   public static final int RETURN = 12;
@@ -106,7 +107,8 @@ public class sym {
   "CLASS",
   "EXTENDS",
   "THIS",
-  "NEW"
+  "NEW",
+  "DOT"
   };
 }
 
