@@ -30,6 +30,7 @@ import static mtm68.lexer.TokenType.RETURN;
 import static mtm68.lexer.TokenType.SEMICOLON;
 import static mtm68.lexer.TokenType.STRING;
 import static mtm68.lexer.TokenType.SUB;
+import static mtm68.lexer.TokenType.THIS;
 import static mtm68.lexer.TokenType.TRUE;
 import static mtm68.lexer.TokenType.UNDERSCORE;
 import static mtm68.lexer.TokenType.USE;
@@ -62,6 +63,7 @@ import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.StringLiteral;
+import mtm68.ast.nodes.This;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.ast.nodes.binary.LessThan;
@@ -1322,6 +1324,33 @@ public class ParserTests {
 		assertEquals(1, defn.getBody().getMethodDefns().size());
 	}
 	
+	@Test
+	void testClassDefnReturnThis() throws Exception{
+		// Class A { f() { return this } }
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(ID, "f"),
+ 				token(OPEN_PAREN),
+ 				token(CLOSE_PAREN),
+ 				token(OPEN_CURLY),
+ 				token(RETURN),
+ 				token(THIS),
+ 				token(CLOSE_CURLY),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+		
+		Optional<Return> retStmt = firstClassReturnStatement(prog); 
+		assertTrue(retStmt.isPresent());
+		assertEquals(1, retStmt.get().getRetList().size());
+	    assertInstanceOf(This.class, retStmt.get().getRetList().get(0));
+	}
 	
 	//--------------------------------------------------------------------------------
 	//- new keyword
@@ -1400,6 +1429,15 @@ public class ParserTests {
 
 	private Optional<Return> returnStatement(Program program) {
 		return program.getBody().getFunctionDefns().get(0).getBody().getReturnStmt();
+	}
+	
+	private Optional<Return> firstClassReturnStatement(Program program) {
+		return program.getBody()
+			.getClassDefns()
+			.get(0).getBody()
+			.getMethodDefns()
+			.get(0).getBody()
+			.getReturnStmt();
 	}
 
 	private Expr firstExp(Program program) {
