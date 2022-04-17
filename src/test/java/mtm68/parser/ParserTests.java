@@ -1323,10 +1323,9 @@ public class ParserTests {
 	}
 	
 	
-	   //--------------------------------------------------------------------------------
-	   //- new keyword
-	   //--------------------------------------------------------------------------------
-	
+	//--------------------------------------------------------------------------------
+	//- new keyword
+	//--------------------------------------------------------------------------------
 	
 	@Test
 	void singleAssignNew() throws Exception {
@@ -1364,6 +1363,27 @@ public class ParserTests {
 		assertTrue(retStmt.isPresent());
 		assertEquals(1, retStmt.get().getRetList().size());
 	    assertInstanceOf(New.class, retStmt.get().getRetList().get(0));
+	}
+	
+	@Test
+	void procedureCallNewArg() throws Exception {
+		// f(new A.init()) 
+		List<Token> tokens = elems(
+				token(ID, "f"), 
+				token(OPEN_PAREN), 
+				token(NEW),
+				token(ID, "A"), 
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+
+		ProcedureCall fc = assertInstanceOfAndReturn(ProcedureCall.class, firstStatement(prog));
+		List<Expr> args = fc.getFexp().getArgs(); 
+		assertEquals(1, args.size());
+		assertInstanceOf(New.class, args.get(0));
 	}
 	
 	private void assertSyntaxError(TokenType expected, ParserError actual) {
