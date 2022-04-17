@@ -68,7 +68,7 @@ terminal ADD, SUB, MULT, DIV, MOD, HIGH_MULT, LT, LEQ, GT, GEQ, EQEQ, NEQ, AND, 
 // a terminal or nonterminal to get SourceFileLexerTests to work since
 // TokenFactory.newToken() makes a call to TokenTypeToSymConverter.convert().
 // The sym for these new keywords don't exist unless defined in this file.
-terminal CLASS, EXTENDS, THIS, NEW;
+terminal CLASS, EXTENDS, THIS, NEW, DOT;
 
 // You might want to add types to these declarations.
 nonterminal Program prog;
