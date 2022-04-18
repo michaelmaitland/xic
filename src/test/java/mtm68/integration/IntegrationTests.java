@@ -20,7 +20,6 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -51,8 +50,9 @@ import mtm68.assem.RegisterAllocator;
 import mtm68.assem.cfg.RegisterAllocation;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.visit.TrivialRegisterAllocator;
-import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Program;
+import mtm68.ast.symbol.ProgramSymbols;
+import mtm68.ast.symbol.SymbolTable;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
@@ -63,8 +63,8 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
-import mtm68.visit.SymbolCollector;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.TypeChecker;
 
 public class IntegrationTests {
@@ -499,16 +499,16 @@ public class IntegrationTests {
 		
 		// TYPECHECK
 		SymbolTableManager symTableManager = new SymbolTableManager(libPath);
-		Map<String, FunctionDecl> libFuncTable = symTableManager.mergeSymbolTables((Program) program);
+		SymbolTable libSymTable = symTableManager.mergeSymbolTables((Program) program);
 		
-		SymbolCollector funcCollector = new SymbolCollector(libFuncTable);
-		Map<String, FunctionDecl> funcTable = funcCollector.visit(program);
+		SymbolCollector symCollector = new SymbolCollector(libSymTable);
+		SymbolTable symTable = symCollector.visit(program);
 
-		ErrorUtils.printErrors(funcCollector.getErrors(), filename);
+		ErrorUtils.printErrors(symCollector.getErrors(), filename);
 
-		assertFalse("Found errors after collecting functions", funcCollector.hasError());
+		assertFalse("Found errors after collecting functions", symCollector.hasError());
 		
-		TypeChecker typeChecker = new TypeChecker(funcTable);	
+		TypeChecker typeChecker = new TypeChecker(symTable);	
 		program = typeChecker.performTypeCheck(program);
 		
 		ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
@@ -522,7 +522,8 @@ public class IntegrationTests {
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
 		
-		NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(filename, nodeFactory, new ArrayList<>(funcTable.values()));
+		ProgramSymbols syms = symTable.toProgSymbols();
+		NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(filename, nodeFactory, syms);
 		Lowerer lowerer = new Lowerer(nodeFactory);
 		CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
 		UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);

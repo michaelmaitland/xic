@@ -4,6 +4,7 @@ import java.util.List;
 
 import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.FunctionDecl;
+import mtm68.util.ArrayUtils;
 
 public class ProgramSymbols {
 	
@@ -17,7 +18,9 @@ public class ProgramSymbols {
 		this.classDecls = classDecls;
 	}
 	
-	public ProgramSymbols() {}
+	public ProgramSymbols() {
+		this(ArrayUtils.empty(), ArrayUtils.empty());
+	}
 
 	public List<FunctionDecl> getFuncDecls() {
 		return funcDecls;

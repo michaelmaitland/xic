@@ -1,10 +1,10 @@
 package mtm68.types;
 
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.ArrayUtils.empty;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,16 +15,13 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
-import mtm68.ast.types.ContextType;
+import mtm68.ast.symbol.SymbolTable;
 import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
 import mtm68.visit.SymbolCollector;
 import mtm68.visit.Visitor;
 
-import static mtm68.util.ArrayUtils.elems;
-import static mtm68.util.ArrayUtils.empty;
-
-public class FunctionCollectorTests {
+public class SymbolCollectorTests {
 
 	@Test
 	void testFunctionCollection() {
@@ -33,7 +30,7 @@ public class FunctionCollectorTests {
 						func("g"),
 						func("h")));
 		
-		TypingContext context = functionCollect(prog);
+		TypingContext context = symbolCollect(prog);
 		
 		assertTrue(context.isDefined("f"));
 		assertTrue(context.isFunctionDecl("f"));
@@ -49,19 +46,19 @@ public class FunctionCollectorTests {
 				elems(func("f"),
 						func("f")));
 		
-		assertFunctionCollectError(prog);
+		assertSymbolCollectError(prog);
 	}
 	
 	@Test
 	void testInterfaceMismatch() {
-		Map<String, FunctionDecl> initFuncTable = new HashMap<>();
-		initFuncTable.put("f", new FunctionDecl("f", elems(new SimpleDecl("x", Types.INT)), elems(Types.INT)));
+		SymbolTable initSymTable = new SymbolTable();
+		initSymTable.putFunc("f", new FunctionDecl("f", elems(new SimpleDecl("x", Types.INT)), elems(Types.INT)));
 		
 		//Matching decls
 		Program prog = new Program(empty(),
 				elems(func("f")));
 		
-		TypingContext context = functionCollect(prog, initFuncTable);
+		TypingContext context = symbolCollect(prog, initSymTable);
 		
 		assertTrue(context.isDefined("f"));
 		assertTrue(context.isFunctionDecl("f"));
@@ -70,7 +67,7 @@ public class FunctionCollectorTests {
 		prog = new Program(empty(),
 				elems(func("f", elems(new SimpleDecl("y", Types.BOOL)))));
 		
-		assertFunctionCollectError(prog, initFuncTable);
+		assertSymbolCollectError(prog, initSymTable);
 	}
 	
 	private FunctionDefn func(String name, List<SimpleDecl> args) {
@@ -83,22 +80,22 @@ public class FunctionCollectorTests {
 		return func(name, elems(new SimpleDecl("x", Types.INT)));
 	}
 	
-	private TypingContext functionCollect(Node root) {
-		return functionCollect(root, new HashMap<>());
+	private TypingContext symbolCollect(Node root) {
+		return symbolCollect(root, new SymbolTable());
 	}
 	
-	private TypingContext functionCollect(Node root, Map<String, FunctionDecl> initFuncTable) {
-		SymbolCollector fc = new SymbolCollector(initFuncTable);
+	private TypingContext symbolCollect(Node root, SymbolTable initSymTable) {
+		SymbolCollector fc = new SymbolCollector(initSymTable);
 		addLocs(root);
 		return new TypingContext(fc.visit(root));
 	}
 	
-	private void assertFunctionCollectError(Node root) {
-		assertFunctionCollectError(root, new HashMap<>());
+	private void assertSymbolCollectError(Node root) {
+		assertSymbolCollectError(root, new SymbolTable());
 	}
 	
-	private void assertFunctionCollectError(Node root, Map<String, FunctionDecl> initFuncTable) {
-		SymbolCollector fc = new SymbolCollector(initFuncTable);
+	private void assertSymbolCollectError(Node root, SymbolTable initSymTable) {
+		SymbolCollector fc = new SymbolCollector(initSymTable);
 		addLocs(root);
 		fc.visit(root);
 		assertTrue(fc.hasError(), "Expected collect error but got none");
