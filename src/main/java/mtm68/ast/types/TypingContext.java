@@ -46,7 +46,6 @@ public class TypingContext {
 		}
 		return result;
 	}
-	
 
 	/** Pushes new map onto context stack */
 	public void enterScope() {

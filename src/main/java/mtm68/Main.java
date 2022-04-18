@@ -37,7 +37,7 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
-import mtm68.ast.symbol.ProgSymbols;
+import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.symbol.SymbolTable;
 import mtm68.ast.symbol.ValidProgram;
 import mtm68.exception.BaseError;
@@ -201,7 +201,7 @@ public class Main {
 			program = Optimizer.optimizeAST(program);
 
 			String programName = vp.getProgramName();
-			ProgSymbols syms = vp.getProgSymbols();
+			ProgramSymbols syms = vp.getProgSymbols();
 			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory, syms);
 			Lowerer lowerer = new Lowerer(nodeFactory);
 			CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);

@@ -37,7 +37,7 @@ import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
-import mtm68.ast.symbol.ProgSymbols;
+import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
@@ -73,10 +73,10 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
-		this(programName, inf, new ProgSymbols());
+		this(programName, inf, new ProgramSymbols());
 	}
 	
-	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgSymbols decls) {
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgramSymbols decls) {
 		this(programName, new HashMap<>(), inf);
 		saveFuncSymbols(decls.getFuncDecls());
 		saveClassSymbols(decls.getClassDecls());

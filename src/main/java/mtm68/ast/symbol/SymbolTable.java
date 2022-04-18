@@ -11,8 +11,8 @@ import mtm68.ast.nodes.Interface;
 
 public class SymbolTable {
 	
-	Map<String, FunctionDecl> fDecls;
-	Map<String, ClassDecl> cDecls;
+	private Map<String, FunctionDecl> fDecls;
+	private Map<String, ClassDecl> cDecls;
 	
 	public SymbolTable(Interface i) {
 		this.fDecls= new HashMap<>();
@@ -75,9 +75,9 @@ public class SymbolTable {
 		return cDecls;
 	}
 	
-	public ProgSymbols toProgSymbols() {
+	public ProgramSymbols toProgSymbols() {
 		List<FunctionDecl> fs = new ArrayList<>(fDecls.values());
 		List<ClassDecl> cs = new ArrayList<>(cDecls.values());
-		return new ProgSymbols(fs, cs);
+		return new ProgramSymbols(fs, cs);
 	}
 }

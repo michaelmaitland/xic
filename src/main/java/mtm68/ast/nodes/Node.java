@@ -149,5 +149,4 @@ public abstract class Node implements HasLocation, Cloneable {
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
-
 }
