@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.symbol.SymbolTable;
 import mtm68.exception.FatalTypeException;
 
 public class TypingContext {
@@ -21,20 +23,30 @@ public class TypingContext {
 		contextStack.push(new HashMap<>());
 	}
 
-	public TypingContext(Map<String, FunctionDecl> funcTable) {
+	public TypingContext(SymbolTable symTable) {
 		contextStack = new ArrayDeque<>();
-		contextStack.push(convertFuncTableToContext(funcTable));
+		contextStack.push(convertSymTableToContext(symTable));
 	}
 	
-	private Map<String, ContextType> convertFuncTableToContext(Map<String, FunctionDecl> funcTable) {
+	private Map<String, ContextType> convertSymTableToContext(SymbolTable symTable) {
 		Map<String, ContextType> result = new HashMap<>();
+
+		Map<String, FunctionDecl> funcTable = symTable.getFunctionDecls();
 		for(String funcName : funcTable.keySet()) {
 			FunctionDecl decl = funcTable.get(funcName);
 			ContextType cType = new ContextType(decl.getArgs(), decl.getReturnTypes());
 			result.put(funcName, cType);
 		}
+		
+		Map<String, ClassDecl> classTable = symTable.getClassDecls();
+		for(String className : classTable.keySet()) {
+			ClassDecl decl = classTable.get(className);
+			// TODO: Build out class context. 
+			// Leaving a todo because we're not dealing with typechecking right now
+		}
 		return result;
 	}
+	
 
 	/** Pushes new map onto context stack */
 	public void enterScope() {

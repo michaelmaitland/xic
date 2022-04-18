@@ -6,7 +6,7 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
-import mtm68.visit.FunctionCollector;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -75,8 +75,8 @@ public class FunctionDecl extends Node {
 	}
 	
 	@Override
-	public Node extractFunctionDecl(FunctionCollector fc) {
-		fc.addFunctionDecl(this);
+	public Node extractFunctionDecl(SymbolCollector sc) {
+		sc.addFunctionDecl(this);
 		return this;
 	}
 

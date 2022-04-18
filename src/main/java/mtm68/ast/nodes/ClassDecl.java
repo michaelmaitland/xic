@@ -5,6 +5,7 @@ import java.util.List;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -66,6 +67,11 @@ public class ClassDecl extends Node {
 			return decl;
 		} 
 
+		return this;
+	}
+	
+	public Node extractClassDecl(SymbolCollector sc) {
+		sc.addClassDecl(this);
 		return this;
 	}
 

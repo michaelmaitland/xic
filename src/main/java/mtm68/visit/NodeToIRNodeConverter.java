@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
@@ -17,6 +16,7 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -26,6 +26,7 @@ import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.ast.nodes.BoolLiteral;
+import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
@@ -36,6 +37,7 @@ import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.symbol.ProgSymbols;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
@@ -71,12 +73,13 @@ public class NodeToIRNodeConverter extends Visitor {
 
 	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
-		this(programName, inf, ArrayUtils.empty());
+		this(programName, inf, new ProgSymbols());
 	}
 	
-	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, List<FunctionDecl> decls) {
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgSymbols decls) {
 		this(programName, new HashMap<>(), inf);
-		saveFuncSymbols(decls);
+		saveFuncSymbols(decls.getFuncDecls());
+		saveClassSymbols(decls.getClassDecls());
 	}
 	
 	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
@@ -151,6 +154,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
 		for(FunctionDecl decl : decls) saveFuncSymbol(decl);
 	}
+	
+	public void saveClassSymbols(List<ClassDecl> decls) {
+		for(ClassDecl decl : decls) saveClassSymbol(decl);
+	}
 
 	public String argVal(int argIdx) {
 		return Constants.ARG_PREFIX + argIdx;
@@ -185,6 +192,9 @@ public class NodeToIRNodeConverter extends Visitor {
 		funcAndProcEncodings.put(functionDecl.getId(), encoded); 
 	}
 	
+	public void saveClassSymbol(ClassDecl classDecl) {
+		// TODO
+	}
 	
 	/**
 	 * Returns an encoding of a procedure using the encoding defined in the Xi ABI.

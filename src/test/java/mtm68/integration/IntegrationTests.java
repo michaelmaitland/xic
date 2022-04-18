@@ -63,7 +63,7 @@ import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
-import mtm68.visit.FunctionCollector;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 
@@ -501,7 +501,7 @@ public class IntegrationTests {
 		SymbolTableManager symTableManager = new SymbolTableManager(libPath);
 		Map<String, FunctionDecl> libFuncTable = symTableManager.mergeSymbolTables((Program) program);
 		
-		FunctionCollector funcCollector = new FunctionCollector(libFuncTable);
+		SymbolCollector funcCollector = new SymbolCollector(libFuncTable);
 		Map<String, FunctionDecl> funcTable = funcCollector.visit(program);
 
 		ErrorUtils.printErrors(funcCollector.getErrors(), filename);

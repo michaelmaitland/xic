@@ -18,7 +18,7 @@ import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.ContextType;
 import mtm68.ast.types.Types;
 import mtm68.ast.types.TypingContext;
-import mtm68.visit.FunctionCollector;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.Visitor;
 
 import static mtm68.util.ArrayUtils.elems;
@@ -88,7 +88,7 @@ public class FunctionCollectorTests {
 	}
 	
 	private TypingContext functionCollect(Node root, Map<String, FunctionDecl> initFuncTable) {
-		FunctionCollector fc = new FunctionCollector(initFuncTable);
+		SymbolCollector fc = new SymbolCollector(initFuncTable);
 		addLocs(root);
 		return new TypingContext(fc.visit(root));
 	}
@@ -98,7 +98,7 @@ public class FunctionCollectorTests {
 	}
 	
 	private void assertFunctionCollectError(Node root, Map<String, FunctionDecl> initFuncTable) {
-		FunctionCollector fc = new FunctionCollector(initFuncTable);
+		SymbolCollector fc = new SymbolCollector(initFuncTable);
 		addLocs(root);
 		fc.visit(root);
 		assertTrue(fc.hasError(), "Expected collect error but got none");
