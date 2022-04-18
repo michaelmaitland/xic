@@ -15,8 +15,10 @@ import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Negate;
+import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Not;
+import mtm68.ast.nodes.This;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.BinExpr;
 import mtm68.ast.nodes.binary.Binop;
@@ -365,6 +367,16 @@ public class TypeChecker extends Visitor {
 	
 	private boolean isCompatibleArrayTypes(Type t1, Type t2) {
 		return t1.equals(t2) || t1.equals(Types.EMPTY_ARRAY) || t2.equals(Types.EMPTY_ARRAY);
+	}
+
+	public Type checkThis(This this1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Type checkNew(New new1) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

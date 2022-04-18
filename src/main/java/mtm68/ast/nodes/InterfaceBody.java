@@ -87,7 +87,6 @@ public class InterfaceBody extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO
 		return this;
 	}
 

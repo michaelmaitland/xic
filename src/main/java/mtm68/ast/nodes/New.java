@@ -2,6 +2,7 @@ package mtm68.ast.nodes;
 
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -43,8 +44,8 @@ public class New extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO
-		return this;
+		Type type = tc.checkNew(this);
+		return copyAndSetType(type);
 	}
 
 	@Override

@@ -67,7 +67,6 @@ public class Interface extends Node implements Root {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO
 		return this;
 	}
 

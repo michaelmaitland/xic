@@ -5,10 +5,12 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Use;
+import mtm68.ast.types.SymbolTable;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;
@@ -18,7 +20,7 @@ import mtm68.parser.Parser;
 import mtm68.util.ErrorUtils;
 
 public class SymbolTableManager {
-	private Map<String, Map<String, FunctionDecl>> useIdToSymTable;
+	private Map<String, SymbolTable> useIdToSymTable;
 	private Path libPath;
 	
 	public SymbolTableManager(Path libPath) {
@@ -26,8 +28,8 @@ public class SymbolTableManager {
 		this.libPath = libPath;
 	}
 	
-	public Map<String, FunctionDecl> mergeSymbolTables(Program prog) throws SemanticException{
-		Map<String, FunctionDecl> mergedTable = new HashMap<>();
+	public SymbolTable mergeSymbolTables(Program prog) throws SemanticException{
+		SymbolTable mergedTable = new SymbolTable();
 		for(Use use : prog.getUseStmts()) {
 			if(!useIdToSymTable.containsKey(use.getId())) {
 				try {
@@ -37,16 +39,37 @@ public class SymbolTableManager {
 					throw new SemanticException(use, use.getId() + ".ixi not found in library " + libPath);
 				}
 			}
-			Map<String, FunctionDecl> curMap = useIdToSymTable.get(use.getId());
-			for(String f : curMap.keySet()) {
-				if(mergedTable.containsKey(f)) {
-					if(!mergedTable.get(f).equals(curMap.get(f))) 
-						throw new SemanticException(use, "Multiple interface mismatched function declaration for " + curMap.get(f));
-				}
-			}
-			mergedTable.putAll(useIdToSymTable.get(use.getId()));
+			SymbolTable curTable = useIdToSymTable.get(use.getId());
+			
+			mergeFunctionDecls(mergedTable, curTable, use);
+			mergeClassDecls(mergedTable, curTable, use);
 		}
 		return mergedTable;
+	}
+	
+	private void mergeFunctionDecls(SymbolTable mergeTo, SymbolTable toMerge, Use use) throws SemanticException {
+		Map<String, FunctionDecl> toMergeFuncs = toMerge.getFunctionDecls();
+		Map<String, FunctionDecl> mergedFuncs = mergeTo.getFunctionDecls();
+		for(String f : toMergeFuncs.keySet()) {
+			if(mergedFuncs.containsKey(f)) {
+				if(!mergedFuncs.get(f).equals(toMergeFuncs.get(f))) 
+					throw new SemanticException(use, "Multiple interface mismatched function declaration for " + toMergeFuncs.get(f));
+				}
+			}
+			mergedFuncs.putAll(useIdToSymTable.get(use.getId()).getFunctionDecls());
+	}
+	
+	
+	private void mergeClassDecls(SymbolTable mergeTo, SymbolTable toMerge, Use use) throws SemanticException {
+		Map<String, ClassDecl> toMergeClasses = toMerge.getClassDecls();
+		Map<String, ClassDecl> mergedClasses = mergeTo.getClassDecls();
+		for(String c : toMergeClasses.keySet()) {
+			if(mergedClasses.containsKey(c)) {
+				if(!mergedClasses.get(c).equals(toMergeClasses.get(c))) 
+					throw new SemanticException(use, "Multiple interface mismatched class declaration for " + toMergeClasses.get(c));
+				}
+			}
+			mergedClasses.putAll(useIdToSymTable.get(use.getId()).getClassDecls());
 	}
 
 	private void generateSymbolTableFromLib(Use use) throws FileNotFoundException, SemanticException {
@@ -69,11 +92,7 @@ public class SymbolTableManager {
 	}
 	
 	public void generateSymbolTableFromAST(String useId, Interface root) {
-		Map<String, FunctionDecl> symTable = new HashMap<>();
-		
-		for(FunctionDecl decl : root.getBody().getFunctionDecls())
-			symTable.put(decl.getId(), decl);
-		
+		SymbolTable symTable = new SymbolTable(root);
 		useIdToSymTable.put(useId, symTable);
 	}
 }

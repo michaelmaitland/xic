@@ -40,6 +40,7 @@ import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
+import mtm68.ast.types.SymbolTable;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
 import mtm68.exception.SemanticException;
@@ -332,7 +333,7 @@ public class Main {
 			//Typecheck
 			if(root instanceof Program) {
 				try {
-					Map<String, FunctionDecl> libFuncTable = symTableManager.mergeSymbolTables((Program) root);
+					SymbolTable libSymTable = symTableManager.mergeSymbolTables((Program) root);
 					
 					FunctionCollector funcCollector = new FunctionCollector(libFuncTable);
 					Map<String, FunctionDecl> funcTable = funcCollector.visit(root);
