@@ -5,6 +5,7 @@ import java.util.List;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.Decl;
+import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -13,9 +14,9 @@ import mtm68.visit.Visitor;
 public class ClassBody extends Node {
 	
 	private List<FunctionDefn> methodDefns;
-	private List<Decl> fields;
+	private List<SimpleDecl> fields;
 	
-	public ClassBody(List<FunctionDefn> methodDefns, List<Decl> fields) {
+	public ClassBody(List<FunctionDefn> methodDefns, List<SimpleDecl> fields) {
 		this.methodDefns = methodDefns;
 		this.fields = fields;
 	}
@@ -28,7 +29,7 @@ public class ClassBody extends Node {
 		return methodDefns;
 	}
 
-	public List<Decl> getFields() {
+	public List<SimpleDecl> getFields() {
 		return fields;
 	}
 
@@ -36,7 +37,7 @@ public class ClassBody extends Node {
 		methodDefns.add(methodDefn);
 	}
 	
-	public void addField(Decl field) {
+	public void addField(SimpleDecl field) {
 		fields.add(field);
 	}
 
@@ -65,7 +66,7 @@ public class ClassBody extends Node {
 	@Override
 	public Node visitChildren(Visitor v) {
 		List<FunctionDefn> newMethodDefns = acceptList(methodDefns, v);
-		List<Decl> newFields = acceptList(fields, v);
+		List<SimpleDecl> newFields = acceptList(fields, v);
 		
 		if(newMethodDefns != methodDefns || newFields != fields) {
 			ClassBody defn = copy();

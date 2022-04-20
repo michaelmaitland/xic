@@ -315,7 +315,6 @@ cdefn ::= CLASS ID:a OPEN_CURLY decl_or_fdefn_star:df CLOSE_CURLY {: RESULT = ne
     
 decl_or_fdefn_star ::= /* epsilon */	  {: RESULT = new ClassBody(); :}
     | decl_or_fdefn_star:df decl:d        {: RESULT = df; df.addField(d); :}
-    | decl_or_fdefn_star:df ext_decl:d	  {: RESULT = df; df.addField(d); :}
     | decl_or_fdefn_star:df fdefn:f       {: RESULT = df; df.addMethod(f); :}
     ;
 
