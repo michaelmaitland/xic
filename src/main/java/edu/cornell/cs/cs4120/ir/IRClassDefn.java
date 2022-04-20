@@ -8,15 +8,22 @@ import edu.cornell.cs.cs4120.ir.visit.IRContainsExprWithSideEffect;
 import edu.cornell.cs.cs4120.ir.visit.IRContainsMemSubexprDecorator;
 import edu.cornell.cs.cs4120.ir.visit.Lowerer;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.util.ArrayUtils;
 
 /** An IR class definition */
 public class IRClassDefn extends IRNode_c {
     private String className;
-    private IRClassDefn superClass;
     private List<IRFuncDefn> methods;
-    private List<IRNode> fields;
+    private IRESeq dispatchVector;
 
     public IRClassDefn() {
+    	this.methods = ArrayUtils.empty();
+    }
+    
+    public IRClassDefn(String className, List<IRFuncDefn> methods, IRESeq dispatchVector) {
+    	this.className = className;
+    	this.methods = methods;
+    	this.dispatchVector = dispatchVector;
     }
 
 	@Override

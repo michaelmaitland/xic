@@ -67,6 +67,8 @@ public interface IRNodeFactory {
 
     IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs);
 
+    IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRESeq dispatchVector);
+
     /**
      *
      * @param expr the destination of the jump

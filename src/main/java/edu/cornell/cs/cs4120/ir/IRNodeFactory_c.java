@@ -63,6 +63,11 @@ public class IRNodeFactory_c implements IRNodeFactory {
     public IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs) {
         return new IRFuncDefn(name, stmt, numArgs);
     }
+    
+    @Override
+	public IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRESeq dispatchVector) {
+    	return new IRClassDefn(className, methods, dispatchVector);
+	}
 
     @Override
     public IRJump IRJump(IRExpr expr) {
