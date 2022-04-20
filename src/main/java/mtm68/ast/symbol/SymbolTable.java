@@ -15,15 +15,15 @@ public class SymbolTable {
 	private Map<String, ClassDecl> cDecls;
 	
 	public SymbolTable(Interface i) {
-		this.fDecls= new HashMap<>();
-		this.cDecls= new HashMap<>();
+		this.fDecls = new HashMap<>();
+		this.cDecls = new HashMap<>();
 		putFunctionDecls(i.getBody().getFunctionDecls());
 		putClassDecls(i.getBody().getClassDecls());
 	}
 
 	public SymbolTable() {
-		this.fDecls= new HashMap<>();
-		this.cDecls= new HashMap<>();
+		this.fDecls = new HashMap<>();
+		this.cDecls = new HashMap<>();
 	}
 	
 	public boolean containsFunc(String id) {

@@ -41,6 +41,7 @@ import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
+import mtm68.ast.types.ObjectType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.util.ArrayUtils;
@@ -62,6 +63,14 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * symbol.
 	 */
 	private Map<String, String> funcAndProcEncodings;
+	
+	/**
+	 * Keys are the class name as defined in the AST nodes.
+	 * Values are a mapping whose keys are the method name as
+	 * defined in the AST nodes. Values are the encoded method
+	 * symbol.
+	 */
+	private Map<String, Map<String, String>> objectMethodEncodings;
 	
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
 
@@ -164,6 +173,29 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 	
 	/**
+	 * Returns an encoding of an object method. The encoding is the same as the
+	 * encoding defined for a function or procedure in the Xi ABI except that the
+	 * function name is proceeded by the class name and an underscore.
+	 * 
+	 * Example:
+	 * A.f() is encoded as _I_A_f_p
+	 * Dog.bite(int) : int is encoded as _I_Dogbite_itoi
+	 */
+	public String saveAndGetMethodSymbol(FunctionDecl functionDecl, String className) {
+		if(!objectMethodEncodings.containsKey(className)) {
+			objectMethodEncodings.put(className, new HashMap<>());
+		}
+
+		Map<String, String> methods = objectMethodEncodings.get(className);
+		if(!methods.containsKey(functionDecl.getId())) {
+			String methodNameEncoding = encodeMethodName(className, functionDecl.getId());
+			saveFuncSymbol(functionDecl, methodNameEncoding, methods);
+		}
+		
+		return methods.get(functionDecl.getId());
+	}
+	
+	/**
 	 * Returns an encoding of a function or procedure
 	 * using the encoding defined in the Xi ABI.
 	 */
@@ -173,11 +205,16 @@ public class NodeToIRNodeConverter extends Visitor {
 		
 		return funcAndProcEncodings.get(functionDecl.getId());
 	}
-	
+
 	public void saveFuncSymbol(FunctionDecl functionDecl) {
+		saveFuncSymbol(functionDecl, encodeFuncName(functionDecl.getId()), funcAndProcEncodings);
+	}
+	
+	private void saveFuncSymbol(FunctionDecl functionDecl, String encodedFuncName, 
+			Map<String, String> encodings) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("_I");
-		sb.append(encodeFuncName(functionDecl.getId()));
+		sb.append(encodedFuncName);
 		sb.append("_");
 		
 		sb.append(encodeReturnTypes(functionDecl.getReturnTypes()));
@@ -189,9 +226,9 @@ public class NodeToIRNodeConverter extends Visitor {
 		sb.append(encodeTypes(argTypes));
 	
 		String encoded = sb.toString();
-		funcAndProcEncodings.put(functionDecl.getId(), encoded); 
+		encodings.put(functionDecl.getId(), encoded);
 	}
-	
+
 	public void saveClassSymbol(ClassDecl classDecl) {
 		// TODO
 	}
@@ -226,6 +263,14 @@ public class NodeToIRNodeConverter extends Visitor {
 		return enc;
 	}	
 	
+	private String encodeMethodName(String className, String methodName) {
+		return "_" + encodeClassName(className) + encodeFuncName(methodName);
+	}
+
+	private String encodeClassName(String className) {
+		return className.replaceAll("_", "__");
+	}
+
 	private String encodeFuncName(String funcName) {
 		return funcName.replaceAll("_", "__");
 	}
@@ -246,6 +291,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * Encodes a type. 
 	 * ints are encoded as {@code i}
 	 * bools are encoded as {@code b}
+	 * objects are encoded as "o" concatenated with the length of the unescaped
+	 * class name concatenated with the escaped class name
 	 * arrays are encoded as {@code a}
 	 * 
 	 */
@@ -254,6 +301,10 @@ public class NodeToIRNodeConverter extends Visitor {
 			return "i";
 		} else if(type instanceof BoolType) {
 			return "b";
+		} else if(type instanceof ObjectType) {
+			String typeName = ((ObjectType) type).getName();
+			String escapedTypeName = encodeClassName(typeName);
+			return "o" + typeName.length() + escapedTypeName;
 		} else if (type instanceof ArrayType) {
 			return "a" + encodeType(((ArrayType) type).getType());
 		} else {

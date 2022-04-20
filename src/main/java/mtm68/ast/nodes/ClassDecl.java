@@ -83,7 +83,7 @@ public class ClassDecl extends Node {
 	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
+		/* There is no IR conversion that needs to be done */
 		return this;
 	}
 
