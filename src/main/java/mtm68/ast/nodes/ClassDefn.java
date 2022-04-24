@@ -1,15 +1,13 @@
 package mtm68.ast.nodes;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRClassDefn;
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
-import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -43,8 +41,12 @@ public class ClassDefn extends Node {
 		return body;
 	}
 
-	public void setIrClassDefn(IRClassDefn irClassDefn) {
+	public void setIRClassDefn(IRClassDefn irClassDefn) {
 		this.irClassDefn = irClassDefn;
+	}
+	
+	public IRClassDefn getIRClassDefn() {
+		return irClassDefn;
 	}
 
 	@Override
@@ -81,28 +83,18 @@ public class ClassDefn extends Node {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		/* 
-		 * The conversion to IR for a ClassDefn must build a VTable and keep a reference
-		 * to it so allocations of this object type can put a pointer to the DV 
-		 * in its representation.
-		 */
-		
 		// TODO encode func names correctly. We can add a bool isMethod which the converter
 		// can check to determine how the NodeToIRConverter saves the function.
-		Map<String, String> symbols = body.getMethodDefns()
-			.stream()
-			.map(FunctionDefn::getFunctionDecl)
-			.collect(Collectors.toMap(FunctionDecl::getId, d -> cv.saveAndGetMethodSymbol(d, id)));
-
-		List<IRStmt> fields = body.getFields()
-								  .stream()
-								  .map(SimpleDecl::getIRStmt)
-								  .collect(Collectors.toList());
-
-		IRClassDefn irClassDefn = inf.IRClassDefn(id, superType, methods, fields);
+		List<IRFuncDefn> methods = body.getMethodDefns()
+								  	   .stream()
+								  	   .map(FunctionDefn::getIRFuncDefn)
+								  	   .collect(Collectors.toList());
+		
+		IRESeq dv = cv.constructDispatchVector(this);
+		IRClassDefn irClassDefn = inf.IRClassDefn(id, methods, dv);
 		
 		ClassDefn newDefn = copy();
-		newDefn.setIrClassDefn(irClassDefn);
+		newDefn.setIRClassDefn(irClassDefn);
 		return newDefn;
 	}
 }

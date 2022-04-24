@@ -27,6 +27,7 @@ import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.ClassDecl;
+import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
@@ -37,6 +38,8 @@ import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.symbol.DispatchVectorClassResolver;
+import mtm68.ast.symbol.DispatchVectorIndexResolver;
 import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
@@ -72,6 +75,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	 */
 	private Map<String, Map<String, String>> objectMethodEncodings;
 	
+	private DispatchVectorClassResolver dispatchVectorClassResolver;
+	
+	private DispatchVectorIndexResolver dispatchVectorIndexResolver;
+	
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
 
 	private static final String MALLOC_LABEL = "_xi_alloc";
@@ -85,17 +92,19 @@ public class NodeToIRNodeConverter extends Visitor {
 		this(programName, inf, new ProgramSymbols());
 	}
 	
-	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgramSymbols decls) {
-		this(programName, new HashMap<>(), inf);
-		saveFuncSymbols(decls.getFuncDecls());
-		saveClassSymbols(decls.getClassDecls());
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgramSymbols syms) {
+		this(programName, new HashMap<>(), inf, syms);
+		saveFuncSymbols(syms.getFuncDecls());
+		saveClassSymbols(syms.getClassDecls());
 	}
 	
-	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
+	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf, ProgramSymbols syms) {
 		this.programName = programName;
 		this.labelCounter = 0;
 		this.funcAndProcEncodings = funcAndProcEncodings;
 		this.inf = inf;
+		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
+		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
@@ -230,7 +239,11 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 
 	public void saveClassSymbol(ClassDecl classDecl) {
-		// TODO
+		List<FunctionDecl> methods = classDecl.getMethodDecls();
+		String className = classDecl.getId();
+		for(FunctionDecl method : methods) {
+			saveAndGetMethodSymbol(method, className);
+		}
 	}
 	
 	/**
@@ -795,5 +808,30 @@ public class NodeToIRNodeConverter extends Visitor {
 		IRSeq seq = inf.IRSeq(stmts);
 		
 		return inf.IRESeq(seq, resultTemp);
+	}
+	
+	public IRESeq constructDispatchVector(ClassDefn defn) {
+		String className = defn.getId();
+		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
+
+		List<IRExpr> elems = ArrayUtils.empty();
+		for(String funcId : methods.keySet()) {
+			String invokeClassName = methods.get(funcId);
+			String funcNameEncoded = encodeMethodName(invokeClassName, funcId);
+			
+			// Encode the encoded function name as a char[]
+			List<IRExpr> string = ArrayUtils.stringToCharList(funcNameEncoded)
+					.stream()
+					.map(ch -> inf.IRConst(ch))
+					.collect(Collectors.toList());
+			IRESeq eseq = allocateAndInitArray(string);
+			
+			// Place it into the correct spot in the sequence based on the index
+			// we calculated it to be at.
+			int index = this.dispatchVectorIndexResolver.getMethodIndex(className, funcId);
+			elems.add(index, eseq);
+		}
+
+		return allocateAndInitArray(elems);
 	}
 }

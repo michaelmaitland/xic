@@ -37,7 +37,6 @@ import mtm68.assem.visit.TrivialRegisterAllocator;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
-import mtm68.ast.symbol.DispatchVectorGenerator;
 import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.symbol.SymbolTable;
 import mtm68.ast.symbol.ValidProgram;
@@ -193,7 +192,6 @@ public class Main {
 		});
 		
 		List<ValidProgram> programs = getValidPrograms(symTableManager);
-		DispatchVectorGenerator dvGenerator = new DispatchVectorGenerator(programs);
 		
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
 		Optimizer.setNodeFactory(nodeFactory);
