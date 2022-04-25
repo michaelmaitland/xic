@@ -79,6 +79,10 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private DispatchVectorIndexResolver dispatchVectorIndexResolver;
 	
+	private Map<String, Integer> classNameToNumFields;
+	
+	private Map<String, IRMem> classNameToDispatchVectorAddr;
+	
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
 
 	private static final String MALLOC_LABEL = "_xi_alloc";
@@ -105,6 +109,8 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.inf = inf;
 		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
 		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
+		this.classNameToNumFields = new HashMap<>();
+		this.classNameToDispatchVectorAddr = new HashMap<>();
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
@@ -828,10 +834,32 @@ public class NodeToIRNodeConverter extends Visitor {
 			
 			// Place it into the correct spot in the sequence based on the index
 			// we calculated it to be at.
-			int index = this.dispatchVectorIndexResolver.getMethodIndex(className, funcId);
+			int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
 			elems.add(index, eseq);
 		}
 
-		return allocateAndInitArray(elems);
+		IRESeq eseq = allocateAndInitArray(elems);
+		classNameToDispatchVectorAddr.put(defn.getId(), getOffsetIntoArr(eseq, inf.IRConst(0), true));
+		return eseq;
+	}
+	
+	public void saveNumFields(ClassDefn defn) {
+		classNameToNumFields.put(defn.getId(), defn.getBody().getFields().size());
+	}
+
+	public int getNumFields(String className) {
+		if(classNameToNumFields.containsKey(className)) {
+			return classNameToNumFields.get(className);
+		} else {
+			throw new InternalCompilerError("Could not find class " + className + " when searching for number of fields.");
+		}
+	}
+
+	public IRMem getDispatchVectorAddr(String className) {
+		if(classNameToDispatchVectorAddr.containsKey(className)) {
+			return classNameToDispatchVectorAddr.get(className);
+		} else {
+			throw new InternalCompilerError("Could not find class " + className + " when searching for dispatch vector address.");
+		}
 	}
 }
