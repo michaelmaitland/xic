@@ -80,9 +80,9 @@ public class New extends Expr {
 		String sym = cv.getFuncSymbol(fExpr);
 		IRName name = inf.IRName(sym);
 		List<IRExpr> irArgs = fExpr.getArgs()
-							       .stream()
-								   .map(Expr::getIRExpr)
-								   .collect(Collectors.toList());
+		                           .stream()
+                                   .map(Expr::getIRExpr)
+                                   .collect(Collectors.toList());
 		// Prepend the object argument
 		irArgs.add(0, object);
 
