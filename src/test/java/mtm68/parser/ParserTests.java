@@ -1237,7 +1237,7 @@ public class ParserTests {
 
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getMethodDefns().size());
-		assertTrue(defn.getBody().getMethodDefns().get(0).isMethod());
+		assertTrue(defn.getBody().getMethodDefns().get(0).getFunctionDecl().isMethod());
 	}
 	
 	@Test

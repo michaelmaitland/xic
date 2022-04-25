@@ -18,6 +18,7 @@ import mtm68.visit.Visitor;
 public class ClassDefn extends Node {
 	
 	private String id;
+	private ClassDecl classDecl;
 	private String superType;
 	private ClassBody body;
 	private IRClassDefn irClassDefn;
@@ -26,6 +27,12 @@ public class ClassDefn extends Node {
 		this.id = id;
 		this.superType = superType;
 		this.body = body;
+		
+		List<FunctionDecl> fDecls = body.getMethodDefns()
+									    .stream()
+									    .map(FunctionDefn::getFunctionDecl)
+									    .collect(Collectors.toList());
+		this.classDecl = new ClassDecl(id, superType, fDecls);
 	}
 	
 	public ClassDefn(String id, ClassBody body) {
@@ -69,10 +76,12 @@ public class ClassDefn extends Node {
 	@Override
 	public Node visitChildren(Visitor v) {
 		ClassBody newBody = body.accept(v);
+		ClassDecl newClassDecl = classDecl.accept(v);
 		
-		if(newBody != body) {
+		if(newBody != body || newClassDecl != classDecl) {
 			ClassDefn defn = copy();
 			defn.body = newBody;
+			defn.classDecl = newClassDecl;
 			return defn;
 		}
 		return this;

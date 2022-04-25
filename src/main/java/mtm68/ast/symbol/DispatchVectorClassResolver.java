@@ -60,12 +60,15 @@ public class DispatchVectorClassResolver {
 	}
 	
 	private void gen(Map<String, String> funcIdToClassId, ClassDecl cDecl) {
+		// gen all functions this class defines
 		for(FunctionDecl fDecl : cDecl.getMethodDecls()) {
 			if(!funcIdToClassId.containsKey(fDecl.getId())) {
 				funcIdToClassId.put(fDecl.getId(), cDecl.getId());
-			} else if(cDecl.getSuperType() != null) {
-				gen(funcIdToClassId, classNameToDecl.get(cDecl.getSuperType()));
-			}
+			} 	
+		}
+		// gen all functions its super type defines
+		if(cDecl.getSuperType() != null) {
+			gen(funcIdToClassId, classNameToDecl.get(cDecl.getSuperType()));
 		}
 	}
 }

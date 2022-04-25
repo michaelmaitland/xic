@@ -1,16 +1,16 @@
-package mtm68;
+package mtm68.ast.symbol;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import mtm68.FileType;
 import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.Use;
-import mtm68.ast.symbol.SymbolTable;
 import mtm68.exception.SemanticException;
 import mtm68.lexer.FileTypeLexer;
 import mtm68.lexer.Lexer;

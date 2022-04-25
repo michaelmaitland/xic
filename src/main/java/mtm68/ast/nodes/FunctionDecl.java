@@ -14,6 +14,7 @@ import mtm68.visit.Visitor;
 public class FunctionDecl extends Node {
 	
 	private String id;
+	private boolean isMethod;
 	private List<SimpleDecl> args;
 	private List<Type> returnTypes;
 
@@ -33,6 +34,14 @@ public class FunctionDecl extends Node {
 	
 	public List<Type> getReturnTypes() {
 		return returnTypes;
+	}
+	
+	public boolean isMethod() {
+		return isMethod;
+	}
+
+	public void setIsMethod(boolean isMethod) {
+		this.isMethod = isMethod;
 	}
 
 	@Override

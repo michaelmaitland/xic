@@ -13,18 +13,12 @@ public class FunctionDefn extends Node {
 	
 	private FunctionDecl functionDecl;
 	private Block body;
-	private boolean isMethod;
 	
 	private  IRFuncDefn irFuncDefn;
 
 	public FunctionDefn(FunctionDecl fDecl, Block body) {
-		this(fDecl, body, false);
-	}
-
-	public FunctionDefn(FunctionDecl fDecl, Block body, boolean isMethod) {
 		this.functionDecl = fDecl;
 		this.body = body;
-		this.isMethod = isMethod;
 	}
 
 	public FunctionDecl getFunctionDecl() {
@@ -80,7 +74,7 @@ public class FunctionDefn extends Node {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 
 		// ClassDefn will be responsible for building the function defns
-		if(isMethod) {
+		if(functionDecl.isMethod()) {
 			return this;
 		}
 
@@ -94,11 +88,4 @@ public class FunctionDefn extends Node {
 		return copy;
 	}
 
-	public void setIsMethod(boolean isMethod) {
-		this.isMethod = isMethod;
-	}
-	
-	public boolean isMethod() {
-		return isMethod;
-	}
 }

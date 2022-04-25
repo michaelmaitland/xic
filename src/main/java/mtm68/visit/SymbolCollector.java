@@ -24,6 +24,10 @@ public class SymbolCollector extends Visitor{
 		progSymTable = new SymbolTable();
 		errors = new ArrayList<>();
 	}
+	
+	public SymbolCollector() {
+		this(new SymbolTable());
+	}
 
 	@Override
 	public Node leave(Node parent, Node n) {
@@ -46,6 +50,11 @@ public class SymbolCollector extends Visitor{
 	}
 
 	public void addFunctionDecl(FunctionDecl decl) {
+		// Do not save methods as part of functions
+		if(decl.isMethod()) {
+			return;
+		}
+
 		String funcName = decl.getId();
 		if(progSymTable.containsFunc(funcName)) {
 			reportError(decl, "Function " + decl.getId() + " declared multiple times in source file.");

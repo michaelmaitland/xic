@@ -60,11 +60,11 @@ public class SymbolTable {
 	}
 	
 	private void putFunctionDecls(Map<String, FunctionDecl> fDecls) {
-		this.fDecls.putAll(fDecls);
+		fDecls.putAll(fDecls);
 	}
 
 	private void putClassDecls(Map<String, ClassDecl> cDecls) {
-		this.cDecls.putAll(cDecls);
+		cDecls.putAll(cDecls);
 	}
 
 	public Map<String, FunctionDecl> getFunctionDecls() {

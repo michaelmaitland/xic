@@ -8,10 +8,10 @@ public class ValidProgram {
 	private Program program;
 	private ProgramSymbols progSymbols;
 
-	public ValidProgram(String programName, Program program, SymbolTable symTable) {
+	public ValidProgram(String programName, Program program, ProgramSymbols symTable) {
 		this.programName = programName;
 		this.program = program;
-		this.progSymbols = symTable.toProgSymbols();
+		this.progSymbols = symTable;
 	}
 
 	public String getProgramName() {
