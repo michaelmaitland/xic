@@ -96,6 +96,10 @@ public class NodeToIRNodeConverter extends Visitor {
 		this(programName, inf, new ProgramSymbols());
 	}
 	
+	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
+		this(programName, funcAndProcEncodings, inf, new ProgramSymbols());
+	}
+	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgramSymbols syms) {
 		this(programName, new HashMap<>(), inf, syms);
 		saveFuncSymbols(syms.getFuncDecls());

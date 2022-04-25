@@ -1,7 +1,18 @@
 package mtm68.ir;
 
-import static mtm68.util.ArrayUtils.*;
-import static mtm68.util.NodeTestUtil.*;
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.ArrayUtils.empty;
+import static mtm68.util.ArrayUtils.singleton;
+import static mtm68.util.NodeTestUtil.arbitraryCondition;
+import static mtm68.util.NodeTestUtil.arrayWithElems;
+import static mtm68.util.NodeTestUtil.assertInstanceOf;
+import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
+import static mtm68.util.NodeTestUtil.boolLit;
+import static mtm68.util.NodeTestUtil.charLit;
+import static mtm68.util.NodeTestUtil.emptyArray;
+import static mtm68.util.NodeTestUtil.emptyBlock;
+import static mtm68.util.NodeTestUtil.intLit;
+import static mtm68.util.NodeTestUtil.stringLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
