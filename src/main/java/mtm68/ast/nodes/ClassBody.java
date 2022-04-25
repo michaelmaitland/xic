@@ -86,7 +86,6 @@ public class ClassBody extends Node {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
-		return null;
+		return this;
 	}
 }

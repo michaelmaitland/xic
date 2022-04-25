@@ -26,6 +26,18 @@ public class IRClassDefn extends IRNode_c {
     	this.dispatchVector = dispatchVector;
     }
 
+	public String getClassName() {
+		return className;
+	}
+
+	public List<IRFuncDefn> getMethods() {
+		return methods;
+	}
+
+	public IRESeq getDispatchVector() {
+		return dispatchVector;
+	}
+
 	@Override
 	public IRNode lower(Lowerer v) {
 		return this;

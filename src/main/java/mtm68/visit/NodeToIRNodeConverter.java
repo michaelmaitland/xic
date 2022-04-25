@@ -111,6 +111,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.labelCounter = 0;
 		this.funcAndProcEncodings = funcAndProcEncodings;
 		this.inf = inf;
+		this.objectMethodEncodings = new HashMap<>();
 		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
 		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
 		this.classNameToNumFields = new HashMap<>();
@@ -287,7 +288,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	}	
 	
 	private String encodeMethodName(String className, String methodName) {
-		return "_" + encodeClassName(className) + encodeFuncName(methodName);
+		return encodeClassName(className) + "_" + encodeFuncName(methodName);
 	}
 
 	private String encodeClassName(String className) {

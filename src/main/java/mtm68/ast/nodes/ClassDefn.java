@@ -50,6 +50,10 @@ public class ClassDefn extends Node {
 	public ClassBody getBody() {
 		return body;
 	}
+	
+	public ClassDecl getClassDecl() {
+		return classDecl;
+	}
 
 	public void setIRClassDefn(IRClassDefn irClassDefn) {
 		this.irClassDefn = irClassDefn;
