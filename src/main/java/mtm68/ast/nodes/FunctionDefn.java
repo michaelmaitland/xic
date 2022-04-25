@@ -13,12 +13,18 @@ public class FunctionDefn extends Node {
 	
 	private FunctionDecl functionDecl;
 	private Block body;
+	private boolean isMethod;
 	
 	private  IRFuncDefn irFuncDefn;
 
 	public FunctionDefn(FunctionDecl fDecl, Block body) {
+		this(fDecl, body, false);
+	}
+
+	public FunctionDefn(FunctionDecl fDecl, Block body, boolean isMethod) {
 		this.functionDecl = fDecl;
 		this.body = body;
+		this.isMethod = isMethod;
 	}
 
 	public FunctionDecl getFunctionDecl() {
@@ -73,6 +79,11 @@ public class FunctionDefn extends Node {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 
+		// ClassDefn will be responsible for building the function defns
+		if(isMethod) {
+			return this;
+		}
+
 		String funcName = cv.saveAndGetFuncSymbol(functionDecl);
 		
 		IRSeq seq = cv.constructFuncDefnSeq(functionDecl, body);
@@ -81,5 +92,13 @@ public class FunctionDefn extends Node {
 		FunctionDefn copy = copy();
 		copy.setIRFuncDefn(defn);
 		return copy;
+	}
+
+	public void setIsMethod(boolean isMethod) {
+		this.isMethod = isMethod;
+	}
+	
+	public boolean isMethod() {
+		return isMethod;
 	}
 }

@@ -7,7 +7,10 @@ import edu.cornell.cs.cs4120.ir.IRClassDefn;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.types.ObjectType;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -83,12 +86,17 @@ public class ClassDefn extends Node {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO encode func names correctly. We can add a bool isMethod which the converter
-		// can check to determine how the NodeToIRConverter saves the function.
-		List<IRFuncDefn> methods = body.getMethodDefns()
-								  	   .stream()
-								  	   .map(FunctionDefn::getIRFuncDefn)
-								  	   .collect(Collectors.toList());
+		
+		// Discard IRFunctionDefn and reconstruct with correct naming
+		// and first argument called "this"
+		List<IRFuncDefn> methods = body.getMethodDefns().stream().map(fDefn -> {
+			FunctionDecl functionDecl = fDefn.getFunctionDecl();
+			String methodName = cv.saveAndGetMethodSymbol(functionDecl, id);
+			functionDecl.getArgs().add(new SimpleDecl("this", new ObjectType(id)));
+
+			IRSeq seq = cv.constructFuncDefnSeq(functionDecl, fDefn.getBody());
+			return inf.IRFuncDefn(methodName, seq, functionDecl.getArgs().size());
+		}).collect(Collectors.toList());
 		
 		IRESeq dv = cv.constructDispatchVector(this);
 		IRClassDefn irClassDefn = inf.IRClassDefn(id, methods, dv);

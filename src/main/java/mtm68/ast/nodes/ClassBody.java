@@ -34,6 +34,7 @@ public class ClassBody extends Node {
 	}
 
 	public void addMethod(FunctionDefn methodDefn) {
+		methodDefn.setIsMethod(true);
 		methodDefns.add(methodDefn);
 	}
 	
