@@ -38,6 +38,13 @@ public class DispatchVectorIndexResolver {
 		}
 		return null;
 	}
+	
+	public Map<String, Integer> getIndicies(String dispatchVectorClass) {
+		if(classNameToFuncIdToIndex.containsKey(dispatchVectorClass)) {
+			return classNameToFuncIdToIndex.get(dispatchVectorClass);
+		}
+		return null;
+	}
 
 	private void gen() {
 		for (ClassDecl cDecl : symbols.getClassDecls()) {
@@ -46,6 +53,7 @@ public class DispatchVectorIndexResolver {
 	}
 
 	private void gen(ClassDecl cDecl) {
+		// get indicies from super type if any
 		Map<String, Integer> funcIdToIndex;
 		if (cDecl.getSuperType() != null) {
 			gen(classNameToDecl.get(cDecl.getSuperType()));
@@ -55,10 +63,17 @@ public class DispatchVectorIndexResolver {
 			funcIdToIndex = new HashMap<>();
 		}
 
+		// add funcs that are not already in the map using the next
+		// index 
 		int index = funcIdToIndex.size();
 		for (FunctionDecl fDecl : cDecl.getMethodDecls()) {
-			funcIdToIndex.put(fDecl.getId(), index);
-			index++;
+			if (!funcIdToIndex.containsKey(fDecl.getId())) {
+				funcIdToIndex.put(fDecl.getId(), index);
+				index++;
+
+			}
 		}
+		
+		classNameToFuncIdToIndex.put(cDecl.getId(), funcIdToIndex);
 	}
 }
