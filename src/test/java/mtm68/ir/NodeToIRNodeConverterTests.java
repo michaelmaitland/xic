@@ -131,6 +131,10 @@ public class NodeToIRNodeConverterTests {
 		
 	private void assertArrayInit(ArrayInit converted, int numElems) {
 		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, converted.getIRExpr());
+		assertArrayInit(eseq, numElems);
+	}
+	
+	private void assertArrayInit(IRESeq eseq, int numElems) {
 		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, eseq.stmt());
 		assertEquals(3 + numElems, seq.stmts().size()); // one to alloc, one to move ret into temp, one to set length
 		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
@@ -646,6 +650,8 @@ public class NodeToIRNodeConverterTests {
 		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
 		assertEquals("A", irClassDefn.getClassName());
 		assertEquals(0, irClassDefn.getMethods().size());
+		
+		assertDispatchVectorInit(irClassDefn, c, 0);
 	}
 	
 	@Test
@@ -658,6 +664,8 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("A", irClassDefn.getClassName());
 		assertEquals(1, irClassDefn.getMethods().size());	
 		assertEquals("_IA_f_p", irClassDefn.getMethods().get(0).name());
+
+		assertDispatchVectorInit(irClassDefn, c, 1);
 	}
 	
 	@Test
@@ -671,6 +679,8 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(2, irClassDefn.getMethods().size());		
 		assertEquals("_IA_f_p", irClassDefn.getMethods().get(0).name());
 		assertEquals("_IA_g_p", irClassDefn.getMethods().get(1).name());
+		
+		assertDispatchVectorInit(irClassDefn, c, 2);
 	}
 	
 	@Test
@@ -684,6 +694,8 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("B", irClassDefn.getClassName());
 		assertEquals(1, irClassDefn.getMethods().size());		
 		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());
+
+		assertDispatchVectorInit(irClassDefn, c2, 1);
 	}
 	
 	@Test
@@ -698,6 +710,8 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(2, irClassDefn.getMethods().size());		
 		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());	
 		assertEquals("_IB_g_p", irClassDefn.getMethods().get(1).name());	
+
+		assertDispatchVectorInit(irClassDefn, c2, 2);
 	}
 	
 	@Test
@@ -712,6 +726,8 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(2, irClassDefn.getMethods().size());		
 		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());	
 		assertEquals("_IB_h_p", irClassDefn.getMethods().get(1).name());	
+
+		assertDispatchVectorInit(irClassDefn, c2, 3);
 	}
 	
 	@Test
@@ -726,8 +742,15 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(2, irClassDefn.getMethods().size());		
 		assertEquals("_IB_h_p", irClassDefn.getMethods().get(0).name());		
 		assertEquals("_IB_i_p", irClassDefn.getMethods().get(1).name());		
-	}
 
+		assertDispatchVectorInit(irClassDefn, c2, 4);
+	}
+	
+	private void assertDispatchVectorInit(IRClassDefn irClassDefn, ClassDefn cDefn, int numMethods) {
+		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, irClassDefn.getDispatchVector());
+		assertArrayInit(eseq, numMethods);
+	}	
+	
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods
 	//-------------------------------------------------------------------------------- 
