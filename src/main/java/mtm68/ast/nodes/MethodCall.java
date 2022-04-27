@@ -3,6 +3,7 @@ package mtm68.ast.nodes;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -57,13 +58,24 @@ public class MethodCall extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO
+		/* MethodCall gets converted to FExpr before type checking */
 		return this;
+	}
+	
+	@Override
+	public Node augmentWithThis(ThisAugmenter ta) {
+		/*
+		 * MethodCall is the same as the function call with the object passed as the
+		 * first argument.
+		 */
+		FExpr newFExpr = fExpr.copy();
+		newFExpr.getArgs().add(obj);
+		return newFExpr;
 	}
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
+		/* MethodCall gets converted to FExpr before conversion to IR */
 		return this;
 	}
 }

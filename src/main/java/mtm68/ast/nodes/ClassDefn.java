@@ -9,8 +9,6 @@ import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
-import mtm68.ast.nodes.stmts.SimpleDecl;
-import mtm68.ast.types.ObjectType;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
