@@ -101,11 +101,9 @@ public class ClassDefn extends Node {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		
 		// Discard IRFunctionDefn and reconstruct with correct naming
-		// and first argument called "this"
 		List<IRFuncDefn> methods = body.getMethodDefns().stream().map(fDefn -> {
 			FunctionDecl functionDecl = fDefn.getFunctionDecl();
 			String methodName = cv.saveAndGetMethodSymbol(functionDecl, id);
-			functionDecl.getArgs().add(new SimpleDecl("this", new ObjectType(id)));
 
 			IRSeq seq = cv.constructFuncDefnSeq(functionDecl, fDefn.getBody());
 			return inf.IRFuncDefn(methodName, seq, functionDecl.getArgs().size());
