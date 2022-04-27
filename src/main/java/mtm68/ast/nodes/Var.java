@@ -4,6 +4,7 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.VariableRenamer;
 import mtm68.visit.Visitor;
@@ -43,6 +44,16 @@ public class Var extends Expr {
 	public Node typeCheck(TypeChecker tc) {
 		Type type = tc.checkVar(this);
 		return copyAndSetType(type);
+	}
+	
+	@Override
+	public Node augmentWithThis(ThisAugmenter ta) {
+		// Change x to this.x if its a field.
+		if(ta.isField(this)) {
+			return new FieldAccess(this);
+		} else {
+			return this;
+		}
 	}
 
 	@Override

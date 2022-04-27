@@ -41,6 +41,7 @@ public class TypingContext {
 		Map<String, ClassDecl> classTable = symTable.getClassDecls();
 		for(String className : classTable.keySet()) {
 			ClassDecl decl = classTable.get(className);
+			// ContextType cType = new ContextType(decl.getId() )
 			// TODO: Build out class context. 
 			// Leaving a todo because we're not dealing with typechecking right now
 		}
@@ -67,7 +68,6 @@ public class TypingContext {
 		}
 		return null;
 	}
-	
 	
 	/** Returns whether a label has a binding in the context stack.
 	 * 
