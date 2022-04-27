@@ -636,7 +636,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(2, irRet.rets().size());
 	}
 	
-	
 	// --------------------------------------------------------------------------------
 	// ClassDefn
 	// --------------------------------------------------------------------------------
@@ -750,6 +749,10 @@ public class NodeToIRNodeConverterTests {
 		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, irClassDefn.getDispatchVector());
 		assertArrayInit(eseq, numMethods);
 	}	
+	
+	// --------------------------------------------------------------------------------
+	// New
+	// --------------------------------------------------------------------------------
 	
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods

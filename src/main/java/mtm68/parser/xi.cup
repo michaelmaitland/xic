@@ -195,6 +195,10 @@ exp ::= exp:e1 OR exp:e2           {: RESULT = new Or(e1, e2); :}
     | LENGTH OPEN_PAREN exp:e CLOSE_PAREN {: RESULT = new ArrayLength(e); :}
     | NEW ID:id DOT fexp:e         {: RESULT = new New(id, e); :}
     | THIS                         {: RESULT = new This(); :}
+    | THIS DOT fexp:e              {: RESULT = new MethodCall(e); :}
+    | THIS DOT ID:id               {: RESULT = new FieldAccess(new Var(id)); :}
+    | ID:id1 DOT ID:id2            {: RESULT = new FieldAccess(new Var(id1), new Var(id2)); :}
+    | ID:id DOT fexp:e             {: RESULT = new MethodCall(new Var(id), e); :}
     ;
 
 fexp ::= ID:id OPEN_PAREN exp_star:args CLOSE_PAREN     {: RESULT = new FExpr(id, args); :} 
