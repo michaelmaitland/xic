@@ -58,24 +58,23 @@ public class MethodCall extends Expr {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		/* MethodCall gets converted to FExpr before type checking */
+		// TODO
 		return this;
 	}
 	
 	@Override
 	public Node augmentWithThis(ThisAugmenter ta) {
-		/*
-		 * MethodCall is the same as the function call with the object passed as the
-		 * first argument.
-		 */
-		FExpr newFExpr = fExpr.copy();
-		newFExpr.getArgs().add(obj);
-		return newFExpr;
+		// change o.f() to o.f(o)
+		MethodCall newMethodCall = copy();
+		newMethodCall.getFExpr().getArgs().add(0, obj);
+		return newMethodCall;
 	}
-
+	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		/* MethodCall gets converted to FExpr before conversion to IR */
-		return this;
+		
+		String t = cv.newTemp(obj.getId());
+
+		return copyAndSetIRExpr(inf.IRTemp(t));
 	}
 }

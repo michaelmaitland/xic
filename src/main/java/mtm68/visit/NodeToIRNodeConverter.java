@@ -867,4 +867,12 @@ public class NodeToIRNodeConverter extends Visitor {
 			throw new InternalCompilerError("Could not find class " + className + " when searching for dispatch vector address.");
 		}
 	}
+
+	/**
+	 * A function that initializes all dispatch vectors.
+	 */
+	public IRFuncDefn dispatchVectorInit() {
+		List<IRStmt> stmts = ArrayUtils.empty();
+		return null;
+	}
 }

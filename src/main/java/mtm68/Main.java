@@ -212,6 +212,7 @@ public class Main {
 
 			// Add our function before lowering
 			program.getIrCompUnit().appendFunc(irConverter.allocLayer());
+			program.getIrCompUnit().appendFunc(irConverter.dispatchVectorInit());
 
 			IRNode irRoot = lowerer.visit(program.getIrCompUnit());
 

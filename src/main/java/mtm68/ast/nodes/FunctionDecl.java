@@ -7,6 +7,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
 import mtm68.visit.SymbolCollector;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -48,7 +49,7 @@ public class FunctionDecl extends Node {
 	public String toString() {
 		return "FunctionDecl [id=" + id + ", args=" + args + ", returnTypes=" + returnTypes + "]";
 	}
-
+	
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.printAtom(id);
@@ -81,6 +82,20 @@ public class FunctionDecl extends Node {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		return this;
+	}
+	
+	@Override
+	public Node augmentWithThis(ThisAugmenter ta) {
+		// Add "this" as first argument if its a method
+		if(isMethod) {
+			FunctionDecl newDecl = copy();
+			Type classType = ta.getCurrentClassType();
+			SimpleDecl thisArg = new SimpleDecl("this", classType);
+			newDecl.args.add(thisArg);
+			return newDecl;
+		} else {
+			return this;
+		}
 	}
 	
 	@Override

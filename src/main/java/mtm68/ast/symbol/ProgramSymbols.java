@@ -12,6 +12,8 @@ public class ProgramSymbols {
 
 	private List<ClassDecl> classDecls;
 	
+	private Map<String, List<String>> classToFieldsName;
+	
 	public ProgramSymbols(List<FunctionDecl> funcDecls, List<ClassDecl> classDecls) {
 		super();
 		this.funcDecls = funcDecls;

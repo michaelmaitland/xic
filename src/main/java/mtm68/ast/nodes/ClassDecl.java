@@ -77,7 +77,6 @@ public class ClassDecl extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO: I think that we should save the relevant information in the Context
 		return this;
 	}
 	

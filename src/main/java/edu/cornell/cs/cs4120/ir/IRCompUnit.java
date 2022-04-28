@@ -161,6 +161,13 @@ public class IRCompUnit extends IRNode_c {
         for (IRFuncDefn func : functions.values()) {
             funcAssems.add((FuncDefnAssem)func.getAssem());
         }
+        
+		for (IRClassDefn cDefn : classes.values()) {
+			for (IRFuncDefn func : cDefn.getMethods()) {
+				funcAssems.add((FuncDefnAssem) func.getAssem());
+			}
+		}
+
 		return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
 	}
 

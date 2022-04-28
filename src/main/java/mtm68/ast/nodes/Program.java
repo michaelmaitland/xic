@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import edu.cornell.cs.cs4120.ir.IRClassDefn;
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -83,8 +84,12 @@ public class Program extends Node implements Root {
 		Map<String, IRFuncDefn> irFuncDefns = body.getFunctionDefns().stream()
 			.map(FunctionDefn::getIRFuncDefn)
 			.collect(Collectors.toMap(IRFuncDefn::name, v -> v));
+		
+		Map<String, IRClassDefn> irClassDefns = body.getClassDefns().stream()
+			.map(ClassDefn::getIRClassDefn)
+			.collect(Collectors.toMap(IRClassDefn::getClassName, v -> v));
 
-		IRCompUnit compUnit = inf.IRCompUnit(cv.getProgramName(), irFuncDefns);
+		IRCompUnit compUnit = inf.IRCompUnit(cv.getProgramName(), irFuncDefns, irClassDefns);
 		
 		Program newProgram = copy();
 		newProgram.irCompUnit = compUnit;
