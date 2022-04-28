@@ -210,7 +210,7 @@ public class Main {
 			
 			program = irConverter.performConvertToIR(program);
 
-			// Add our function before lowering
+			// Add our functions before lowering
 			program.getIrCompUnit().appendFunc(irConverter.allocLayer());
 			program.getIrCompUnit().appendFunc(irConverter.dispatchVectorInit());
 

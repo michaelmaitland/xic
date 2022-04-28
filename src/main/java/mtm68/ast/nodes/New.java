@@ -75,10 +75,11 @@ public class New extends Expr {
 		// allocate the object that contains dv ptr + fields
 		IRESeq alloc = cv.allocateAndInitArray(exprs);
 		
-		IRMem objAddr = cv.getOffsetIntoArr(alloc, inf.IRConst(0), true);
+		IRMem object = cv.getOffsetIntoArr(alloc, inf.IRConst(0));
 		
-		// FExpr must have the object as first argument
-		// We rebuild the FExpr IR here and use the new version instead 
+		// FExpr must have the object as first argument. Since it had no
+		// way to refer to the object before since it didn't exist yet,
+		// we must rebuild the FExpr IR here and use the new version instead 
 		String sym = cv.getFuncSymbol(fExpr);
 		IRName name = inf.IRName(sym);
 		List<IRExpr> irArgs = fExpr.getArgs()
