@@ -851,8 +851,15 @@ public class NodeToIRNodeConverter extends Visitor {
 		return eseq;
 	}
 	
-	public void saveNumFields(ClassDefn defn) {
+	public void saveFields(ClassDefn defn) {
 		classNameToNumFields.put(defn.getId(), defn.getBody().getFields().size());
+		List<SimpleDecl> fields = defn.getBody().getFields();
+		
+		Map<String, Integer> fieldNameToIndex = new HashMap<>();
+		for(int i = 0; i < fields.size(); i++) {
+			fieldNameToIndex.put(fields.get(i).getId(), i);
+		}
+		classNameToFieldNameToIndex.put(defn.getId(), fieldNameToIndex);
 	}
 
 	public int getNumFields(String className) {

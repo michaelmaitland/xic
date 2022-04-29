@@ -68,7 +68,9 @@ public class FieldAccess extends Expr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		ObjectType objType = (ObjectType) obj.getType();
 		int index = cv.getFieldIndex(objType, field);
+
 		IRMem field = cv.getOffsetIntoArr(obj.getIRExpr(), inf.IRConst(index));
+
 		return copyAndSetIRExpr(field);
 	}
 }

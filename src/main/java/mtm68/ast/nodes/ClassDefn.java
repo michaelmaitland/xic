@@ -98,6 +98,8 @@ public class ClassDefn extends Node {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		
+		cv.saveFields(this);
+
 		// Discard IRFunctionDefn and reconstruct with correct naming
 		List<IRFuncDefn> methods = body.getMethodDefns().stream().map(fDefn -> {
 			FunctionDecl functionDecl = fDefn.getFunctionDecl();
