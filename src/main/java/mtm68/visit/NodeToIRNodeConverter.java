@@ -33,6 +33,7 @@ import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Not;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.And;
 import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
@@ -82,6 +83,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	private Map<String, Integer> classNameToNumFields;
 	
 	private Map<String, IRMem> classNameToDispatchVectorAddr;
+
+	private Map<String, Map<String, Integer>> classNameToFieldNameToIndex;
 	
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
 
@@ -874,5 +877,20 @@ public class NodeToIRNodeConverter extends Visitor {
 	public IRFuncDefn dispatchVectorInit() {
 		List<IRStmt> stmts = ArrayUtils.empty();
 		return null;
+	}
+
+	public Integer getFieldIndex(ObjectType objType, Var field) {
+		String className = objType.getName();
+		String fieldName = field.getId();
+		if(classNameToFieldNameToIndex.containsKey(fieldName)) {
+			Map<String, Integer> fields = classNameToFieldNameToIndex.get(className);
+			if(fields.containsKey(fieldName)) {
+				return fields.get(fieldName);
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
 	}
 }

@@ -1,7 +1,9 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.ObjectType;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -64,7 +66,9 @@ public class FieldAccess extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
-		return this;
+		ObjectType objType = (ObjectType) obj.getType();
+		int index = cv.getFieldIndex(objType, field);
+		IRMem field = cv.getOffsetIntoArr(obj.getIRExpr(), inf.IRConst(index));
+		return copyAndSetIRExpr(field);
 	}
 }
