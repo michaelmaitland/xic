@@ -11,6 +11,7 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
+import edu.cornell.cs.cs4120.ir.IRDataArray;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
@@ -82,8 +83,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private Map<String, Integer> classNameToNumFields;
 	
-	private Map<String, IRMem> classNameToDispatchVectorAddr;
-
 	private Map<String, Map<String, Integer>> classNameToFieldNameToIndex;
 	
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
@@ -118,7 +117,6 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
 		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
 		this.classNameToNumFields = new HashMap<>();
-		this.classNameToDispatchVectorAddr = new HashMap<>();
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
@@ -824,31 +822,25 @@ public class NodeToIRNodeConverter extends Visitor {
 		return inf.IRESeq(seq, resultTemp);
 	}
 	
-	public IRESeq constructDispatchVector(ClassDefn defn) {
+	public IRDataArray constructDispatchVector(ClassDefn defn) {
 		String className = defn.getId();
 		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
 
-		List<IRExpr> elems = ArrayUtils.empty();
+		List<long[]> elems = ArrayUtils.empty();
 		for(String funcId : methods.keySet()) {
 			String invokeClassName = methods.get(funcId);
 			String funcNameEncoded = encodeMethodName(invokeClassName, funcId);
 			
-			// Encode the encoded function name as a char[]
-			List<IRExpr> string = ArrayUtils.stringToCharList(funcNameEncoded)
-					.stream()
-					.map(ch -> inf.IRConst(ch))
-					.collect(Collectors.toList());
-			IRESeq eseq = allocateAndInitArray(string);
+			long[] data = ArrayUtils.stringToLongArray(funcNameEncoded);
 			
 			// Place it into the correct spot in the sequence based on the index
 			// we calculated it to be at.
 			int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
-			elems.add(index, eseq);
+			elems.add(index, data);
 		}
 
-		IRESeq eseq = allocateAndInitArray(elems);
-		classNameToDispatchVectorAddr.put(defn.getId(), getOffsetIntoArr(eseq, inf.IRConst(0), true));
-		return eseq;
+		IRDataArray dv = inf.IRDataArray(defn.getId(), (long[][])elems.toArray());
+		return dv;
 	}
 	
 	public void saveFields(ClassDefn defn) {
@@ -868,22 +860,6 @@ public class NodeToIRNodeConverter extends Visitor {
 		} else {
 			throw new InternalCompilerError("Could not find class " + className + " when searching for number of fields.");
 		}
-	}
-
-	public IRMem getDispatchVectorAddr(String className) {
-		if(classNameToDispatchVectorAddr.containsKey(className)) {
-			return classNameToDispatchVectorAddr.get(className);
-		} else {
-			throw new InternalCompilerError("Could not find class " + className + " when searching for dispatch vector address.");
-		}
-	}
-
-	/**
-	 * A function that initializes all dispatch vectors.
-	 */
-	public IRFuncDefn dispatchVectorInit() {
-		List<IRStmt> stmts = ArrayUtils.empty();
-		return null;
 	}
 
 	public Integer getFieldIndex(ObjectType objType, Var field) {

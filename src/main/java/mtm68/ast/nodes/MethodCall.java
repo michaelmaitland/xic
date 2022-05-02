@@ -1,5 +1,7 @@
 package mtm68.ast.nodes;
 
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -72,9 +74,13 @@ public class MethodCall extends Expr {
 	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		IRMem dispatchVector = cv.getOffsetIntoArr(obj.getIRExpr(), inf.IRConst(0));
+		int index = cv.getMethodIndex(this);
 		
-		String t = cv.newTemp(obj.getId());
+		IRMem methodName = cv.getOffsetIntoArr(dispatchVector, inf.IRConst(index));
+		
+		IRESeq eseq;
 
-		return copyAndSetIRExpr(inf.IRTemp(t));
+		return copyAndSetIRExpr(eseq);
 	}
 }

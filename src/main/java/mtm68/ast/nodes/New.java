@@ -64,7 +64,7 @@ public class New extends Expr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		List<IRExpr> exprs = ArrayUtils.empty();
 
-		IRMem dispatchVectorPointer = cv.getDispatchVectorAddr(className);
+		IRMove dispatchVectorPointer = inf.IRMove(inf.IRTemp(cv.newTemp()), inf.IRName(className));
 		exprs.add(dispatchVectorPointer);
 		
 		int numFields = cv.getNumFields(className);

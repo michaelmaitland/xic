@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRClassDefn;
-import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRDataArray;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
@@ -109,7 +109,7 @@ public class ClassDefn extends Node {
 			return inf.IRFuncDefn(methodName, seq, functionDecl.getArgs().size());
 		}).collect(Collectors.toList());
 		
-		IRESeq dv = cv.constructDispatchVector(this);
+		IRDataArray dv = cv.constructDispatchVector(this);
 		IRClassDefn irClassDefn = inf.IRClassDefn(id, methods, dv);
 		
 		ClassDefn newDefn = copy();

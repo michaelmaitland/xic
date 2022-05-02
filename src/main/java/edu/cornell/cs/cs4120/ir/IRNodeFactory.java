@@ -69,7 +69,7 @@ public interface IRNodeFactory {
 
     IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs);
 
-    IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRESeq dispatchVector);
+    IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRDataArray dispatchVector);
 
     /**
      *
@@ -150,4 +150,6 @@ public interface IRNodeFactory {
      * @param name name of this temporary register
      */
     IRTemp IRTemp(String name);
+
+	IRDataArray IRDataArray(String id, long[][] elems);
 }
