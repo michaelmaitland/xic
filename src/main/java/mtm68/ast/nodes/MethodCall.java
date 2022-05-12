@@ -1,9 +1,18 @@
 package mtm68.ast.nodes;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.util.FreshTempGenerator;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.ThisAugmenter;
 import mtm68.visit.TypeChecker;

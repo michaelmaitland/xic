@@ -21,6 +21,7 @@ public class FExpr extends Expr {
 	
 	private String id;
 	private List<Expr> args;
+	private boolean isMethodCall;
 
 	public FExpr(String id, List<Expr> args) {
 		this.id = id;
@@ -33,6 +34,10 @@ public class FExpr extends Expr {
 	
 	public List<Expr> getArgs() {
 		return args;
+	}
+	
+	public void setIsMethodCall(boolean isMethodCall) {
+		this.isMethodCall = isMethodCall;
 	}
 
 	@Override
@@ -72,6 +77,11 @@ public class FExpr extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+		// Method Calls will build the FExpr IR on their own
+		if(isMethodCall) {
+			return this;
+		}
+
 		String sym = cv.getFuncSymbol(this);
 		IRName name = inf.IRName(sym);
 		List<IRExpr> irArgs = args.stream()

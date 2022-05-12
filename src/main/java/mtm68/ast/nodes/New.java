@@ -8,7 +8,6 @@ import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -27,6 +26,7 @@ public class New extends Expr {
 	public New(String className, FExpr fExpr) {
 		this.className = className;
 		this.fExpr = fExpr;
+		fExpr.setIsMethodCall(true);
 	}
 	
 	@Override
@@ -64,8 +64,9 @@ public class New extends Expr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		List<IRExpr> exprs = ArrayUtils.empty();
 
-		IRMove dispatchVectorPointer = inf.IRMove(inf.IRTemp(cv.newTemp()), inf.IRName(className));
-		exprs.add(dispatchVectorPointer);
+		// Put DV in a temp
+		IRESeq dispatchVectorPtr = cv.getDispatchVector(className); 
+		exprs.add(dispatchVectorPtr);
 		
 		int numFields = cv.getNumFields(className);
 		for(int i = 0; i < numFields; i++) {
@@ -74,14 +75,12 @@ public class New extends Expr {
 
 		// allocate the object that contains dv ptr + fields
 		IRESeq alloc = cv.allocateAndInitArray(exprs);
-		
 		IRMem object = cv.getOffsetIntoArr(alloc, inf.IRConst(0));
 		
 		// FExpr must have the object as first argument. Since it had no
 		// way to refer to the object before since it didn't exist yet,
 		// we must rebuild the FExpr IR here and use the new version instead 
-		String sym = cv.getFuncSymbol(fExpr);
-		IRName name = inf.IRName(sym);
+		IRMem name = cv.getMethodSymbol(fExpr, className);
 		List<IRExpr> irArgs = fExpr.getArgs()
 								   .stream()
 								   .map(Expr::getIRExpr)
@@ -92,8 +91,8 @@ public class New extends Expr {
 		IRCallStmt call = inf.IRCallStmt(name, irArgs);
 		IRTemp freshTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
 		IRMove moveIntoFresh = inf.IRMove(freshTemp, inf.IRTemp(cv.retVal(0)));
-		IRESeq eseq = inf.IRESeq(inf.IRSeq(call, moveIntoFresh), freshTemp);
+		IRESeq eseq2 = inf.IRESeq(inf.IRSeq(call, moveIntoFresh), freshTemp);
 
-		return copyAndSetIRExpr(eseq);
+		return copyAndSetIRExpr(eseq2);
 	}
 }

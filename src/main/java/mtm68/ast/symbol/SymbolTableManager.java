@@ -3,6 +3,7 @@ package mtm68.ast.symbol;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import mtm68.FileType;
@@ -43,6 +44,7 @@ public class SymbolTableManager {
 			
 			mergeFunctionDecls(mergedTable, curTable, use);
 			mergeClassDecls(mergedTable, curTable, use);
+			mergeFields(mergedTable, curTable, use);
 		}
 		return mergedTable;
 	}
@@ -70,6 +72,17 @@ public class SymbolTableManager {
 				}
 			}
 			mergedClasses.putAll(useIdToSymTable.get(use.getId()).getClassDecls());
+	}
+	
+	private void mergeFields(SymbolTable mergeTo, SymbolTable toMerge, Use use) throws SemanticException {
+		Map<String, List<String>> toMergeClasses = toMerge.getFields();
+		Map<String, List<String>> mergedClasses = mergeTo.getFields();
+		for (String c : toMergeClasses.keySet()) {
+			if (mergedClasses.containsKey(c)) {
+				throw new SemanticException(use, "Multiple definitions for class " + toMergeClasses.get(c));
+			}
+			mergedClasses.putAll(useIdToSymTable.get(use.getId()).getFields());
+		}
 	}
 
 	private void generateSymbolTableFromLib(Use use) throws FileNotFoundException, SemanticException {

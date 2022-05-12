@@ -33,6 +33,7 @@ import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRClassDefn;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
@@ -55,6 +56,7 @@ import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.IntLiteral;
+import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
@@ -753,6 +755,18 @@ public class NodeToIRNodeConverterTests {
 	// --------------------------------------------------------------------------------
 	// New
 	// --------------------------------------------------------------------------------
+	@Test
+	public void newObjNoFields() {
+		ClassDefn c = cDefn("A", "f");
+		ProgramSymbols progSyms = syms(c);
+
+		FExpr fExpr = new FExpr("f", ArrayUtils.empty());
+		New n = new New("A", fExpr);
+		New newNew = doConversion(progSyms, n);
+		
+		IRExpr ir = newNew.getIRExpr();
+		assertNotNull(ir);
+	}
 	
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods
@@ -771,7 +785,7 @@ public class NodeToIRNodeConverterTests {
 	}
 	
 	private <N extends Node> N doConversion(ProgramSymbols progSyms, N node) {
-		NodeToIRNodeConverter conv = new NodeToIRNodeConverter("test", new HashMap<>(), new IRNodeFactory_c(), progSyms);
+		NodeToIRNodeConverter conv = new NodeToIRNodeConverter("test", new IRNodeFactory_c(), progSyms);
 		addLocs(node);
 		return conv.performConvertToIR(node);
 	}
@@ -800,19 +814,28 @@ public class NodeToIRNodeConverterTests {
 	}
 	
 	private ClassDefn cDefn(String className, String... methods) {
-		return new ClassDefn(className, new ClassBody(funcs(methods), null));
+		return new ClassDefn(className, new ClassBody(funcs(methods), ArrayUtils.empty()));
 	}
 	
 	private ClassDefn cDefnExt(String className, String superClass, String... methods) {
-		return new ClassDefn(className, superClass, new ClassBody(funcs(methods), null));
+		return new ClassDefn(className, superClass, new ClassBody(funcs(methods), ArrayUtils.empty()));
 	}
 	
 	private ProgramSymbols syms(ClassDefn... c) {
+		Map<String, List<String>> fields = new HashMap<>();
+		for(ClassDefn defn : c) {
+			List<String> fs = defn.getBody().getFields().stream()
+									  .map(SimpleDecl::getId)
+									  .collect(Collectors.toList());
+			fields.put(defn.getId(), fs);
+		}
+		
 		return new ProgramSymbols(
 				ArrayUtils.empty(), 
 				Arrays.asList(c).stream()
 				                .map(ClassDefn::getClassDecl)
-				                .collect(Collectors.toList())
+				                .collect(Collectors.toList()),
+				fields
 				);
 	}
 }

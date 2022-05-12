@@ -106,6 +106,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		this(programName, new HashMap<>(), inf, syms);
 		saveFuncSymbols(syms.getFuncDecls());
 		saveClassSymbols(syms.getClassDecls());
+		saveFields(syms.getClassFields());
 	}
 	
 	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf, ProgramSymbols syms) {
@@ -843,15 +844,19 @@ public class NodeToIRNodeConverter extends Visitor {
 		return dv;
 	}
 	
-	public void saveFields(ClassDefn defn) {
-		classNameToNumFields.put(defn.getId(), defn.getBody().getFields().size());
-		List<SimpleDecl> fields = defn.getBody().getFields();
-		
-		Map<String, Integer> fieldNameToIndex = new HashMap<>();
-		for(int i = 0; i < fields.size(); i++) {
-			fieldNameToIndex.put(fields.get(i).getId(), i);
+	public void saveFields(Map<String, List<String>> classToFields) {
+		classNameToNumFields = new HashMap<>();
+		classNameToFieldNameToIndex = new HashMap<>();
+		for(String className : classToFields.keySet()) {
+			List<String> fields = classToFields.get(className);
+			classNameToNumFields.put(className, fields.size());
+
+			Map<String, Integer> fieldNameToIndex = new HashMap<>();
+			for (int i = 0; i < fields.size(); i++) {
+				fieldNameToIndex.put(fields.get(i), i);
+			}
+			classNameToFieldNameToIndex.put(className, fieldNameToIndex);
 		}
-		classNameToFieldNameToIndex.put(defn.getId(), fieldNameToIndex);
 	}
 
 	public int getNumFields(String className) {
@@ -875,5 +880,20 @@ public class NodeToIRNodeConverter extends Visitor {
 		} else {
 			return null;
 		}
+	}
+
+	public IRMem getMethodSymbol(FExpr fExpr, String className) {
+		IRESeq dispatchVectorPtr = getDispatchVector(className);
+
+		int index = dispatchVectorIndexResolver.getMethodIndex(className, fExpr.getId());
+		IRBinOp offset = inf.IRBinOp(OpType.ADD, dispatchVectorPtr, inf.IRConst(index));
+
+		return inf.IRMem(offset);
+	}
+	
+	public IRESeq getDispatchVector(String className) {
+		IRTemp ptr = inf.IRTemp(newTemp());
+		IRMove populateTemp = inf.IRMove(ptr, inf.IRName(className));
+		return inf.IRESeq(populateTemp, ptr);
 	}
 }
