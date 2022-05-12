@@ -881,7 +881,7 @@ public class NodeToIRNodeConverter extends Visitor {
 			return null;
 		}
 	}
-
+	
 	public IRMem getMethodSymbol(FExpr fExpr, String className) {
 		IRESeq dispatchVectorPtr = getDispatchVector(className);
 

@@ -56,6 +56,7 @@ import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.IntLiteral;
+import mtm68.ast.nodes.MethodCall;
 import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
@@ -72,6 +73,7 @@ import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
 import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.types.DeclType;
+import mtm68.ast.types.ObjectType;
 import mtm68.ast.types.Types;
 import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
@@ -764,6 +766,24 @@ public class NodeToIRNodeConverterTests {
 		New n = new New("A", fExpr);
 		New newNew = doConversion(progSyms, n);
 		
+		IRExpr ir = newNew.getIRExpr();
+		assertNotNull(ir);
+	}
+	
+	// --------------------------------------------------------------------------------
+	// MethodCall
+	// --------------------------------------------------------------------------------
+	@Test
+	public void simpleMethodCall() {
+		ClassDefn c = cDefn("A", "f");
+		ProgramSymbols progSyms = syms(c);
+
+		FExpr fExpr = new FExpr("f", ArrayUtils.empty());
+		Var obj = new Var("o");
+		obj.setType(new ObjectType("A"));
+		MethodCall mc = new MethodCall(obj, fExpr);
+		MethodCall newNew = doConversion(progSyms, mc);
+
 		IRExpr ir = newNew.getIRExpr();
 		assertNotNull(ir);
 	}

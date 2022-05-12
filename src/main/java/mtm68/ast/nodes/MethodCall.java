@@ -8,10 +8,10 @@ import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
-import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
+import mtm68.ast.types.ObjectType;
 import mtm68.util.FreshTempGenerator;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.ThisAugmenter;
@@ -26,6 +26,7 @@ public class MethodCall extends Expr {
 	public MethodCall(Var obj, FExpr fExpr) {
 		this.obj = obj;
 		this.fExpr = fExpr;
+		fExpr.setIsMethodCall(true);
 	}
 	
 	public MethodCall(FExpr fExpr) {
@@ -83,12 +84,23 @@ public class MethodCall extends Expr {
 	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		IRMem dispatchVector = cv.getOffsetIntoArr(obj.getIRExpr(), inf.IRConst(0));
-		int index = cv.getMethodIndex(this);
 		
-		IRMem methodName = cv.getOffsetIntoArr(dispatchVector, inf.IRConst(index));
+		// It doesn't matter whether we have the concrete class
+		// name here because all types that declare this
+		// method put it at same index.
+		ObjectType type = (ObjectType)obj.getType();
+		IRMem name = cv.getMethodSymbol(fExpr, type.getName());
 		
-		IRESeq eseq;
+		List<IRExpr> irArgs = fExpr.getArgs()
+				.stream()
+				.map(Expr::getIRExpr).collect(Collectors.toList());
+		// Prepend the object argument
+		irArgs.add(0, obj.getIRExpr());
+
+		IRCallStmt call = inf.IRCallStmt(name, irArgs);
+		IRTemp freshTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
+		IRMove moveIntoFresh = inf.IRMove(freshTemp, inf.IRTemp(cv.retVal(0)));
+		IRESeq eseq = inf.IRESeq(inf.IRSeq(call, moveIntoFresh), freshTemp);
 
 		return copyAndSetIRExpr(eseq);
 	}
