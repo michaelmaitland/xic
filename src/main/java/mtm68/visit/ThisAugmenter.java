@@ -1,27 +1,37 @@
 package mtm68.visit;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.ast.nodes.ClassDefn;
+import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
+import mtm68.ast.nodes.stmts.Block;
+import mtm68.ast.nodes.stmts.Decl;
+import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.nodes.stmts.While;
 import mtm68.ast.types.ObjectType;
 import mtm68.ast.types.Type;
+import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
 
 public class ThisAugmenter extends Visitor {
 
-	private Stack<ClassDefn> context;
+	private Optional<ClassDefn> currentClass;
+	
+	private Stack<List<String>> varContext;
 	
 	public ThisAugmenter() {
-		this(new Stack<>()); 
+		this.currentClass = Optional.empty(); 
 	}
 
-	public ThisAugmenter(Stack<ClassDefn> context){
-		this.context = context;
+	public ThisAugmenter(ClassDefn currentClass){
+		this.currentClass= Optional.of(currentClass);
 	}
 	
 	public <N extends Node> N performAugment(N root) {
@@ -38,7 +48,9 @@ public class ThisAugmenter extends Visitor {
 	@Override
 	public Visitor enter(Node parent, Node n) {
 		if (n instanceof ClassDefn)
-			context.push((ClassDefn) n);
+			currentClass = Optional.of((ClassDefn) n);
+		
+		if(isScopeNode(n) || parent instanceof If) varContext.push(ArrayUtils.empty());
 
 		return this;
 	}
@@ -47,19 +59,31 @@ public class ThisAugmenter extends Visitor {
 	public Node leave(Node parent, Node n) {
 		Node newN = n.augmentWithThis(this);
 		
-		if (n instanceof ClassDefn) context.pop();
+		if (n instanceof ClassDefn) currentClass = Optional.empty();
+
+		if(isScopeNode(n) || parent instanceof If) varContext.pop();
 
 		return newN;
 	}
-
+	
+	private boolean isScopeNode(Node node) {
+		return node instanceof Block
+				|| node instanceof While
+				|| node instanceof FunctionDefn;
+	}
+	
 	/**
-	 * Whether or not var is a field that is defined in the 
+	 * Whether or not Var refers to a field that is defined in the 
 	 * current context ClassDefn.
 	 */
 	public boolean isField(Var var) {
-		if(context.isEmpty()) return false;
+		
+		// If its in scope from a decl then its not a field
+		if(isInScope(var.getId())) return false;
+		
+		if(currentClass.isPresent()) return false;
 	
-		ClassDefn defn = context.peek();
+		ClassDefn defn = currentClass.get();
 		List<SimpleDecl> fields = defn.getBody().getFields();
 		for(SimpleDecl field : fields) {
 			if(field.getId().equals(var.getId())) {
@@ -70,14 +94,27 @@ public class ThisAugmenter extends Visitor {
 		return false;
 	}
 
+	private boolean isInScope(String id) {
+		Iterator<List<String>> stackIterator = varContext.iterator();
+		while (stackIterator.hasNext()) {
+			List<String> context = stackIterator.next();
+			if (context.contains(id))
+				return true;
+		}
+		return false;
+	}
+	
 	/**
 	 * The ObjectType corresponding to the current context ClassDefn.
 	 */
 	public Type getCurrentClassType() {
-		if(context.isEmpty()) 
+		if(!currentClass.isPresent()) 
 			throw new InternalCompilerError("No current class in ThisAugmenter context");
 		else 
-			return new ObjectType(context.peek().getId());
+			return new ObjectType(currentClass.get().getId());
 	}
 
+	public void addBinding(Decl decl) {
+		varContext.peek().add(decl.getId());
+	}
 }

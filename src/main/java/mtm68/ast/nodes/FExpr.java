@@ -14,6 +14,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
 import mtm68.util.FreshTempGenerator;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -73,6 +74,11 @@ public class FExpr extends Expr {
 		exp.type = type;
 
 		return exp;
+	}
+	
+	@Override
+	public Node augmentWithThis(ThisAugmenter ta) {
+		return new MethodCall(this);
 	}
 
 	@Override
