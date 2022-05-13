@@ -40,6 +40,10 @@ public class FExpr extends Expr {
 	public void setIsMethodCall(boolean isMethodCall) {
 		this.isMethodCall = isMethodCall;
 	}
+	
+	public boolean isMethodCall() {
+		return isMethodCall;
+	}
 
 	@Override
 	public String toString() {

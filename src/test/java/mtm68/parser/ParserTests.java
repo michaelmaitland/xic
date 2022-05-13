@@ -1211,7 +1211,6 @@ public class ParserTests {
 		assertEquals("B", defn.getSuperType());
 	}
 	
-	
 	@Test
 	void testClassDefnWithMethods() throws Exception{
 		// Class A { f() {} g() {}}
@@ -1240,6 +1239,10 @@ public class ParserTests {
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getMethodDefns().size());
 		assertTrue(defn.getBody().getMethodDefns().get(0).getFunctionDecl().isMethod());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(2, decl.getMethodDecls().size());
 	}
 	
 	@Test
@@ -1265,6 +1268,10 @@ public class ParserTests {
 
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getFields().size());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(0, decl.getMethodDecls().size());
 	}
 		
 	
@@ -1325,6 +1332,10 @@ public class ParserTests {
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getFields().size());
 		assertEquals(1, defn.getBody().getMethodDefns().size());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(1, decl.getMethodDecls().size());
 	}
 	
 	@Test
@@ -1435,6 +1446,7 @@ public class ParserTests {
 		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, firstExp(prog));
 		assertEquals("this", mc.getObj().getId());
 		assertEquals("f", mc.getFExpr().getId());
+		assertTrue(mc.getFExpr().isMethodCall());
 	}
 	
 	@Test
@@ -1451,8 +1463,12 @@ public class ParserTests {
 		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, firstExp(prog));
 		assertEquals("o", mc.getObj().getId());
 		assertEquals("f", mc.getFExpr().getId());
+		assertTrue(mc.getFExpr().isMethodCall());
 	}
 	
+	//--------------------------------------------------------------------------------
+	//- FieldAccess
+	//--------------------------------------------------------------------------------
 	@Test
 	public void thisFieldAccess() throws Exception {
 		// this.p
@@ -1573,5 +1589,4 @@ public class ParserTests {
 	private Token token(TokenType t, Object data) {
 		return tokenFac.newToken(t, data, 0, 0);
 	}
-	
-	}
+}
