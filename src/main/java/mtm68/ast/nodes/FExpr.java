@@ -78,7 +78,13 @@ public class FExpr extends Expr {
 	
 	@Override
 	public Node augmentWithThis(ThisAugmenter ta) {
-		return new MethodCall(this);
+		// If its not yet marked as a method call we want
+		// to augment iff we're in a class an that class defines
+		// the function being called
+		if(!isMethodCall && ta.inClassScope() && ta.classHasFunc(id))
+			return new MethodCall(this);
+		else
+			return this;
 	}
 
 	@Override

@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.Stack;
 
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
+import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.ClassDefn;
+import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
@@ -116,5 +118,22 @@ public class ThisAugmenter extends Visitor {
 
 	public void addBinding(Decl decl) {
 		varContext.peek().add(decl.getId());
+	}
+
+	public boolean inClassScope() {
+		return currentClass.isPresent();
+	}
+
+	public boolean classHasFunc(String id) {
+		if(!currentClass.isPresent()) {
+			throw new InternalCompilerError("No current class in ThisAugmenter context");
+		} else {
+			ClassDecl decl = currentClass.get().getClassDecl();
+			List<FunctionDecl> methods = decl.getMethodDecls();
+			for(FunctionDecl method : methods) {
+				if(method.getId().equals(id)) return true;
+			}
+			return false;
+		}
 	}
 }
