@@ -91,11 +91,10 @@ public class MethodCall extends Expr {
 		ObjectType type = (ObjectType)obj.getType();
 		IRMem name = cv.getMethodSymbol(fExpr, type.getName());
 		
+		// Note that the object is already an arg of the FExpr because of augmentWithThis
 		List<IRExpr> irArgs = fExpr.getArgs()
 				.stream()
 				.map(Expr::getIRExpr).collect(Collectors.toList());
-		// Prepend the object argument
-		irArgs.add(0, obj.getIRExpr());
 
 		IRCallStmt call = inf.IRCallStmt(name, irArgs);
 		IRTemp freshTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
