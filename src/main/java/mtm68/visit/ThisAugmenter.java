@@ -30,10 +30,12 @@ public class ThisAugmenter extends Visitor {
 	
 	public ThisAugmenter() {
 		this.currentClass = Optional.empty(); 
+		this.varContext = new Stack<>();
 	}
 
-	public ThisAugmenter(ClassDefn currentClass){
-		this.currentClass= Optional.of(currentClass);
+	public ThisAugmenter(Optional<ClassDefn> currentClass, Stack<List<String>> varContext) {
+		this.currentClass= currentClass;
+		this.varContext = varContext;
 	}
 	
 	public <N extends Node> N performAugment(N root) {
