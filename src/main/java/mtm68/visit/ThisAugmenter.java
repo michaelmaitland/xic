@@ -8,7 +8,6 @@ import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.stmts.SimpleDecl;
-import mtm68.ast.symbol.SymbolTable;
 import mtm68.ast.types.ObjectType;
 import mtm68.ast.types.Type;
 import mtm68.util.Debug;
@@ -17,21 +16,12 @@ public class ThisAugmenter extends Visitor {
 
 	private Stack<ClassDefn> context;
 	
-	// TODO we should really be using the symbol table to determine
-	// what is a field
-	private SymbolTable symbolTable;
-	
 	public ThisAugmenter() {
-		this(new Stack<>(), new SymbolTable());
+		this(new Stack<>()); 
 	}
 
-	public ThisAugmenter(SymbolTable symTable) {
-		this(new Stack<>(), symTable);
-	}
-
-	public ThisAugmenter(Stack<ClassDefn> context, SymbolTable symbolTable) {
+	public ThisAugmenter(Stack<ClassDefn> context){
 		this.context = context;
-		this.symbolTable = symbolTable;
 	}
 	
 	public <N extends Node> N performAugment(N root) {
@@ -69,8 +59,6 @@ public class ThisAugmenter extends Visitor {
 	public boolean isField(Var var) {
 		if(context.isEmpty()) return false;
 	
-		// TODO: instead of this O(n) search, the symbol table 
-		// should have fields lookup in O(1) time for each class
 		ClassDefn defn = context.peek();
 		List<SimpleDecl> fields = defn.getBody().getFields();
 		for(SimpleDecl field : fields) {
