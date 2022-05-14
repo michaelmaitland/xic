@@ -331,6 +331,11 @@ public class IntegrationTests {
 	void testMethodCall() {
 		generateAndAssertOutput("method_call.xi", "1");
 	}
+
+	@Test
+	void testCFA() {
+		generateAndAssertOutput("class_field_access.xi", "97\n11\n11\n22\n22\n0\n1\n2");
+	}
 	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
