@@ -1340,7 +1340,7 @@ public class ParserTests {
 	
 	@Test
 	void testClassDefnReturnThis() throws Exception{
-		// Class A { f() { return this } }
+		// Class A { f() : A { return this } }
 		List<Token> tokens = elems(
 				token(XI),
  				token(CLASS),
@@ -1349,6 +1349,8 @@ public class ParserTests {
  				token(ID, "f"),
  				token(OPEN_PAREN),
  				token(CLOSE_PAREN),
+ 				token(COLON),
+ 				token(ID, "A"),
  				token(OPEN_CURLY),
  				token(RETURN),
  				token(THIS),

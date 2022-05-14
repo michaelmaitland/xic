@@ -327,6 +327,11 @@ public class IntegrationTests {
 		generateAndAssertOutput("dce_2.xi", "");
 	}
 	
+	@Test
+	void testMethodCall() {
+		generateAndAssertOutput("method_call.xi", "1");
+	}
+	
 	private void generateAndAssertOutput(String filename) {
 		String resFilename = filename.replaceFirst("\\.(xi|ixi)", ".res");
 		Path resultFile = Paths.get("src/test/resources/testfile_results/" + resFilename);
@@ -355,10 +360,10 @@ public class IntegrationTests {
 //			irRoot.printSExp(codeWriter);
 //			codeWriter.flush();
 		
-			//assertIRSimulatorOutput(irRoot, expected);
+			assertIRSimulatorOutput(irRoot, expected);
 			
-			List<Assem> assem = generateAssem(irRoot);
-			runAndAssertAssem(assem, expected);
+			//List<Assem> assem = generateAssem(irRoot);
+			//runAndAssertAssem(assem, expected);
 			
 		} catch (FileNotFoundException | SemanticException e) {
 			e.printStackTrace();
@@ -370,7 +375,7 @@ public class IntegrationTests {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
 		IRSimulator simulator = new IRSimulator((IRCompUnit) root, baos);
-//		simulator.call("_Imain_paai", 0);
+		simulator.call("_Imain_paai", 0);
 
 		assertEquals(expected, baos.toString());
 	}

@@ -265,6 +265,7 @@ decl_list ::=  /* epsilon */          {: RESULT = ArrayUtils.empty(); :}
 
 prim_ty ::= INT {: RESULT = Types.INT; :}
     | BOOL      {: RESULT = Types.BOOL; :}
+    | ID:x      {: RESULT = new ObjectType(x); :}
     ;
 
 ty ::= prim_ty:t empty_bracket_star:n {: RESULT = Types.addArrayDims(t, n); :}
