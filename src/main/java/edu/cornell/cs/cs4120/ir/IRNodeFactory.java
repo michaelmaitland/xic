@@ -69,7 +69,7 @@ public interface IRNodeFactory {
 
     IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs);
 
-    IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRDataArray dispatchVector);
+    IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRData dispatchVector);
 
     /**
      *
@@ -151,5 +151,5 @@ public interface IRNodeFactory {
      */
     IRTemp IRTemp(String name);
 
-	IRDataArray IRDataArray(String id, long[][] elems);
+    IRData IRData(String name, long[] data);
 }

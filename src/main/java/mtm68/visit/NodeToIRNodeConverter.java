@@ -11,7 +11,7 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
-import edu.cornell.cs.cs4120.ir.IRDataArray;
+import edu.cornell.cs.cs4120.ir.IRData;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
@@ -81,6 +81,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private DispatchVectorIndexResolver dispatchVectorIndexResolver;
 	
+	private Map<String, IRData> dispatchVectors;
+	
 	private Map<String, Integer> classNameToNumFields;
 	
 	private Map<String, Map<String, Integer>> classNameToFieldNameToIndex;
@@ -92,6 +94,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	private static final String ALLOC_LAYER = "_I$allocLayer_piiiiii";
 	
 	private static final int WORD_SIZE = 8;
+	
+	private static final long DATA_DELIMITER = '\n';
 
 	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
@@ -118,6 +122,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
 		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
 		this.classNameToNumFields = new HashMap<>();
+		this.dispatchVectors = new HashMap<>();
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
@@ -823,27 +828,42 @@ public class NodeToIRNodeConverter extends Visitor {
 		return inf.IRESeq(seq, resultTemp);
 	}
 	
-	public IRDataArray constructDispatchVector(ClassDefn defn) {
+	public IRData constructDispatchVector(ClassDefn defn) {
 		String className = defn.getId();
 		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
 
-		List<long[]> elems = ArrayUtils.empty();
+		int dataSize = getDispatchVectorSize(methods);
+		long[] data = new long[dataSize];
+		int i = 0;
 		for(String funcId : methods.keySet()) {
 			String invokeClassName = methods.get(funcId);
 			String funcNameEncoded = encodeMethodName(invokeClassName, funcId);
 			
-			long[] data = ArrayUtils.stringToLongArray(funcNameEncoded);
-			
-			// Place it into the correct spot in the sequence based on the index
-			// we calculated it to be at.
-			int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
-			elems.add(index, data);
+			for(int j = 0; j < funcNameEncoded.length(); j++) {
+				data[i] = funcNameEncoded.charAt(j);
+				i++;
+			}
+			data[i] = DATA_DELIMITER;
+			i++;
 		}
 
-		IRDataArray dv = inf.IRDataArray(defn.getId(), (long[][])elems.toArray());
+		IRData dv = inf.IRData(defn.getId(), data);
+		dispatchVectors.put(className, dv);
 		return dv;
 	}
 	
+	private int getDispatchVectorSize(Map<String, String> methods) {
+		int size = 0;
+		for(String funcId : methods.keySet()) {
+			String invokeClassName = methods.get(funcId);
+			String funcNameEncoded = encodeMethodName(invokeClassName, funcId);
+			
+			size += funcNameEncoded.length() + 1;
+		}	
+		
+		return size;
+	}
+
 	public void saveFields(Map<String, List<String>> classToFields) {
 		classNameToNumFields = new HashMap<>();
 		classNameToFieldNameToIndex = new HashMap<>();
@@ -886,9 +906,29 @@ public class NodeToIRNodeConverter extends Visitor {
 		IRESeq dispatchVectorPtr = getDispatchVector(className);
 
 		int index = dispatchVectorIndexResolver.getMethodIndex(className, fExpr.getId());
-		IRBinOp offset = inf.IRBinOp(OpType.ADD, dispatchVectorPtr, inf.IRConst(index));
+		IRData dv = dispatchVectors.get(className);
+		long[] data = dv.data();
+		
+		int o = getOffset(data, index) * getWordSize() ;
+
+		IRBinOp offset = inf.IRBinOp(OpType.ADD, dispatchVectorPtr, inf.IRConst(o));
 
 		return inf.IRMem(offset);
+	}
+	
+	private int getOffset(long[] data, int index) {
+		int delimsSeen = 0;
+		for(int i = 0; i <data.length; i++) {
+			if(data[i] == DATA_DELIMITER) {
+				delimsSeen++;
+			}
+			
+			if(delimsSeen == index) {
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 	
 	public IRESeq getDispatchVector(String className) {

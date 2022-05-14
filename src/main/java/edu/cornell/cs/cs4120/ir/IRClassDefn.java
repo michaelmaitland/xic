@@ -14,13 +14,13 @@ import mtm68.util.ArrayUtils;
 public class IRClassDefn extends IRNode_c {
     private String className;
     private List<IRFuncDefn> methods;
-    private IRDataArray dispatchVector;
+    private IRData dispatchVector;
 
     public IRClassDefn() {
     	this.methods = ArrayUtils.empty();
     }
     
-    public IRClassDefn(String className, List<IRFuncDefn> methods, IRDataArray dispatchVector) {
+    public IRClassDefn(String className, List<IRFuncDefn> methods, IRData dispatchVector) {
     	this.className = className;
     	this.methods = methods;
     	this.dispatchVector = dispatchVector;
@@ -34,7 +34,7 @@ public class IRClassDefn extends IRNode_c {
 		return methods;
 	}
 
-	public IRDataArray getDispatchVector() {
+	public IRData getDispatchVector() {
 		return dispatchVector;
 	}
 
