@@ -1392,6 +1392,27 @@ public class ParserTests {
 	}
 	
 	@Test
+	void singleAssignDeclNew() throws Exception {
+	    // x : A = new A.init()
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(ID, "A"),
+				token(EQ),
+				token(NEW),
+				token(ID, "A"),
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+	
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(SimpleDecl.class, assignStmt.getLhs());
+		assertInstanceOf(New.class, assignStmt.getRhs());
+	}
+	
+	@Test
 	void returnNew() throws Exception {
 		// return new A.init()
 		List<Token> tokens = elems(
