@@ -94,6 +94,6 @@ public class SymbolTable {
 	public ProgramSymbols toProgSymbols() {
 		List<FunctionDecl> fs = new ArrayList<>(fDecls.values());
 		List<ClassDecl> cs = new ArrayList<>(cDecls.values());
-		return new ProgramSymbols(fs, cs);
+		return new ProgramSymbols(fs, cs, fields);
 	}
 }

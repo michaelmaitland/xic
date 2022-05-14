@@ -46,7 +46,7 @@ public interface IRNodeFactory {
 
     IRCompUnit IRCompUnit(String name, Map<String, IRFuncDefn> functions);
 
-    IRCompUnit IRCompUnit(String name, Map<String, IRFuncDefn> functions, Map<String, IRClassDefn> classes);
+    IRCompUnit IRCompUnit(String name, Map<String, IRFuncDefn> functions, Map<String, IRData> dataMap);
 
     /**
      *

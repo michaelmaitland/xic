@@ -46,8 +46,8 @@ public class IRNodeFactory_c implements IRNodeFactory {
     
     @Override
     public IRCompUnit IRCompUnit(String name,
-            Map<String, IRFuncDefn> functions,  Map<String, IRClassDefn> classes) {
-        return new IRCompUnit(name, functions, classes);
+            Map<String, IRFuncDefn> functions,  Map<String, IRData> dataMap) {
+        return new IRCompUnit(name, functions, null, dataMap);
     }
 
     @Override

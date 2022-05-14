@@ -137,6 +137,10 @@ public abstract class Node implements HasLocation, Cloneable {
 		return this;
 	}
 
+	public Node extractFields(SymbolCollector sc) {
+		return this;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <N extends Node> N copy() {
 		try {

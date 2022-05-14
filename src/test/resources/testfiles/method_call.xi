@@ -12,7 +12,7 @@ class A {
 }
 
 main(args : int[][]) {
-  // a = A.init()
+  a : A = new A.init()
   // x = a.f()
   // print(unparseInt(x))
 }

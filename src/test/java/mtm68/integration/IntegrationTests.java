@@ -513,16 +513,16 @@ public class IntegrationTests {
 
 		assertFalse("Found errors after collecting functions", symCollector.hasError());
 		
-		TypeChecker typeChecker = new TypeChecker(symTable);	
-		program = typeChecker.performTypeCheck(program);
+		//TypeChecker typeChecker = new TypeChecker(symTable);	
+		//program = typeChecker.performTypeCheck(program);
 		
-		ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
+		//ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 		
-		assertFalse("Found errors after typechecking", typeChecker.hasError());
+		//assertFalse("Found errors after typechecking", typeChecker.hasError());
 		
 		//AST OPTS
 		
-		program = Optimizer.optimizeAST(program);
+		// program = Optimizer.optimizeAST(program);
 
 		//TRANSFORM TO IRCODE
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
@@ -544,7 +544,7 @@ public class IntegrationTests {
 		irRoot.printSExp(printer);
 		printer.flush();
 		
-		irRoot = Optimizer.optimizeIR(irRoot);
+		// irRoot = Optimizer.optimizeIR(irRoot);
 		
 		System.out.println("====================================");
 		SExpPrinter printer2 = new CodeWriterSExpPrinter(new PrintWriter(System.out));

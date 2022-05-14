@@ -3,14 +3,18 @@ package mtm68.visit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import mtm68.ast.nodes.ClassDecl;
+import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Node;
+import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.symbol.SymbolTable;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
+import mtm68.util.ArrayUtils;
 
 public class SymbolCollector extends Visitor{
 
@@ -32,7 +36,8 @@ public class SymbolCollector extends Visitor{
 	@Override
 	public Node leave(Node parent, Node n) {
 		Node newN = n.extractFunctionDecl(this);
-		return newN.extractClassDecl(this);
+		Node newN2 = n.extractFields(this);
+		return newN2.extractClassDecl(this);
 	}
 	
 	public SymbolTable visit(Node root){
@@ -62,6 +67,18 @@ public class SymbolCollector extends Visitor{
 		progSymTable.putFunc(decl.getId(), decl);
 	}
 	
+	public void addFields(ClassDefn classDefn) {
+		List<String> decls = classDefn.getBody()
+									  .getFields()
+									  .stream()
+									  .map(SimpleDecl::getId)
+									  .collect(Collectors.toList());
+		
+		// TODO multiple declaration error checking 
+		
+		progSymTable.putFields(classDefn.getId(), decls);
+	}
+
 	public SymbolTable getCombinedSymTable(){
 		SymbolTable mergedTable = new SymbolTable();
 		mergedTable.putAll(useSymTable);
@@ -77,6 +94,7 @@ public class SymbolCollector extends Visitor{
 	private void combineTables(SymbolTable merged, SymbolTable toMerge) {
 		combineFuncs(merged.getFunctionDecls(), toMerge.getFunctionDecls());
 		combineClasses(merged.getClassDecls(), toMerge.getClassDecls());
+		combineFields(merged.getFields(), toMerge.getFields());
 	}
 	
 	private void combineFuncs(Map<String, FunctionDecl> merged, Map<String, FunctionDecl> toMerge) {
@@ -101,6 +119,19 @@ public class SymbolCollector extends Visitor{
 			}
 			else {
 				merged.put(className, decl);
+			}
+		}
+	}
+	
+	private void combineFields(Map<String, List<String>> merged, Map<String, List<String>> toMerge) {
+		
+		for(String className : toMerge.keySet()) {
+			List<String> fields = toMerge.get(className);
+			if(!merged.containsKey(className)) {
+				merged.put(className, ArrayUtils.elems(fields));
+			} else {
+				List<String> fieldsMerged = merged.get(className);
+				fieldsMerged.addAll(fields);
 			}
 		}
 	}

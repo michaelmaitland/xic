@@ -10,6 +10,7 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRSeq;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -60,6 +61,12 @@ public class ClassDefn extends Node {
 	public IRClassDefn getIRClassDefn() {
 		return irClassDefn;
 	}
+	
+	@Override
+	public Node extractFields(SymbolCollector sc) {
+		sc.addFields(this);
+		return this;
+	}
 
 	@Override
 	public String toString() {
@@ -94,7 +101,7 @@ public class ClassDefn extends Node {
 		// TODO
 		return this;
 	}
-
+	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		

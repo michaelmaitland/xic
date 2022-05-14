@@ -25,27 +25,21 @@ import mtm68.util.SetUtils;
 public class IRCompUnit extends IRNode_c {
     private String name;
     private Map<String, IRFuncDefn> functions;
-    private Map<String, IRClassDefn> classes;
     private List<String> ctors;
     private Map<String, IRData> dataMap;
 
     public IRCompUnit(String name) {
-        this(name, new LinkedHashMap<>(), new LinkedHashMap<>(), new ArrayList<>(), new LinkedHashMap<>());
+        this(name, new LinkedHashMap<>(), new ArrayList<>(), new LinkedHashMap<>());
     }
 
     public IRCompUnit(String name, Map<String, IRFuncDefn> functions) {
-        this(name, functions, new LinkedHashMap<>(), new ArrayList<>(), new LinkedHashMap<>());
+        this(name, functions, new ArrayList<>(), new LinkedHashMap<>());
     }
     
-    public IRCompUnit(String name, Map<String, IRFuncDefn> functions, Map<String, IRClassDefn> classes) {
-        this(name, functions, classes, new ArrayList<>(), new LinkedHashMap<>());
-    }
-
-	public IRCompUnit(String name, Map<String, IRFuncDefn> functions, Map<String, IRClassDefn> classes,
+	public IRCompUnit(String name, Map<String, IRFuncDefn> functions, 
 			List<String> ctors, Map<String, IRData> dataMap) {
         this.name = name;
         this.functions = functions;
-        this.classes = classes;
         this.ctors = ctors;
         this.dataMap = dataMap;
     }
@@ -142,6 +136,7 @@ public class IRCompUnit extends IRNode_c {
         }
         for (IRFuncDefn func : functions.values())
             func.printSExp(p);
+        
         p.endList();
     }
 
@@ -162,11 +157,7 @@ public class IRCompUnit extends IRNode_c {
             funcAssems.add((FuncDefnAssem)func.getAssem());
         }
         
-		for (IRClassDefn cDefn : classes.values()) {
-			for (IRFuncDefn func : cDefn.getMethods()) {
-				funcAssems.add((FuncDefnAssem) func.getAssem());
-			}
-		}
+		
 
 		return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
 	}

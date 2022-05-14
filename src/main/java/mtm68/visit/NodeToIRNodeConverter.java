@@ -905,31 +905,12 @@ public class NodeToIRNodeConverter extends Visitor {
 	public IRMem getMethodSymbol(FExpr fExpr, String className) {
 		IRESeq dispatchVectorPtr = getDispatchVector(className);
 
-		int index = dispatchVectorIndexResolver.getMethodIndex(className, fExpr.getId());
-		IRData dv = dispatchVectors.get(className);
-		long[] data = dv.data();
-		
-		int o = getOffset(data, index) * getWordSize() ;
-
-		IRBinOp offset = inf.IRBinOp(OpType.ADD, dispatchVectorPtr, inf.IRConst(o));
+		// TODO
+		IRBinOp offset = inf.IRBinOp(OpType.ADD, dispatchVectorPtr, inf.IRConst(0));
 
 		return inf.IRMem(offset);
 	}
 	
-	private int getOffset(long[] data, int index) {
-		int delimsSeen = 0;
-		for(int i = 0; i <data.length; i++) {
-			if(data[i] == DATA_DELIMITER) {
-				delimsSeen++;
-			}
-			
-			if(delimsSeen == index) {
-				return i;
-			}
-		}
-		
-		return -1;
-	}
 	
 	public IRESeq getDispatchVector(String className) {
 		IRTemp ptr = inf.IRTemp(newTemp());
