@@ -1,5 +1,8 @@
 package mtm68.types;
 
+import static mtm68.util.TestUtils.assertInstanceOf;
+import static mtm68.util.TestUtils.assertInstanceOfAndReturn;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,8 +13,12 @@ import java.util.Stack;
 import org.junit.jupiter.api.Test;
 
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
+import mtm68.ast.nodes.ClassBody;
 import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.FExpr;
+import mtm68.ast.nodes.FunctionDecl;
+import mtm68.ast.nodes.FunctionDefn;
+import mtm68.ast.nodes.MethodCall;
 import mtm68.ast.nodes.Node;
 import mtm68.util.ArrayUtils;
 import mtm68.visit.ThisAugmenter;
@@ -25,15 +32,28 @@ public class ThisAugmenterTests {
 	//-------------------------------------------------------------------------------- 
 	
 	@Test
-	void dummyAugment() {
+	void augmentNonMethodFExpr() {
 		FExpr f = new FExpr("f", ArrayUtils.empty());
-		FExpr newF = augment(f);
+		Node newF = augment(f);
+		assertInstanceOf(FExpr.class, newF);
 	}
 
 	@Test
-	void dummyError() {
+	void augmentMethodFExpr() {
 		FExpr f = new FExpr("f", ArrayUtils.empty());;
-		assertError(f);
+		
+		FunctionDecl fDecl = new FunctionDecl("f", ArrayUtils.empty(), ArrayUtils.empty());
+		FunctionDefn fDefn = new FunctionDefn(fDecl, null);
+		ClassBody cBody = new ClassBody(ArrayUtils.singleton(fDefn), ArrayUtils.empty());
+		ClassDefn c = new ClassDefn("A", null, cBody);
+		
+		Node n = augment(Optional.of(c), f);
+		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, n);
+		
+		assertEquals("this", mc.getObj().getId());
+		assertEquals("f", mc.getFExpr().getId());
+		
+		assertEquals(f.getArgs().size() + 1, mc.getFExpr().getArgs().size());
 	}
 
 	//-------------------------------------------------------------------------------- 
@@ -60,7 +80,6 @@ public class ThisAugmenterTests {
 	//-------------------------------------------------------------------------------- 
 	// New
 	//-------------------------------------------------------------------------------- 
-
 
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods

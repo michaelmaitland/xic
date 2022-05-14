@@ -71,7 +71,7 @@ public class IRNodeFactory_c implements IRNodeFactory {
     }
     
     @Override
-    public IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRDataArray dispatchVector) {
+    public IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRData dispatchVector) {
     	return new IRClassDefn(className, methods, dispatchVector);
     }
 
@@ -144,9 +144,9 @@ public class IRNodeFactory_c implements IRNodeFactory {
     public IRTemp IRTemp(String name) {
         return new IRTemp(name);
     }
-
-	@Override
-	public IRDataArray IRDataArray(String name, long[][] elems) {
-		return new IRDataArray(name, elems);
-	}
+    
+    @Override
+    public IRData IRData(String name, long[] data) {
+        return new IRData(name, data);
+    }
 }
