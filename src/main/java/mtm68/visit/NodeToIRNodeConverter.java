@@ -835,12 +835,14 @@ public class NodeToIRNodeConverter extends Visitor {
 		int dataSize = getDispatchVectorSize(methods);
 		long[] data = new long[dataSize];
 		int i = 0;
-		for(String funcId : methods.keySet()) {
+		for(int j = 0; j < methods.size(); j++) {
+			
+			String funcId = dispatchVectorIndexResolver.getMethodNameFromIndex(className, j);
 			String invokeClassName = methods.get(funcId);
 			String funcNameEncoded = this.objectMethodEncodings.get(invokeClassName).get(funcId);
 			
-			for(int j = 0; j < funcNameEncoded.length(); j++) {
-				data[i] = funcNameEncoded.charAt(j);
+			for(int k = 0; k < funcNameEncoded.length(); k++) {
+				data[i] = funcNameEncoded.charAt(k);
 				i++;
 			}
 			data[i] = DATA_DELIMITER;
@@ -911,7 +913,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		for(String method : methods.keySet()) {
 			int midx = dispatchVectorIndexResolver.getMethodIndex(className, method);
 			if (midx < index) {
-				offset += 1 + methods.get(method).length();
+				offset += 1 + this.objectMethodEncodings.get(className).get(method).length();
 			}
 		}
 		IRBinOp symbol = inf.IRBinOp(OpType.ADD, dispatchVector, inf.IRConst(offset * getWordSize()));

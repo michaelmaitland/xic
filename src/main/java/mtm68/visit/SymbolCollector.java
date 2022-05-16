@@ -36,7 +36,7 @@ public class SymbolCollector extends Visitor{
 	@Override
 	public Node leave(Node parent, Node n) {
 		Node newN = n.extractFunctionDecl(this);
-		Node newN2 = n.extractFields(this);
+		Node newN2 = newN.extractFields(this);
 		return newN2.extractClassDecl(this);
 	}
 	

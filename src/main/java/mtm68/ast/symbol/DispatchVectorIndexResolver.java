@@ -11,10 +11,12 @@ public class DispatchVectorIndexResolver {
 	private ProgramSymbols symbols;
 	private Map<String, ClassDecl> classNameToDecl;
 	private Map<String, Map<String, Integer>> classNameToFuncIdToIndex;
+	private Map<String, Map<Integer, String>> classNameToIndexToFuncId;
 
 	public DispatchVectorIndexResolver(ProgramSymbols symbols) {
 		this.symbols = symbols;
 		this.classNameToFuncIdToIndex = new HashMap<>();
+		this.classNameToIndexToFuncId = new HashMap<>();
 
 		classNameToDecl = new HashMap<>();
 		for (ClassDecl cDecl : symbols.getClassDecls()) {
@@ -45,6 +47,16 @@ public class DispatchVectorIndexResolver {
 		}
 		return null;
 	}
+	
+	public String getMethodNameFromIndex(String dispatchVectorClass, Integer index) {
+		if(classNameToIndexToFuncId.containsKey(dispatchVectorClass)) {
+			Map<Integer, String> indexToFuncId = classNameToIndexToFuncId.get(dispatchVectorClass);
+			if(indexToFuncId.containsKey(index)) {
+				return indexToFuncId.get(index);
+			}
+		}
+		return null;	
+	}
 
 	private void gen() {
 		for (ClassDecl cDecl : symbols.getClassDecls()) {
@@ -55,12 +67,16 @@ public class DispatchVectorIndexResolver {
 	private void gen(ClassDecl cDecl) {
 		// get indicies from super type if any
 		Map<String, Integer> funcIdToIndex;
+		Map<Integer, String> indexToFuncId;
 		if (cDecl.getSuperType() != null) {
 			gen(classNameToDecl.get(cDecl.getSuperType()));
 			Map<String, Integer> superClassFuncIdToIndex = classNameToFuncIdToIndex.get(cDecl.getSuperType());
 			funcIdToIndex = new HashMap<String, Integer>(superClassFuncIdToIndex);
+			Map<Integer, String> superClassIndexToFuncId = classNameToIndexToFuncId.get(cDecl.getSuperType());
+			indexToFuncId = new HashMap<Integer, String>(superClassIndexToFuncId);
 		} else {
 			funcIdToIndex = new HashMap<>();
+			indexToFuncId = new HashMap<Integer, String>();
 		}
 
 		// add funcs that are not already in the map using the next
@@ -69,11 +85,13 @@ public class DispatchVectorIndexResolver {
 		for (FunctionDecl fDecl : cDecl.getMethodDecls()) {
 			if (!funcIdToIndex.containsKey(fDecl.getId())) {
 				funcIdToIndex.put(fDecl.getId(), index);
+				indexToFuncId.put(index, fDecl.getId());
 				index++;
 
 			}
 		}
 		
 		classNameToFuncIdToIndex.put(cDecl.getId(), funcIdToIndex);
+		classNameToIndexToFuncId.put(cDecl.getId(), indexToFuncId);
 	}
 }
