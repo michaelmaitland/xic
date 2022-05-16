@@ -8,6 +8,7 @@ import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRMem;
 import edu.cornell.cs.cs4120.ir.IRMove;
+import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -89,7 +90,7 @@ public class MethodCall extends Expr {
 		// name here because all types that declare this
 		// method put it at same index.
 		ObjectType type = (ObjectType)obj.getType();
-		IRMem name = cv.getMethodSymbol(fExpr, type.getName());
+		IRMem name = cv.getMethodSymbol(fExpr, "A");
 		
 		// Note that the object is already an arg of the FExpr because of augmentWithThis
 		List<IRExpr> irArgs = fExpr.getArgs()

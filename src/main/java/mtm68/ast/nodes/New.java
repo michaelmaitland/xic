@@ -74,8 +74,7 @@ public class New extends Expr {
 		}
 
 		// allocate the object that contains dv ptr + fields
-		IRESeq alloc = cv.allocateAndInitArray(exprs);
-		IRMem object = cv.getOffsetIntoArr(alloc, inf.IRConst(0));
+		IRESeq object = cv.allocateAndInitArray(exprs);
 		
 		// FExpr must have the object as first argument. Since it had no
 		// way to refer to the object before since it didn't exist yet,

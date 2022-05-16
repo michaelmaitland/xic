@@ -95,7 +95,7 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private static final int WORD_SIZE = 8;
 	
-	private static final long DATA_DELIMITER = '\n';
+	private static final long DATA_DELIMITER = '\0';
 
 	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
@@ -837,7 +837,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		int i = 0;
 		for(String funcId : methods.keySet()) {
 			String invokeClassName = methods.get(funcId);
-			String funcNameEncoded = encodeMethodName(invokeClassName, funcId);
+			String funcNameEncoded = this.objectMethodEncodings.get(invokeClassName).get(funcId);
 			
 			for(int j = 0; j < funcNameEncoded.length(); j++) {
 				data[i] = funcNameEncoded.charAt(j);
@@ -856,7 +856,7 @@ public class NodeToIRNodeConverter extends Visitor {
 		int size = 0;
 		for(String funcId : methods.keySet()) {
 			String invokeClassName = methods.get(funcId);
-			String funcNameEncoded = encodeMethodName(invokeClassName, funcId);
+			String funcNameEncoded = this.objectMethodEncodings.get(invokeClassName).get(funcId);
 			
 			size += funcNameEncoded.length() + 1;
 		}	
@@ -903,12 +903,20 @@ public class NodeToIRNodeConverter extends Visitor {
 	}
 	
 	public IRMem getMethodSymbol(FExpr fExpr, String className) {
-		IRESeq dispatchVectorPtr = getDispatchVector(className);
+		IRName dispatchVector = inf.IRName(className);
 
-		// TODO
-		IRBinOp offset = inf.IRBinOp(OpType.ADD, dispatchVectorPtr, inf.IRConst(0));
+		int offset = 0;
+		int index = dispatchVectorIndexResolver.getMethodIndex(className, fExpr.getId());
+		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
+		for(String method : methods.keySet()) {
+			int midx = dispatchVectorIndexResolver.getMethodIndex(className, method);
+			if (midx < index) {
+				offset += 1 + methods.get(method).length();
+			}
+		}
+		IRBinOp symbol = inf.IRBinOp(OpType.ADD, dispatchVector, inf.IRConst(offset * getWordSize()));
 
-		return inf.IRMem(offset);
+		return inf.IRMem(symbol);
 	}
 	
 	

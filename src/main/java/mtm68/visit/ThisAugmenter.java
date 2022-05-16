@@ -31,6 +31,7 @@ public class ThisAugmenter extends Visitor {
 	public ThisAugmenter() {
 		this.currentClass = Optional.empty(); 
 		this.varContext = new Stack<>();
+		this.varContext.push(ArrayUtils.empty());
 	}
 
 	public ThisAugmenter(Optional<ClassDefn> currentClass, Stack<List<String>> varContext) {
@@ -85,7 +86,7 @@ public class ThisAugmenter extends Visitor {
 		// If its in scope from a decl then its not a field
 		if(isInScope(var.getId())) return false;
 		
-		if(currentClass.isPresent()) return false;
+		if(!currentClass.isPresent()) return false;
 	
 		ClassDefn defn = currentClass.get();
 		List<SimpleDecl> fields = defn.getBody().getFields();

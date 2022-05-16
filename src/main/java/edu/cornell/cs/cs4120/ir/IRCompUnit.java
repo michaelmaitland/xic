@@ -97,14 +97,14 @@ public class IRCompUnit extends IRNode_c {
     public IRNode visitChildren(IRVisitor v) {
         boolean modified = false;
 
-        Map<String, IRFuncDefn> results = new LinkedHashMap<>();
+        Map<String, IRFuncDefn> newFuncs = new LinkedHashMap<>();
         for (IRFuncDefn func : functions.values()) {
             IRFuncDefn newFunc = (IRFuncDefn) v.visit(this, func);
             if (newFunc != func) modified = true;
-            results.put(newFunc.name(), newFunc);
+            newFuncs.put(newFunc.name(), newFunc);
         }
-
-        if (modified) return v.nodeFactory().IRCompUnit(name, results);
+        
+        if (modified) return v.nodeFactory().IRCompUnit(name, newFuncs, dataMap);
 
         return this;
     }

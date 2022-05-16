@@ -1,5 +1,6 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class IRNodeFactory_c implements IRNodeFactory {
     @Override
     public IRCompUnit IRCompUnit(String name,
             Map<String, IRFuncDefn> functions,  Map<String, IRData> dataMap) {
-        return new IRCompUnit(name, functions, null, dataMap);
+        return new IRCompUnit(name, functions, new ArrayList<>(), dataMap);
     }
 
     @Override

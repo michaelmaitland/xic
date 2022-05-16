@@ -8,7 +8,6 @@ import mtm68.ast.nodes.stmts.Decl;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
-import mtm68.visit.SymbolCollector;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
