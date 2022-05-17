@@ -36,7 +36,7 @@ public class IRCompUnit extends IRNode_c {
         this(name, functions, new ArrayList<>(), new LinkedHashMap<>());
     }
     
-	public IRCompUnit(String name, Map<String, IRFuncDefn> functions, List<String> ctors, Map<String, IRData> dataMap) {
+    public IRCompUnit(String name, Map<String, IRFuncDefn> functions, List<String> ctors, Map<String, IRData> dataMap) {
         this.name = name;
         this.functions = functions;
         this.ctors = ctors;
