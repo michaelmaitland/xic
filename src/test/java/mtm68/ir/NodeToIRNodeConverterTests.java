@@ -654,7 +654,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("A", irClassDefn.getClassName());
 		assertEquals(0, irClassDefn.getMethods().size());
 		
-		assertDispatchVectorInit(irClassDefn, c, 0);
 	}
 	
 	@Test
@@ -668,7 +667,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(1, irClassDefn.getMethods().size());	
 		assertEquals("_IA_f_p", irClassDefn.getMethods().get(0).name());
 
-		assertDispatchVectorInit(irClassDefn, c, 1);
 	}
 	
 	@Test
@@ -683,7 +681,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("_IA_f_p", irClassDefn.getMethods().get(0).name());
 		assertEquals("_IA_g_p", irClassDefn.getMethods().get(1).name());
 		
-		assertDispatchVectorInit(irClassDefn, c, 2);
 	}
 	
 	@Test
@@ -698,7 +695,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals(1, irClassDefn.getMethods().size());		
 		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());
 
-		assertDispatchVectorInit(irClassDefn, c2, 1);
 	}
 	
 	@Test
@@ -714,7 +710,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());	
 		assertEquals("_IB_g_p", irClassDefn.getMethods().get(1).name());	
 
-		assertDispatchVectorInit(irClassDefn, c2, 2);
 	}
 	
 	@Test
@@ -730,7 +725,6 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());	
 		assertEquals("_IB_h_p", irClassDefn.getMethods().get(1).name());	
 
-		assertDispatchVectorInit(irClassDefn, c2, 3);
 	}
 	
 	@Test
@@ -746,13 +740,8 @@ public class NodeToIRNodeConverterTests {
 		assertEquals("_IB_h_p", irClassDefn.getMethods().get(0).name());		
 		assertEquals("_IB_i_p", irClassDefn.getMethods().get(1).name());		
 
-		assertDispatchVectorInit(irClassDefn, c2, 4);
 	}
 	
-	private void assertDispatchVectorInit(IRClassDefn irClassDefn, ClassDefn cDefn, int numMethods) {
-		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, irClassDefn.getDispatchVector());
-		assertArrayInit(eseq, numMethods);
-	}	
 	
 	// --------------------------------------------------------------------------------
 	// New

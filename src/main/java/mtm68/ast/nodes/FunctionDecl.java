@@ -84,10 +84,12 @@ public class FunctionDecl extends Node {
 		return this;
 	}
 	
+	private boolean vistedBefore = false;
 	@Override
 	public Node augmentWithThis(ThisAugmenter ta) {
 		// Add "this" as first argument if its a method
-		if(isMethod) {
+		if(isMethod && !vistedBefore) {
+			this.vistedBefore = true;
 			FunctionDecl newDecl = copy();
 			Type classType = ta.getCurrentClassType();
 			SimpleDecl thisArg = new SimpleDecl("this", classType);

@@ -124,7 +124,6 @@ public class IRSimulator {
         initialize();
     }
 
-    /** Setup static data and call ctor functions. */
     private void initialize() {
         malloc(8); // Waste first 8 bytes, to preserve an untouched space for null pointer.
         for (IRData dataWrapper : compUnit.dataMap().values()) {
@@ -497,15 +496,6 @@ public class IRSimulator {
             String targetName;
             if (target.type == StackItem.Kind.NAME)
                 targetName = target.name;
-            else if(target.type == StackItem.Kind.MEM) {
-            	targetName = "" + (char)target.value;
-            	long addr = target.addr + Configuration.WORD_SIZE;
-            	long data;
-            	while((data = read(addr)) != '\0') {
-            		targetName += (char)data;
-            		addr += Configuration.WORD_SIZE;
-            	}
-            }
             else if (indexToInsn.containsKey(target.value)) {
                 IRNode node = indexToInsn.get(target.value);
                 if (node instanceof IRFuncDefn)

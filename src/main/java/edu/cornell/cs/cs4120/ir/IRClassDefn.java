@@ -8,16 +8,14 @@ import mtm68.util.ArrayUtils;
 public class IRClassDefn {
     private String className;
     private List<IRFuncDefn> methods;
-    private IRData dispatchVector;
 
     public IRClassDefn() {
     	this.methods = ArrayUtils.empty();
     }
     
-    public IRClassDefn(String className, List<IRFuncDefn> methods, IRData dispatchVector) {
+    public IRClassDefn(String className, List<IRFuncDefn> methods) {
     	this.className = className;
     	this.methods = methods;
-    	this.dispatchVector = dispatchVector;
     }
 
 	public String getClassName() {
@@ -26,9 +24,5 @@ public class IRClassDefn {
 
 	public List<IRFuncDefn> getMethods() {
 		return methods;
-	}
-
-	public IRData getDispatchVector() {
-		return dispatchVector;
 	}
 }

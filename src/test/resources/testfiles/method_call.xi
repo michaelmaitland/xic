@@ -13,6 +13,6 @@ class A {
 
 main(args : int[][]) {
   a : A = new A.init()
-  x = a.f()
+  x : int = a.f()
   print(unparseInt(x))
 }

@@ -86,11 +86,14 @@ public class MethodCall extends Expr {
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		
+		IRMem dv = cv.getOffsetIntoArr(obj.getIRExpr(), inf.IRConst(0));
+
 		// It doesn't matter whether we have the concrete class
 		// name here because all types that declare this
 		// method put it at same index.
 		ObjectType type = (ObjectType)obj.getType();
-		IRMem name = cv.getMethodSymbol(fExpr, "A");
+		// TODO typecheck and use type
+		IRMem name = cv.getMethodSymbol(dv, fExpr.getId(), "A");
 		
 		// Note that the object is already an arg of the FExpr because of augmentWithThis
 		List<IRExpr> irArgs = fExpr.getArgs()

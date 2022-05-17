@@ -64,9 +64,8 @@ public class New extends Expr {
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
 		List<IRExpr> exprs = ArrayUtils.empty();
 
-		// Put DV in a temp
-		IRESeq dispatchVectorPtr = cv.getDispatchVector(className); 
-		exprs.add(dispatchVectorPtr);
+		IRESeq dispatchVectorAlloc = cv.constructDispatchVector(className); 
+		exprs.add(dispatchVectorAlloc.expr());
 		
 		int numFields = cv.getNumFields(className);
 		for(int i = 0; i < numFields; i++) {
@@ -79,18 +78,18 @@ public class New extends Expr {
 		// FExpr must have the object as first argument. Since it had no
 		// way to refer to the object before since it didn't exist yet,
 		// we must rebuild the FExpr IR here and use the new version instead 
-		IRMem name = cv.getMethodSymbol(fExpr, className);
+		IRMem name = cv.getMethodSymbol(dispatchVectorAlloc.expr(), fExpr.getId(), className);
 		List<IRExpr> irArgs = fExpr.getArgs()
 								   .stream()
 								   .map(Expr::getIRExpr)
 								   .collect(Collectors.toList());
 		// Prepend the object argument
-		irArgs.add(0, object);
+		irArgs.add(0, object.expr());
 
 		IRCallStmt call = inf.IRCallStmt(name, irArgs);
 		IRTemp freshTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
 		IRMove moveIntoFresh = inf.IRMove(freshTemp, inf.IRTemp(cv.retVal(0)));
-		IRESeq eseq2 = inf.IRESeq(inf.IRSeq(call, moveIntoFresh), freshTemp);
+		IRESeq eseq2 = inf.IRESeq(inf.IRSeq(dispatchVectorAlloc.stmt(), object.stmt(), call, moveIntoFresh), freshTemp);
 
 		return copyAndSetIRExpr(eseq2);
 	}

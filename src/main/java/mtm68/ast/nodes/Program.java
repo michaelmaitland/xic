@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRClassDefn;
 import edu.cornell.cs.cs4120.ir.IRCompUnit;
-import edu.cornell.cs.cs4120.ir.IRData;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
@@ -96,11 +95,7 @@ public class Program extends Node implements Root {
 			}
 		}
 		
-		Map<String, IRData> irDataMap = body.getClassDefns().stream()
-			.map(ClassDefn::getIRClassDefn)
-			.collect(Collectors.toMap(IRClassDefn::getClassName, v -> v.getDispatchVector()));
-
-		IRCompUnit compUnit = inf.IRCompUnit(cv.getProgramName(), irFuncDefns, irDataMap);
+		IRCompUnit compUnit = inf.IRCompUnit(cv.getProgramName(), irFuncDefns);
 		
 		Program newProgram = copy();
 		newProgram.irCompUnit = compUnit;

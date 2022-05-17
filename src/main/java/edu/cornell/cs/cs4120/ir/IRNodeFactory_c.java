@@ -72,8 +72,8 @@ public class IRNodeFactory_c implements IRNodeFactory {
     }
     
     @Override
-    public IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods, IRData dispatchVector) {
-    	return new IRClassDefn(className, methods, dispatchVector);
+    public IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods) {
+    	return new IRClassDefn(className, methods);
     }
 
     @Override

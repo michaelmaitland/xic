@@ -1,6 +1,7 @@
 package mtm68.visit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,6 @@ import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
-import edu.cornell.cs.cs4120.ir.IRData;
 import edu.cornell.cs.cs4120.ir.IRESeq;
 import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
@@ -28,7 +28,6 @@ import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.ClassDecl;
-import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
@@ -81,8 +80,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private DispatchVectorIndexResolver dispatchVectorIndexResolver;
 	
-	private Map<String, IRData> dispatchVectors;
-	
 	private Map<String, Integer> classNameToNumFields;
 	
 	private Map<String, Map<String, Integer>> classNameToFieldNameToIndex;
@@ -95,8 +92,6 @@ public class NodeToIRNodeConverter extends Visitor {
 	
 	private static final int WORD_SIZE = 8;
 	
-	private static final long DATA_DELIMITER = '\0';
-
 	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
 		this(programName, inf, new ProgramSymbols());
@@ -122,7 +117,6 @@ public class NodeToIRNodeConverter extends Visitor {
 		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
 		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
 		this.classNameToNumFields = new HashMap<>();
-		this.dispatchVectors = new HashMap<>();
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
@@ -828,44 +822,6 @@ public class NodeToIRNodeConverter extends Visitor {
 		return inf.IRESeq(seq, resultTemp);
 	}
 	
-	public IRData constructDispatchVector(ClassDefn defn) {
-		String className = defn.getId();
-		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
-
-		int dataSize = getDispatchVectorSize(methods);
-		long[] data = new long[dataSize];
-		int i = 0;
-		for(int j = 0; j < methods.size(); j++) {
-			
-			String funcId = dispatchVectorIndexResolver.getMethodNameFromIndex(className, j);
-			String invokeClassName = methods.get(funcId);
-			String funcNameEncoded = this.objectMethodEncodings.get(invokeClassName).get(funcId);
-			
-			for(int k = 0; k < funcNameEncoded.length(); k++) {
-				data[i] = funcNameEncoded.charAt(k);
-				i++;
-			}
-			data[i] = DATA_DELIMITER;
-			i++;
-		}
-
-		IRData dv = inf.IRData(defn.getId(), data);
-		dispatchVectors.put(className, dv);
-		return dv;
-	}
-	
-	private int getDispatchVectorSize(Map<String, String> methods) {
-		int size = 0;
-		for(String funcId : methods.keySet()) {
-			String invokeClassName = methods.get(funcId);
-			String funcNameEncoded = this.objectMethodEncodings.get(invokeClassName).get(funcId);
-			
-			size += funcNameEncoded.length() + 1;
-		}	
-		
-		return size;
-	}
-
 	public void saveFields(Map<String, List<String>> classToFields) {
 		classNameToNumFields = new HashMap<>();
 		classNameToFieldNameToIndex = new HashMap<>();
@@ -904,27 +860,26 @@ public class NodeToIRNodeConverter extends Visitor {
 		}
 	}
 	
-	public IRMem getMethodSymbol(FExpr fExpr, String className) {
-		IRName dispatchVector = inf.IRName(className);
-
-		int offset = 0;
-		int index = dispatchVectorIndexResolver.getMethodIndex(className, fExpr.getId());
+	public IRESeq constructDispatchVector(String className) {
 		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
-		for(String method : methods.keySet()) {
-			int midx = dispatchVectorIndexResolver.getMethodIndex(className, method);
-			if (midx < index) {
-				offset += 1 + this.objectMethodEncodings.get(className).get(method).length();
-			}
-		}
-		IRBinOp symbol = inf.IRBinOp(OpType.ADD, dispatchVector, inf.IRConst(offset * getWordSize()));
+		
+		IRExpr[] elems = new IRExpr[methods.size()];
+		for(String funcId : methods.keySet()) {
+			String invokeClassName = methods.get(funcId);
+			String funcNameEncoded = objectMethodEncodings.get(invokeClassName).get(funcId);
 
-		return inf.IRMem(symbol);
+			//IRMem mem = inf.IRMem(inf.IRName(funcNameEncoded));
+			IRName mem = inf.IRName(funcNameEncoded);
+
+			int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
+			elems[index] = mem;
+		}
+
+		return allocateAndInitArray(Arrays.asList(elems));
 	}
-	
-	
-	public IRESeq getDispatchVector(String className) {
-		IRTemp ptr = inf.IRTemp(newTemp());
-		IRMove populateTemp = inf.IRMove(ptr, inf.IRName(className));
-		return inf.IRESeq(populateTemp, ptr);
+
+	public IRMem getMethodSymbol(IRExpr dispatchVector, String funcId, String className) {
+		int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
+		return getOffsetIntoArr(dispatchVector, inf.IRConst(index));  
 	}
 }
