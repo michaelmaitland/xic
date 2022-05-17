@@ -332,6 +332,11 @@ public class IntegrationTests {
 	void testMethodCall() {
 		generateAndAssertOutput("method_call.xi", "42");
 	}
+	
+	@Test
+	void testFieldAccess() {
+		generateAndAssertOutput("field_access.xi", "33");
+	}
 
 	@Test
 	void testCFA() {

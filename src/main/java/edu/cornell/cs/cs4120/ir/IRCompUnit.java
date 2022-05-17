@@ -36,8 +36,7 @@ public class IRCompUnit extends IRNode_c {
         this(name, functions, new ArrayList<>(), new LinkedHashMap<>());
     }
     
-	public IRCompUnit(String name, Map<String, IRFuncDefn> functions, 
-			List<String> ctors, Map<String, IRData> dataMap) {
+	public IRCompUnit(String name, Map<String, IRFuncDefn> functions, List<String> ctors, Map<String, IRData> dataMap) {
         this.name = name;
         this.functions = functions;
         this.ctors = ctors;
@@ -97,14 +96,14 @@ public class IRCompUnit extends IRNode_c {
     public IRNode visitChildren(IRVisitor v) {
         boolean modified = false;
 
-        Map<String, IRFuncDefn> newFuncs = new LinkedHashMap<>();
+        Map<String, IRFuncDefn> results = new LinkedHashMap<>();
         for (IRFuncDefn func : functions.values()) {
             IRFuncDefn newFunc = (IRFuncDefn) v.visit(this, func);
             if (newFunc != func) modified = true;
-            newFuncs.put(newFunc.name(), newFunc);
+            results.put(newFunc.name(), newFunc);
         }
         
-        if (modified) return v.nodeFactory().IRCompUnit(name, newFuncs, dataMap);
+        if (modified) return v.nodeFactory().IRCompUnit(name, results, dataMap);
 
         return this;
     }
@@ -136,7 +135,6 @@ public class IRCompUnit extends IRNode_c {
         }
         for (IRFuncDefn func : functions.values())
             func.printSExp(p);
-        
         p.endList();
     }
 
@@ -156,10 +154,8 @@ public class IRCompUnit extends IRNode_c {
         for (IRFuncDefn func : functions.values()) {
             funcAssems.add((FuncDefnAssem)func.getAssem());
         }
-        
-		
 
-		return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
+        return copyAndSetAssem(new CompUnitAssem(name, funcAssems));	
 	}
 
 	@Override
