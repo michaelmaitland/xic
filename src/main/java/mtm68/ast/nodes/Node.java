@@ -8,6 +8,7 @@ import edu.cornell.cs.cs4120.ir.IRNodeFactory;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import mtm68.visit.SymbolCollector;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.FunctionInliner;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
@@ -136,6 +137,10 @@ public abstract class Node implements HasLocation, Cloneable {
 		return this;
 	}
 
+	public Node extractFields(SymbolCollector sc) {
+		return this;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <N extends Node> N copy() {
 		try {
@@ -148,5 +153,9 @@ public abstract class Node implements HasLocation, Cloneable {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
+	}
+
+	public Node augmentWithThis(ThisAugmenter ta) {
+		return this;
 	}
 }

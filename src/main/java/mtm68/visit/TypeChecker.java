@@ -279,7 +279,7 @@ public class TypeChecker extends Visitor {
 
 		return type;
 	}
-
+	
 	public Type checkBinExpr(BinExpr be) {
 		
 		Binop op = be.getOp();
@@ -377,5 +377,4 @@ public class TypeChecker extends Visitor {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

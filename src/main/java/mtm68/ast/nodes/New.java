@@ -1,8 +1,19 @@
 package mtm68.ast.nodes;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
+import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
+import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.types.Type;
+import mtm68.util.ArrayUtils;
+import mtm68.util.FreshTempGenerator;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -15,6 +26,7 @@ public class New extends Expr {
 	public New(String className, FExpr fExpr) {
 		this.className = className;
 		this.fExpr = fExpr;
+		fExpr.setIsMethodCall(true);
 	}
 	
 	@Override
@@ -50,7 +62,35 @@ public class New extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
-		return null;
+		List<IRExpr> exprs = ArrayUtils.empty();
+
+		IRESeq dispatchVectorAlloc = cv.constructDispatchVector(className); 
+		exprs.add(dispatchVectorAlloc.expr());
+		
+		int numFields = cv.getNumFields(className);
+		for(int i = 0; i < numFields; i++) {
+			exprs.add(inf.IRConst(0)); // Default all fields to 0
+		}
+
+		// allocate the object that contains dv ptr + fields
+		IRESeq object = cv.allocateAndInitArray(exprs);
+		
+		// FExpr must have the object as first argument. Since it had no
+		// way to refer to the object before since it didn't exist yet,
+		// we must rebuild the FExpr IR here and use the new version instead 
+		IRMem name = cv.getMethodSymbol(dispatchVectorAlloc.expr(), fExpr.getId(), className);
+		List<IRExpr> irArgs = fExpr.getArgs()
+								   .stream()
+								   .map(Expr::getIRExpr)
+								   .collect(Collectors.toList());
+		// Prepend the object argument
+		irArgs.add(0, object.expr());
+
+		IRCallStmt call = inf.IRCallStmt(name, irArgs);
+		IRTemp freshTemp = inf.IRTemp(FreshTempGenerator.getFreshTemp());
+		IRMove moveIntoFresh = inf.IRMove(freshTemp, inf.IRTemp(cv.retVal(0)));
+		IRESeq eseq2 = inf.IRESeq(inf.IRSeq(dispatchVectorAlloc.stmt(), object.stmt(), call, moveIntoFresh), freshTemp);
+
+		return copyAndSetIRExpr(eseq2);
 	}
 }

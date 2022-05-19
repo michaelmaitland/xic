@@ -39,6 +39,7 @@ import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.symbol.SymbolTable;
+import mtm68.ast.symbol.SymbolTableManager;
 import mtm68.ast.symbol.ValidProgram;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
@@ -209,7 +210,7 @@ public class Main {
 			
 			program = irConverter.performConvertToIR(program);
 
-			// Add our function before lowering
+			// Add our functions before lowering
 			program.getIrCompUnit().appendFunc(irConverter.allocLayer());
 
 			IRNode irRoot = lowerer.visit(program.getIrCompUnit());
@@ -348,7 +349,7 @@ public class Main {
 
 					if(!typeChecker.hasError()) {
 						if(outputTypeCheck) FileUtils.writeTypeCheckToFile(filename);
-						ValidProgram vp = new ValidProgram(filename, (Program)root, symTable);
+						ValidProgram vp = new ValidProgram(filename, (Program)root, symTable.toProgSymbols());
 						validPrograms.add(vp);
 					} else {
 						writeErrorToFile(filename, typeChecker.getFirstError());

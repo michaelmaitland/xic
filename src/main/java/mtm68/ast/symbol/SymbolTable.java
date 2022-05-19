@@ -13,21 +13,28 @@ public class SymbolTable {
 	
 	private Map<String, FunctionDecl> fDecls;
 	private Map<String, ClassDecl> cDecls;
+	private Map<String, List<String>> fields;
 	
 	public SymbolTable(Interface i) {
-		this.fDecls= new HashMap<>();
-		this.cDecls= new HashMap<>();
+		this.fDecls = new HashMap<>();
+		this.cDecls = new HashMap<>();
+		this.fields = new HashMap<>();
 		putFunctionDecls(i.getBody().getFunctionDecls());
 		putClassDecls(i.getBody().getClassDecls());
 	}
 
 	public SymbolTable() {
-		this.fDecls= new HashMap<>();
-		this.cDecls= new HashMap<>();
+		this.fDecls = new HashMap<>();
+		this.cDecls = new HashMap<>();
+		this.fields = new HashMap<>();
 	}
 	
 	public boolean containsFunc(String id) {
 		return fDecls.containsKey(id);
+	}
+	
+	public void putFields(String className, List<String> fieldNames) {
+		fields.put(className, fieldNames);
 	}
 	
 	public void putFunc(String id, FunctionDecl fDecl) {
@@ -37,6 +44,7 @@ public class SymbolTable {
 	public void putAll(SymbolTable symTable) {
 		putFunctionDecls(symTable.getFunctionDecls());
 		putClassDecls(symTable.getClassDecls());
+		putFields(symTable.getFields());
 	}
 	
 	public boolean containsClass(String id) {
@@ -59,6 +67,10 @@ public class SymbolTable {
 		}
 	}
 	
+	private void putFields(Map<String, List<String>> fields) {
+		this.fields.putAll(fields);
+	}
+	
 	private void putFunctionDecls(Map<String, FunctionDecl> fDecls) {
 		this.fDecls.putAll(fDecls);
 	}
@@ -75,9 +87,13 @@ public class SymbolTable {
 		return cDecls;
 	}
 	
+	public Map<String, List<String>> getFields() {
+		return fields;
+	}
+	
 	public ProgramSymbols toProgSymbols() {
 		List<FunctionDecl> fs = new ArrayList<>(fDecls.values());
 		List<ClassDecl> cs = new ArrayList<>(cDecls.values());
-		return new ProgramSymbols(fs, cs);
+		return new ProgramSymbols(fs, cs, fields);
 	}
 }

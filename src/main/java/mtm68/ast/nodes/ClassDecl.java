@@ -77,13 +77,12 @@ public class ClassDecl extends Node {
 
 	@Override
 	public Node typeCheck(TypeChecker tc) {
-		// TODO: I think that we should save the relevant information in the Context
 		return this;
 	}
 	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
+		/* There is no IR conversion that needs to be done */
 		return this;
 	}
 

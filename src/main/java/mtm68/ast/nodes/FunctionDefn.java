@@ -69,9 +69,14 @@ public class FunctionDefn extends Node {
 		tc.checkFunctionResult(this);
 		return this;
 	}
-
+	
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
+
+		// ClassDefn will be responsible for building the function defns
+		if(functionDecl.isMethod()) {
+			return this;
+		}
 
 		String funcName = cv.saveAndGetFuncSymbol(functionDecl);
 		
@@ -82,4 +87,5 @@ public class FunctionDefn extends Node {
 		copy.setIRFuncDefn(defn);
 		return copy;
 	}
+
 }

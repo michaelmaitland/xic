@@ -30,7 +30,7 @@ public class This extends Expr {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv, IRNodeFactory inf) {
-		// TODO
-		return this;
+		String t = cv.newTemp("this");
+		return copyAndSetIRExpr(inf.IRTemp(t));
 	}
 }

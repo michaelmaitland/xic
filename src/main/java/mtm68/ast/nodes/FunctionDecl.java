@@ -7,6 +7,7 @@ import edu.cornell.cs.cs4120.util.SExpPrinter;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.types.Type;
 import mtm68.visit.SymbolCollector;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
@@ -14,6 +15,7 @@ import mtm68.visit.Visitor;
 public class FunctionDecl extends Node {
 	
 	private String id;
+	private boolean isMethod;
 	private List<SimpleDecl> args;
 	private List<Type> returnTypes;
 
@@ -34,12 +36,20 @@ public class FunctionDecl extends Node {
 	public List<Type> getReturnTypes() {
 		return returnTypes;
 	}
+	
+	public boolean isMethod() {
+		return isMethod;
+	}
+
+	public void setIsMethod(boolean isMethod) {
+		this.isMethod = isMethod;
+	}
 
 	@Override
 	public String toString() {
 		return "FunctionDecl [id=" + id + ", args=" + args + ", returnTypes=" + returnTypes + "]";
 	}
-
+	
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.printAtom(id);
@@ -72,6 +82,22 @@ public class FunctionDecl extends Node {
 	@Override
 	public Node typeCheck(TypeChecker tc) {
 		return this;
+	}
+	
+	private boolean vistedBefore = false;
+	@Override
+	public Node augmentWithThis(ThisAugmenter ta) {
+		// Add "this" as first argument if its a method
+		if(isMethod && !vistedBefore) {
+			this.vistedBefore = true;
+			FunctionDecl newDecl = copy();
+			Type classType = ta.getCurrentClassType();
+			SimpleDecl thisArg = new SimpleDecl("this", classType);
+			newDecl.args.add(thisArg);
+			return newDecl;
+		} else {
+			return this;
+		}
 	}
 	
 	@Override
