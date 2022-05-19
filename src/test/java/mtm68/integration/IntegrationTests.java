@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.beans.Transient;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -341,6 +342,21 @@ public class IntegrationTests {
 	@Test
 	void testCFA() {
 		generateAndAssertOutput("class_field_access.xi", "97\n11\n11\n22\n22\n0\n1\n2");
+	}
+
+	@Test
+	void testClassEquality() {
+		generateAndAssertOutput("class_equality.xi", "object equals itself");
+	}
+
+	@Test
+	void testClassMethod() {
+		generateAndAssertOutput("class_method.xi", "1");
+	}
+
+	@Test
+	void testClassMethod() {
+		generateAndAssertOutput("class_method.xi", "3\n3");
 	}
 	
 	private void generateAndAssertOutput(String filename) {
