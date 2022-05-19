@@ -10,43 +10,55 @@ import mtm68.visit.Visitor;
 
 public class Interface extends Node implements Root {
 	
-	private List<FunctionDecl> functionDecls;
+	private List<Use> uses;
+	private InterfaceBody body;
 
-	public Interface(List<FunctionDecl> fDecls) {
-		this.functionDecls = fDecls;
+	public Interface(InterfaceBody body) {
+		this(null, body);
 	}
 
-	public List<FunctionDecl> getFunctionDecls() {
-		return functionDecls;
+	public Interface(List<Use> uses, InterfaceBody body) {
+		this.uses = uses;
+		this.body = body;
+	}
+
+	public List<Use> getUses() {
+		return uses;
+	}
+	
+	public InterfaceBody getBody() {
+		return body;
 	}
 
 	@Override
 	public String toString() {
-		return "Interface [fDecls=" + functionDecls + "]";
+		return "Interface [uses=" + uses + ", body=" + body + "]";
 	}
 
 	@Override
 	public void prettyPrint(SExpPrinter p) {
 		p.startUnifiedList();
-		p.startUnifiedList();
 
-		for(FunctionDecl fDecl : functionDecls) {
+		for(Use use : uses) {
 			p.startList();
-			fDecl.prettyPrint(p);
+			use.prettyPrint(p);
 			p.endList();
 		}
+
+		body.prettyPrint(p);
 		
-		p.endList();
 		p.endList();
 	}
 	
 	@Override
 	public Node visitChildren(Visitor v) {
-		List<FunctionDecl> newFunctionDecls = acceptList(functionDecls, v);
+		List<Use> newUses = acceptList(uses, v);
+		InterfaceBody newBody = body.accept(v);
 
-		if(newFunctionDecls != functionDecls) {
+		if(newUses != uses || newBody != body ) {
 			Interface i = copy();
-			i.functionDecls = newFunctionDecls;
+			i.uses = uses;
+			i.body = body;
 			return i;
 		} 
 
@@ -60,7 +72,7 @@ public class Interface extends Node implements Root {
 
 	@Override
 	public Node convertToIR(NodeToIRNodeConverter cv,  IRNodeFactory inf) {
-		/* There is no IR Node for an interface */
+		// TODO
 		return this;
 	}
 }

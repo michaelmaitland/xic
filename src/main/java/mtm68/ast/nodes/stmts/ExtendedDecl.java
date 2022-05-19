@@ -14,6 +14,7 @@ import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.ast.types.Types;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.ThisAugmenter;
 import mtm68.visit.TypeChecker;
 import mtm68.visit.Visitor;
 
@@ -76,6 +77,12 @@ public class ExtendedDecl extends Decl {
 		decl.result = Result.UNIT;
 
 		return decl;
+	}
+	
+	@Override
+	public Node augmentWithThis(ThisAugmenter ta) {
+		ta.addBinding(this);
+		return this;
 	}
 
 	@Override

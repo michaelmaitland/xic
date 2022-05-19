@@ -91,4 +91,12 @@ public class ArrayUtils {
         }
         return chars;
     }
+	
+	public static long[] stringToLongArray(String str) {
+		long[] longs = new long[str.length()];
+		for(int i = 0; i < str.length(); i++) {
+			longs[i] = (long)str.charAt(i);
+		}
+        return longs;
+    }
 }

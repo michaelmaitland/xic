@@ -1,15 +1,28 @@
 package mtm68.ir;
 
-import static mtm68.util.ArrayUtils.*;
-import static mtm68.util.NodeTestUtil.*;
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.ArrayUtils.empty;
+import static mtm68.util.ArrayUtils.singleton;
+import static mtm68.util.NodeTestUtil.arbitraryCondition;
+import static mtm68.util.NodeTestUtil.arrayWithElems;
+import static mtm68.util.NodeTestUtil.assertInstanceOf;
+import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
+import static mtm68.util.NodeTestUtil.boolLit;
+import static mtm68.util.NodeTestUtil.charLit;
+import static mtm68.util.NodeTestUtil.emptyArray;
+import static mtm68.util.NodeTestUtil.emptyBlock;
+import static mtm68.util.NodeTestUtil.intLit;
+import static mtm68.util.NodeTestUtil.stringLit;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +30,10 @@ import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
+import edu.cornell.cs.cs4120.ir.IRClassDefn;
 import edu.cornell.cs.cs4120.ir.IRConst;
 import edu.cornell.cs.cs4120.ir.IRESeq;
+import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
@@ -34,11 +49,15 @@ import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.CharLiteral;
+import mtm68.ast.nodes.ClassBody;
+import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.IntLiteral;
+import mtm68.ast.nodes.MethodCall;
+import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
@@ -52,8 +71,11 @@ import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
+import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.types.DeclType;
+import mtm68.ast.types.ObjectType;
 import mtm68.ast.types.Types;
+import mtm68.util.ArrayUtils;
 import mtm68.visit.NodeToIRNodeConverter;
 import mtm68.visit.Visitor;
 
@@ -113,6 +135,10 @@ public class NodeToIRNodeConverterTests {
 		
 	private void assertArrayInit(ArrayInit converted, int numElems) {
 		IRESeq eseq = assertInstanceOfAndReturn(IRESeq.class, converted.getIRExpr());
+		assertArrayInit(eseq, numElems);
+	}
+	
+	private void assertArrayInit(IRESeq eseq, int numElems) {
 		IRSeq seq = assertInstanceOfAndReturn(IRSeq.class, eseq.stmt());
 		assertEquals(3 + numElems, seq.stmts().size()); // one to alloc, one to move ret into temp, one to set length
 		assertInstanceOf(IRCallStmt.class, seq.stmts().get(0));
@@ -613,7 +639,144 @@ public class NodeToIRNodeConverterTests {
 		IRReturn irRet = assertInstanceOfAndReturn(IRReturn.class, newRet.getIRStmt());
 		assertEquals(2, irRet.rets().size());
 	}
+	
+	// --------------------------------------------------------------------------------
+	// ClassDefn
+	// --------------------------------------------------------------------------------
+	
+	@Test
+	public void testEmptyClassDefn() {
+		ClassDefn c = cDefn("A");
+		ProgramSymbols progSyms = syms(c);
+		ClassDefn newCDefn = doConversion(progSyms, c);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("A", irClassDefn.getClassName());
+		assertEquals(0, irClassDefn.getMethods().size());
+		
+	}
+	
+	@Test
+	public void testSingleMethodNoSuper() {
+		ClassDefn c = cDefn("A", "f");
+		ProgramSymbols progSyms = syms(c);
+		ClassDefn newCDefn = doConversion(progSyms, c);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("A", irClassDefn.getClassName());
+		assertEquals(1, irClassDefn.getMethods().size());	
+		assertEquals("_IA_f_p", irClassDefn.getMethods().get(0).name());
 
+	}
+	
+	@Test
+	public void testMultipleMethodNoSuper() {
+		ClassDefn c = cDefn("A", "f", "g");
+		ProgramSymbols progSyms = syms(c);
+		ClassDefn newCDefn = doConversion(progSyms, c);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("A", irClassDefn.getClassName());
+		assertEquals(2, irClassDefn.getMethods().size());		
+		assertEquals("_IA_f_p", irClassDefn.getMethods().get(0).name());
+		assertEquals("_IA_g_p", irClassDefn.getMethods().get(1).name());
+		
+	}
+	
+	@Test
+	public void testSingleMethodSameAsSuper() {
+		ClassDefn c1 = cDefn("A", "f");
+		ClassDefn c2 = cDefnExt("B", "A", "f");
+		ProgramSymbols progSyms = syms(c1, c2);
+		ClassDefn newCDefn = doConversion(progSyms, c2);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("B", irClassDefn.getClassName());
+		assertEquals(1, irClassDefn.getMethods().size());		
+		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());
+
+	}
+	
+	@Test
+	public void testTwoMethodsBothSameAsSuper() {
+		ClassDefn c1 = cDefn("A", "f", "g");
+		ClassDefn c2 = cDefnExt("B", "A", "f", "g");
+		ProgramSymbols progSyms = syms(c1, c2);
+		ClassDefn newCDefn = doConversion(progSyms, c2);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("B", irClassDefn.getClassName());
+		assertEquals(2, irClassDefn.getMethods().size());		
+		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());	
+		assertEquals("_IB_g_p", irClassDefn.getMethods().get(1).name());	
+
+	}
+	
+	@Test
+	public void testTwoMethodsOneSameAsSuper() {
+		ClassDefn c1 = cDefn("A", "f", "g");
+		ClassDefn c2 = cDefnExt("B", "A", "f", "h");
+		ProgramSymbols progSyms = syms(c1, c2);
+		ClassDefn newCDefn = doConversion(progSyms, c2);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("B", irClassDefn.getClassName());
+		assertEquals(2, irClassDefn.getMethods().size());		
+		assertEquals("_IB_f_p", irClassDefn.getMethods().get(0).name());	
+		assertEquals("_IB_h_p", irClassDefn.getMethods().get(1).name());	
+
+	}
+	
+	@Test
+	public void testTwoMethodsNoneSameAsSuper() {
+		ClassDefn c1 = cDefn("A", "f", "g");
+		ClassDefn c2 = cDefnExt("B", "A", "h", "i");
+		ProgramSymbols progSyms = syms(c1, c2);
+		ClassDefn newCDefn = doConversion(progSyms, c2);
+		
+		IRClassDefn irClassDefn = assertInstanceOfAndReturn(IRClassDefn.class, newCDefn.getIRClassDefn());
+		assertEquals("B", irClassDefn.getClassName());
+		assertEquals(2, irClassDefn.getMethods().size());		
+		assertEquals("_IB_h_p", irClassDefn.getMethods().get(0).name());		
+		assertEquals("_IB_i_p", irClassDefn.getMethods().get(1).name());		
+
+	}
+	
+	
+	// --------------------------------------------------------------------------------
+	// New
+	// --------------------------------------------------------------------------------
+	@Test
+	public void newObjNoFields() {
+		ClassDefn c = cDefn("A", "f");
+		ProgramSymbols progSyms = syms(c);
+
+		FExpr fExpr = new FExpr("f", ArrayUtils.empty());
+		New n = new New("A", fExpr);
+		New newNew = doConversion(progSyms, n);
+		
+		IRExpr ir = newNew.getIRExpr();
+		assertNotNull(ir);
+	}
+	
+	// --------------------------------------------------------------------------------
+	// MethodCall
+	// --------------------------------------------------------------------------------
+	@Test
+	public void simpleMethodCall() {
+		ClassDefn c = cDefn("A", "f");
+		ProgramSymbols progSyms = syms(c);
+
+		FExpr fExpr = new FExpr("f", ArrayUtils.empty());
+		Var obj = new Var("o");
+		obj.setType(new ObjectType("A"));
+		MethodCall mc = new MethodCall(obj, fExpr);
+		MethodCall newNew = doConversion(progSyms, mc);
+
+		IRExpr ir = newNew.getIRExpr();
+		assertNotNull(ir);
+	}
+	
 	//-------------------------------------------------------------------------------- 
 	// Helper Methods
 	//-------------------------------------------------------------------------------- 
@@ -629,6 +792,12 @@ public class NodeToIRNodeConverterTests {
 		addLocs(node);
 		return conv.performConvertToIR(node);
 	}
+	
+	private <N extends Node> N doConversion(ProgramSymbols progSyms, N node) {
+		NodeToIRNodeConverter conv = new NodeToIRNodeConverter("test", new IRNodeFactory_c(), progSyms);
+		addLocs(node);
+		return conv.performConvertToIR(node);
+	}
 
 	private void addLocs(Node n) {
 		n.accept(new Visitor() {
@@ -638,5 +807,44 @@ public class NodeToIRNodeConverterTests {
 				return n;
 			}
 		});
+	}
+	
+	private List<FunctionDefn> funcs(String... funcs) {
+		List<FunctionDecl> decls = ArrayUtils.empty();
+		for(String func : funcs) {
+			FunctionDecl decl = new FunctionDecl(func, empty(), empty());
+			decl.setIsMethod(true);
+			decls.add(decl);
+		}
+		
+		return decls.stream()
+			 	    .map(decl -> new FunctionDefn(decl, new Block(ArrayUtils.empty())))
+			 	    .collect(Collectors.toList());
+	}
+	
+	private ClassDefn cDefn(String className, String... methods) {
+		return new ClassDefn(className, new ClassBody(funcs(methods), ArrayUtils.empty()));
+	}
+	
+	private ClassDefn cDefnExt(String className, String superClass, String... methods) {
+		return new ClassDefn(className, superClass, new ClassBody(funcs(methods), ArrayUtils.empty()));
+	}
+	
+	private ProgramSymbols syms(ClassDefn... c) {
+		Map<String, List<String>> fields = new HashMap<>();
+		for(ClassDefn defn : c) {
+			List<String> fs = defn.getBody().getFields().stream()
+									  .map(SimpleDecl::getId)
+									  .collect(Collectors.toList());
+			fields.put(defn.getId(), fs);
+		}
+		
+		return new ProgramSymbols(
+				ArrayUtils.empty(), 
+				Arrays.asList(c).stream()
+				                .map(ClassDefn::getClassDecl)
+				                .collect(Collectors.toList()),
+				fields
+				);
 	}
 }

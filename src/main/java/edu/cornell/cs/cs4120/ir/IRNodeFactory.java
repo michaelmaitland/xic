@@ -46,6 +46,8 @@ public interface IRNodeFactory {
 
     IRCompUnit IRCompUnit(String name, Map<String, IRFuncDefn> functions);
 
+    IRCompUnit IRCompUnit(String name, Map<String, IRFuncDefn> functions, Map<String, IRData> dataMap);
+
     /**
      *
      * @param value value of this constant
@@ -66,6 +68,8 @@ public interface IRNodeFactory {
     IRExp IRExp(IRExpr expr);
 
     IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs);
+
+    IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods);
 
     /**
      *
@@ -146,4 +150,6 @@ public interface IRNodeFactory {
      * @param name name of this temporary register
      */
     IRTemp IRTemp(String name);
+
+    IRData IRData(String name, long[] data);
 }

@@ -1,6 +1,6 @@
 package mtm68.parser;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.PrintWriter;
 import java.io.StringReader;
