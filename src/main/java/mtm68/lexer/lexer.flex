@@ -111,6 +111,7 @@ EscapedBackslash = "\\\\"
     ","           { return newToken(TokenType.COMMA); }
     "="           { return newToken(TokenType.EQ); }
     "_"           { return newToken(TokenType.UNDERSCORE); }
+    "\."           { return newToken(TokenType.DOT); }
 
     "+"           { return newToken(TokenType.ADD); }
     "-"           { return newToken(TokenType.SUB); }

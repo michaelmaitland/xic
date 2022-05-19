@@ -1,6 +1,7 @@
 package mtm68.visit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,6 @@ import java.util.stream.Collectors;
 
 import edu.cornell.cs.cs4120.ir.IRBinOp;
 import edu.cornell.cs.cs4120.ir.IRBinOp.OpType;
-import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 import edu.cornell.cs.cs4120.ir.IRCJump;
 import edu.cornell.cs.cs4120.ir.IRCallStmt;
 import edu.cornell.cs.cs4120.ir.IRConst;
@@ -17,6 +17,7 @@ import edu.cornell.cs.cs4120.ir.IRExpr;
 import edu.cornell.cs.cs4120.ir.IRFuncDefn;
 import edu.cornell.cs.cs4120.ir.IRLabel;
 import edu.cornell.cs.cs4120.ir.IRMem;
+import edu.cornell.cs.cs4120.ir.IRMem.MemType;
 import edu.cornell.cs.cs4120.ir.IRMove;
 import edu.cornell.cs.cs4120.ir.IRName;
 import edu.cornell.cs.cs4120.ir.IRNodeFactory;
@@ -26,19 +27,25 @@ import edu.cornell.cs.cs4120.ir.IRStmt;
 import edu.cornell.cs.cs4120.ir.IRTemp;
 import edu.cornell.cs.cs4120.util.InternalCompilerError;
 import mtm68.ast.nodes.BoolLiteral;
+import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Not;
+import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.And;
 import mtm68.ast.nodes.binary.EqEq;
 import mtm68.ast.nodes.binary.Or;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.SimpleDecl;
+import mtm68.ast.symbol.DispatchVectorClassResolver;
+import mtm68.ast.symbol.DispatchVectorIndexResolver;
+import mtm68.ast.symbol.ProgramSymbols;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.BoolType;
 import mtm68.ast.types.IntType;
+import mtm68.ast.types.ObjectType;
 import mtm68.ast.types.Result;
 import mtm68.ast.types.Type;
 import mtm68.util.ArrayUtils;
@@ -61,6 +68,22 @@ public class NodeToIRNodeConverter extends Visitor {
 	 */
 	private Map<String, String> funcAndProcEncodings;
 	
+	/**
+	 * Keys are the class name as defined in the AST nodes.
+	 * Values are a mapping whose keys are the method name as
+	 * defined in the AST nodes. Values are the encoded method
+	 * symbol.
+	 */
+	private Map<String, Map<String, String>> objectMethodEncodings;
+	
+	private DispatchVectorClassResolver dispatchVectorClassResolver;
+	
+	private DispatchVectorIndexResolver dispatchVectorIndexResolver;
+	
+	private Map<String, Integer> classNameToNumFields;
+	
+	private Map<String, Map<String, Integer>> classNameToFieldNameToIndex;
+	
 	private static final String OUT_OF_BOUNDS_LABEL = "_xi_out_of_bounds";
 
 	private static final String MALLOC_LABEL = "_xi_alloc";
@@ -68,22 +91,32 @@ public class NodeToIRNodeConverter extends Visitor {
 	private static final String ALLOC_LAYER = "_I$allocLayer_piiiiii";
 	
 	private static final int WORD_SIZE = 8;
-
+	
 	
 	public NodeToIRNodeConverter(String programName, IRNodeFactory inf) {
-		this(programName, inf, ArrayUtils.empty());
-	}
-	
-	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, List<FunctionDecl> decls) {
-		this(programName, new HashMap<>(), inf);
-		saveFuncSymbols(decls);
+		this(programName, inf, new ProgramSymbols());
 	}
 	
 	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf) {
+		this(programName, funcAndProcEncodings, inf, new ProgramSymbols());
+	}
+	
+	public NodeToIRNodeConverter(String programName, IRNodeFactory inf, ProgramSymbols syms) {
+		this(programName, new HashMap<>(), inf, syms);
+		saveFuncSymbols(syms.getFuncDecls());
+		saveClassSymbols(syms.getClassDecls());
+		saveFields(syms.getClassFields());
+	}
+	
+	public NodeToIRNodeConverter(String programName, Map<String, String> funcAndProcEncodings, IRNodeFactory inf, ProgramSymbols syms) {
 		this.programName = programName;
 		this.labelCounter = 0;
 		this.funcAndProcEncodings = funcAndProcEncodings;
 		this.inf = inf;
+		this.objectMethodEncodings = new HashMap<>();
+		this.dispatchVectorClassResolver = new DispatchVectorClassResolver(syms);
+		this.dispatchVectorIndexResolver = new DispatchVectorIndexResolver(syms);
+		this.classNameToNumFields = new HashMap<>();
 	}
 
 	public <N extends Node> N performConvertToIR(N root) {
@@ -151,9 +184,36 @@ public class NodeToIRNodeConverter extends Visitor {
 	public void saveFuncSymbols(List<FunctionDecl> decls) {
 		for(FunctionDecl decl : decls) saveFuncSymbol(decl);
 	}
+	
+	public void saveClassSymbols(List<ClassDecl> decls) {
+		for(ClassDecl decl : decls) saveClassSymbol(decl);
+	}
 
 	public String argVal(int argIdx) {
 		return Constants.ARG_PREFIX + argIdx;
+	}
+	
+	/**
+	 * Returns an encoding of an object method. The encoding is the same as the
+	 * encoding defined for a function or procedure in the Xi ABI except that the
+	 * function name is proceeded by the class name and an underscore.
+	 * 
+	 * Example:
+	 * A.f() is encoded as _I_A_f_p
+	 * Dog.bite(int) : int is encoded as _I_Dogbite_itoi
+	 */
+	public String saveAndGetMethodSymbol(FunctionDecl functionDecl, String className) {
+		if(!objectMethodEncodings.containsKey(className)) {
+			objectMethodEncodings.put(className, new HashMap<>());
+		}
+
+		Map<String, String> methods = objectMethodEncodings.get(className);
+		if(!methods.containsKey(functionDecl.getId())) {
+			String methodNameEncoding = encodeMethodName(className, functionDecl.getId());
+			saveFuncSymbol(functionDecl, methodNameEncoding, methods);
+		}
+		
+		return methods.get(functionDecl.getId());
 	}
 	
 	/**
@@ -166,11 +226,16 @@ public class NodeToIRNodeConverter extends Visitor {
 		
 		return funcAndProcEncodings.get(functionDecl.getId());
 	}
-	
+
 	public void saveFuncSymbol(FunctionDecl functionDecl) {
+		saveFuncSymbol(functionDecl, encodeFuncName(functionDecl.getId()), funcAndProcEncodings);
+	}
+	
+	private void saveFuncSymbol(FunctionDecl functionDecl, String encodedFuncName, 
+			Map<String, String> encodings) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("_I");
-		sb.append(encodeFuncName(functionDecl.getId()));
+		sb.append(encodedFuncName);
 		sb.append("_");
 		
 		sb.append(encodeReturnTypes(functionDecl.getReturnTypes()));
@@ -182,9 +247,16 @@ public class NodeToIRNodeConverter extends Visitor {
 		sb.append(encodeTypes(argTypes));
 	
 		String encoded = sb.toString();
-		funcAndProcEncodings.put(functionDecl.getId(), encoded); 
+		encodings.put(functionDecl.getId(), encoded);
 	}
-	
+
+	public void saveClassSymbol(ClassDecl classDecl) {
+		List<FunctionDecl> methods = classDecl.getMethodDecls();
+		String className = classDecl.getId();
+		for(FunctionDecl method : methods) {
+			saveAndGetMethodSymbol(method, className);
+		}
+	}
 	
 	/**
 	 * Returns an encoding of a procedure using the encoding defined in the Xi ABI.
@@ -216,6 +288,14 @@ public class NodeToIRNodeConverter extends Visitor {
 		return enc;
 	}	
 	
+	private String encodeMethodName(String className, String methodName) {
+		return encodeClassName(className) + "_" + encodeFuncName(methodName);
+	}
+
+	private String encodeClassName(String className) {
+		return className.replaceAll("_", "__");
+	}
+
 	private String encodeFuncName(String funcName) {
 		return funcName.replaceAll("_", "__");
 	}
@@ -236,6 +316,8 @@ public class NodeToIRNodeConverter extends Visitor {
 	 * Encodes a type. 
 	 * ints are encoded as {@code i}
 	 * bools are encoded as {@code b}
+	 * objects are encoded as "o" concatenated with the length of the unescaped
+	 * class name concatenated with the escaped class name
 	 * arrays are encoded as {@code a}
 	 * 
 	 */
@@ -244,6 +326,10 @@ public class NodeToIRNodeConverter extends Visitor {
 			return "i";
 		} else if(type instanceof BoolType) {
 			return "b";
+		} else if(type instanceof ObjectType) {
+			String typeName = ((ObjectType) type).getName();
+			String escapedTypeName = encodeClassName(typeName);
+			return "o" + typeName.length() + escapedTypeName;
 		} else if (type instanceof ArrayType) {
 			return "a" + encodeType(((ArrayType) type).getType());
 		} else {
@@ -734,5 +820,66 @@ public class NodeToIRNodeConverter extends Visitor {
 		IRSeq seq = inf.IRSeq(stmts);
 		
 		return inf.IRESeq(seq, resultTemp);
+	}
+	
+	public void saveFields(Map<String, List<String>> classToFields) {
+		classNameToNumFields = new HashMap<>();
+		classNameToFieldNameToIndex = new HashMap<>();
+		for(String className : classToFields.keySet()) {
+			List<String> fields = classToFields.get(className);
+			classNameToNumFields.put(className, fields.size());
+
+			Map<String, Integer> fieldNameToIndex = new HashMap<>();
+			for (int i = 0; i < fields.size(); i++) {
+				fieldNameToIndex.put(fields.get(i), i);
+			}
+			classNameToFieldNameToIndex.put(className, fieldNameToIndex);
+		}
+	}
+
+	public int getNumFields(String className) {
+		if(classNameToNumFields.containsKey(className)) {
+			return classNameToNumFields.get(className);
+		} else {
+			throw new InternalCompilerError("Could not find class " + className + " when searching for number of fields.");
+		}
+	}
+
+	public Integer getFieldIndex(ObjectType objType, Var field) {
+		String className = objType.getName();
+		String fieldName = field.getId();
+		if(classNameToFieldNameToIndex.containsKey(fieldName)) {
+			Map<String, Integer> fields = classNameToFieldNameToIndex.get(className);
+			if(fields.containsKey(fieldName)) {
+				return fields.get(fieldName);
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	public IRESeq constructDispatchVector(String className) {
+		Map<String, String> methods = dispatchVectorClassResolver.getMethods(className);
+		
+		IRExpr[] elems = new IRExpr[methods.size()];
+		for(String funcId : methods.keySet()) {
+			String invokeClassName = methods.get(funcId);
+			String funcNameEncoded = objectMethodEncodings.get(invokeClassName).get(funcId);
+
+			//IRMem mem = inf.IRMem(inf.IRName(funcNameEncoded));
+			IRName mem = inf.IRName(funcNameEncoded);
+
+			int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
+			elems[index] = mem;
+		}
+
+		return allocateAndInitArray(Arrays.asList(elems));
+	}
+
+	public IRMem getMethodSymbol(IRExpr dispatchVector, String funcId, String className) {
+		int index = dispatchVectorIndexResolver.getMethodIndex(className, funcId);
+		return getOffsetIntoArr(dispatchVector, inf.IRConst(index));  
 	}
 }

@@ -56,9 +56,11 @@ import mtm68.ast.nodes.BoolLiteral;
 import mtm68.ast.nodes.ClassDecl;
 import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.FieldAccess;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Interface;
+import mtm68.ast.nodes.MethodCall;
 import mtm68.ast.nodes.Negate;
 import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Program;
@@ -1209,7 +1211,6 @@ public class ParserTests {
 		assertEquals("B", defn.getSuperType());
 	}
 	
-	
 	@Test
 	void testClassDefnWithMethods() throws Exception{
 		// Class A { f() {} g() {}}
@@ -1237,6 +1238,11 @@ public class ParserTests {
 
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getMethodDefns().size());
+		assertTrue(defn.getBody().getMethodDefns().get(0).getFunctionDecl().isMethod());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(2, decl.getMethodDecls().size());
 	}
 	
 	@Test
@@ -1262,6 +1268,10 @@ public class ParserTests {
 
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getFields().size());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(0, decl.getMethodDecls().size());
 	}
 		
 	
@@ -1322,11 +1332,15 @@ public class ParserTests {
 		ClassDefn defn = prog.getBody().getClassDefns().get(0);
 		assertEquals(2, defn.getBody().getFields().size());
 		assertEquals(1, defn.getBody().getMethodDefns().size());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(1, decl.getMethodDecls().size());
 	}
 	
 	@Test
 	void testClassDefnReturnThis() throws Exception{
-		// Class A { f() { return this } }
+		// Class A { f() : A { return this } }
 		List<Token> tokens = elems(
 				token(XI),
  				token(CLASS),
@@ -1335,6 +1349,8 @@ public class ParserTests {
  				token(ID, "f"),
  				token(OPEN_PAREN),
  				token(CLOSE_PAREN),
+ 				token(COLON),
+ 				token(ID, "A"),
  				token(OPEN_CURLY),
  				token(RETURN),
  				token(THIS),
@@ -1372,6 +1388,27 @@ public class ParserTests {
 	
 		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
 		assertInstanceOf(Var.class, assignStmt.getLhs());
+		assertInstanceOf(New.class, assignStmt.getRhs());
+	}
+	
+	@Test
+	void singleAssignDeclNew() throws Exception {
+	    // x : A = new A.init()
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(ID, "A"),
+				token(EQ),
+				token(NEW),
+				token(ID, "A"),
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+	
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(SimpleDecl.class, assignStmt.getLhs());
 		assertInstanceOf(New.class, assignStmt.getRhs());
 	}
 	
@@ -1414,6 +1451,75 @@ public class ParserTests {
 		assertEquals(1, args.size());
 		assertInstanceOf(New.class, args.get(0));
 	}
+	
+	//--------------------------------------------------------------------------------
+	//- MethodCall
+	//--------------------------------------------------------------------------------
+	@Test
+	public void thisDotMethodCall() throws Exception {
+		// this.f()
+		List<Token> tokens = elems(
+				token(THIS),
+				token(DOT),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromExp(tokens);
+		
+		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, firstExp(prog));
+		assertEquals("this", mc.getObj().getId());
+		assertEquals("f", mc.getFExpr().getId());
+		assertTrue(mc.getFExpr().isMethodCall());
+	}
+	
+	@Test
+	public void varDotMethodCall() throws Exception {
+		// o.f()
+		List<Token> tokens = elems(
+				token(ID, "o"),
+				token(DOT),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromExp(tokens);
+		
+		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, firstExp(prog));
+		assertEquals("o", mc.getObj().getId());
+		assertEquals("f", mc.getFExpr().getId());
+		assertTrue(mc.getFExpr().isMethodCall());
+	}
+	
+	//--------------------------------------------------------------------------------
+	//- FieldAccess
+	//--------------------------------------------------------------------------------
+	@Test
+	public void thisFieldAccess() throws Exception {
+		// this.p
+		List<Token> tokens = elems(
+				token(THIS),
+				token(DOT),
+				token(ID, "p"));
+		Program prog = parseProgFromExp(tokens);
+		
+		FieldAccess fa = assertInstanceOfAndReturn(FieldAccess.class, firstExp(prog));
+		assertEquals("this", fa.getObj().getId());
+		assertEquals("p", fa.getField().getId());
+	}
+	
+	@Test
+	public void varFieldAccess() throws Exception {
+		// o.p
+		List<Token> tokens = elems(
+				token(ID, "o"),
+				token(DOT),
+				token(ID, "p"));
+		Program prog = parseProgFromExp(tokens);
+		
+		FieldAccess fa= assertInstanceOfAndReturn(FieldAccess.class, firstExp(prog));
+		assertEquals("o", fa.getObj().getId());
+		assertEquals("p", fa.getField().getId());
+	}
+		
 	
 	private void assertSyntaxError(TokenType expected, ParserError actual) {
 		assertEquals(expected, tokenFromError(actual).getType());
@@ -1506,5 +1612,4 @@ public class ParserTests {
 	private Token token(TokenType t, Object data) {
 		return tokenFac.newToken(t, data, 0, 0);
 	}
-	
-	}
+}

@@ -2,7 +2,6 @@ package mtm68.visit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,12 +10,13 @@ import mtm68.ast.nodes.ArrayInit;
 import mtm68.ast.nodes.ArrayLength;
 import mtm68.ast.nodes.Expr;
 import mtm68.ast.nodes.FExpr;
-import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.FunctionDefn;
 import mtm68.ast.nodes.HasLocation;
 import mtm68.ast.nodes.Negate;
+import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Not;
+import mtm68.ast.nodes.This;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.BinExpr;
 import mtm68.ast.nodes.binary.Binop;
@@ -26,6 +26,7 @@ import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.While;
+import mtm68.ast.symbol.SymbolTable;
 import mtm68.ast.types.ArrayType;
 import mtm68.ast.types.EmptyArrayType;
 import mtm68.ast.types.HasResult;
@@ -53,8 +54,8 @@ public class TypeChecker extends Visitor {
 	private	Set<Binop> arrToArrToArr = ArrayUtils.newHashSet(Binop.ADD);
 
 
-	public TypeChecker(Map<String, FunctionDecl> funcTable) {
-		this(new TypingContext(funcTable));
+	public TypeChecker(SymbolTable symTable) {
+		this(new TypingContext(symTable));
 	}
 
 	public TypeChecker(TypingContext context) {
@@ -278,7 +279,7 @@ public class TypeChecker extends Visitor {
 
 		return type;
 	}
-
+	
 	public Type checkBinExpr(BinExpr be) {
 		
 		Binop op = be.getOp();
@@ -367,4 +368,13 @@ public class TypeChecker extends Visitor {
 		return t1.equals(t2) || t1.equals(Types.EMPTY_ARRAY) || t2.equals(Types.EMPTY_ARRAY);
 	}
 
+	public Type checkThis(This this1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Type checkNew(New new1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

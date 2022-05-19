@@ -8,10 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.kohsuke.args4j.Argument;
@@ -36,10 +34,13 @@ import mtm68.assem.RegisterAllocator;
 import mtm68.assem.cfg.RegisterAllocation;
 import mtm68.assem.operand.RealReg;
 import mtm68.assem.visit.TrivialRegisterAllocator;
-import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.Interface;
 import mtm68.ast.nodes.Node;
 import mtm68.ast.nodes.Program;
+import mtm68.ast.symbol.ProgramSymbols;
+import mtm68.ast.symbol.SymbolTable;
+import mtm68.ast.symbol.SymbolTableManager;
+import mtm68.ast.symbol.ValidProgram;
 import mtm68.exception.BaseError;
 import mtm68.exception.SemanticError;
 import mtm68.exception.SemanticException;
@@ -50,11 +51,12 @@ import mtm68.lexer.Token;
 import mtm68.lexer.TokenFactory;
 import mtm68.parser.ParseResult;
 import mtm68.parser.Parser;
+import mtm68.util.ArrayUtils;
 import mtm68.util.Debug;
 import mtm68.util.ErrorUtils;
 import mtm68.util.FileUtils;
-import mtm68.visit.FunctionCollector;
 import mtm68.visit.NodeToIRNodeConverter;
+import mtm68.visit.SymbolCollector;
 import mtm68.visit.TypeChecker;
 
 public class Main {
@@ -190,24 +192,25 @@ public class Main {
 		    }
 		});
 		
-		Map<String, List<FunctionDecl>> progFuncDecls = new HashMap<>();
-		Map<String, Program> programs = getValidPrograms(symTableManager, progFuncDecls);
+		List<ValidProgram> programs = getValidPrograms(symTableManager);
 		
 		IRNodeFactory nodeFactory = new IRNodeFactory_c();
 		Optimizer.setNodeFactory(nodeFactory);
-		for(String programName : programs.keySet()) {
-			Program program = programs.get(programName);
+		for(ValidProgram vp : programs) {
+			Program program = vp.getProgram();
 			
 			program = Optimizer.optimizeAST(program);
 
-			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory, progFuncDecls.get(programName));
+			String programName = vp.getProgramName();
+			ProgramSymbols syms = vp.getProgSymbols();
+			NodeToIRNodeConverter irConverter = new NodeToIRNodeConverter(programName, nodeFactory, syms);
 			Lowerer lowerer = new Lowerer(nodeFactory);
 			CFGVisitor cfgVisitor = new CFGVisitor(nodeFactory);
 			UnusedLabelVisitor unusedLabelVisitor = new UnusedLabelVisitor(nodeFactory);
 			
 			program = irConverter.performConvertToIR(program);
 
-			// Add our function before lowering
+			// Add our functions before lowering
 			program.getIrCompUnit().appendFunc(irConverter.allocLayer());
 
 			IRNode irRoot = lowerer.visit(program.getIrCompUnit());
@@ -290,9 +293,8 @@ public class Main {
 		return !doNotOptimize;
 	}
 	
-	public Map<String, Program> getValidPrograms(SymbolTableManager symTableManager, 
-			Map<String, List<FunctionDecl>> progFuncDecls) throws IOException {
-		Map<String, Program> validPrograms = new HashMap<>();
+	public List<ValidProgram> getValidPrograms(SymbolTableManager symTableManager) throws IOException {
+		List<ValidProgram> validPrograms = ArrayUtils.empty();
 
 		for (String filename : sourceFiles) {
 			//Check valid file and file exists
@@ -332,25 +334,23 @@ public class Main {
 			//Typecheck
 			if(root instanceof Program) {
 				try {
-					Map<String, FunctionDecl> libFuncTable = symTableManager.mergeSymbolTables((Program) root);
-					
-					FunctionCollector funcCollector = new FunctionCollector(libFuncTable);
-					Map<String, FunctionDecl> funcTable = funcCollector.visit(root);
-					if(funcCollector.hasError()) {
-						ErrorUtils.printErrors(funcCollector.getErrors(), filename);
-						writeErrorToFile(filename, funcCollector.getFirstError());
+					SymbolTable libSymTable = symTableManager.mergeSymbolTables((Program) root);
+					SymbolCollector symCollector = new SymbolCollector(libSymTable);
+					SymbolTable symTable = symCollector.visit(root);
+					if(symCollector.hasError()) {
+						ErrorUtils.printErrors(symCollector.getErrors(), filename);
+						writeErrorToFile(filename, symCollector.getFirstError());
 						continue;
 					}
 					
-					progFuncDecls.put(filename, new ArrayList<>(funcTable.values()));
-					
-					TypeChecker typeChecker = new TypeChecker(funcTable);	
+					TypeChecker typeChecker = new TypeChecker(symTable);	
 					root = typeChecker.performTypeCheck(root);
 					ErrorUtils.printErrors(typeChecker.getTypeErrors(), filename);
 
 					if(!typeChecker.hasError()) {
 						if(outputTypeCheck) FileUtils.writeTypeCheckToFile(filename);
-						validPrograms.put(filename, (Program)root);
+						ValidProgram vp = new ValidProgram(filename, (Program)root, symTable.toProgSymbols());
+						validPrograms.add(vp);
 					} else {
 						writeErrorToFile(filename, typeChecker.getFirstError());
 					}
@@ -365,7 +365,6 @@ public class Main {
 			if(root instanceof Interface) {
 				symTableManager.generateSymbolTableFromAST(filename.substring(0, filename.length()-4), (Interface) root); 
 			}	
-			
 		}
 		
 		return validPrograms;

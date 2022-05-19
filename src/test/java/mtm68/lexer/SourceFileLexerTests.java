@@ -11,6 +11,7 @@ import static mtm68.lexer.TokenType.CLOSE_SQUARE;
 import static mtm68.lexer.TokenType.COLON;
 import static mtm68.lexer.TokenType.COMMA;
 import static mtm68.lexer.TokenType.DIV;
+import static mtm68.lexer.TokenType.DOT;
 import static mtm68.lexer.TokenType.ELSE;
 import static mtm68.lexer.TokenType.EQ;
 import static mtm68.lexer.TokenType.EQEQ;
@@ -342,6 +343,7 @@ public class SourceFileLexerTests {
 		assertSingleToken(COMMA, ",");
 		assertSingleToken(EQ, "=");
 		assertSingleToken(UNDERSCORE, "_");
+		assertSingleToken(DOT, ".");
 
 		assertSingleToken(ADD, "+");
 		assertSingleToken(SUB, "-");
