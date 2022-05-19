@@ -1,5 +1,6 @@
 package edu.cornell.cs.cs4120.ir;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,12 @@ public class IRNodeFactory_c implements IRNodeFactory {
             Map<String, IRFuncDefn> functions) {
         return new IRCompUnit(name, functions);
     }
+    
+    @Override
+    public IRCompUnit IRCompUnit(String name,
+            Map<String, IRFuncDefn> functions,  Map<String, IRData> dataMap) {
+        return new IRCompUnit(name, functions, new ArrayList<>(), dataMap);
+    }
 
     @Override
     public IRConst IRConst(long value) {
@@ -62,6 +69,11 @@ public class IRNodeFactory_c implements IRNodeFactory {
     @Override
     public IRFuncDefn IRFuncDefn(String name, IRStmt stmt, int numArgs) {
         return new IRFuncDefn(name, stmt, numArgs);
+    }
+    
+    @Override
+    public IRClassDefn IRClassDefn(String className, List<IRFuncDefn> methods) {
+    	return new IRClassDefn(className, methods);
     }
 
     @Override
@@ -132,5 +144,10 @@ public class IRNodeFactory_c implements IRNodeFactory {
     @Override
     public IRTemp IRTemp(String name) {
         return new IRTemp(name);
+    }
+    
+    @Override
+    public IRData IRData(String name, long[] data) {
+        return new IRData(name, data);
     }
 }

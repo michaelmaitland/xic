@@ -1,8 +1,46 @@
 package mtm68.parser;
 
-import static mtm68.lexer.TokenType.*;
-import static mtm68.util.ArrayUtils.*;
-import static mtm68.util.NodeTestUtil.*;
+import static mtm68.lexer.TokenType.ADD;
+import static mtm68.lexer.TokenType.BOOL;
+import static mtm68.lexer.TokenType.CLASS;
+import static mtm68.lexer.TokenType.CLOSE_CURLY;
+import static mtm68.lexer.TokenType.CLOSE_PAREN;
+import static mtm68.lexer.TokenType.CLOSE_SQUARE;
+import static mtm68.lexer.TokenType.COLON;
+import static mtm68.lexer.TokenType.COMMA;
+import static mtm68.lexer.TokenType.DIV;
+import static mtm68.lexer.TokenType.DOT;
+import static mtm68.lexer.TokenType.ELSE;
+import static mtm68.lexer.TokenType.EOF;
+import static mtm68.lexer.TokenType.EQ;
+import static mtm68.lexer.TokenType.EXTENDS;
+import static mtm68.lexer.TokenType.ID;
+import static mtm68.lexer.TokenType.IF;
+import static mtm68.lexer.TokenType.INT;
+import static mtm68.lexer.TokenType.INTEGER;
+import static mtm68.lexer.TokenType.IXI;
+import static mtm68.lexer.TokenType.LT;
+import static mtm68.lexer.TokenType.MOD;
+import static mtm68.lexer.TokenType.MULT;
+import static mtm68.lexer.TokenType.NEW;
+import static mtm68.lexer.TokenType.OPEN_CURLY;
+import static mtm68.lexer.TokenType.OPEN_PAREN;
+import static mtm68.lexer.TokenType.OPEN_SQUARE;
+import static mtm68.lexer.TokenType.RETURN;
+import static mtm68.lexer.TokenType.SEMICOLON;
+import static mtm68.lexer.TokenType.STRING;
+import static mtm68.lexer.TokenType.SUB;
+import static mtm68.lexer.TokenType.THIS;
+import static mtm68.lexer.TokenType.TRUE;
+import static mtm68.lexer.TokenType.UNDERSCORE;
+import static mtm68.lexer.TokenType.USE;
+import static mtm68.lexer.TokenType.WHILE;
+import static mtm68.lexer.TokenType.XI;
+import static mtm68.util.ArrayUtils.concat;
+import static mtm68.util.ArrayUtils.elems;
+import static mtm68.util.NodeTestUtil.assertInstanceOf;
+import static mtm68.util.NodeTestUtil.assertInstanceOfAndReturn;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,13 +53,19 @@ import org.junit.jupiter.api.Test;
 import java_cup.runtime.ComplexSymbolFactory;
 import mtm68.ast.nodes.ArrayIndex;
 import mtm68.ast.nodes.BoolLiteral;
+import mtm68.ast.nodes.ClassDecl;
+import mtm68.ast.nodes.ClassDefn;
 import mtm68.ast.nodes.Expr;
+import mtm68.ast.nodes.FieldAccess;
 import mtm68.ast.nodes.FunctionDecl;
 import mtm68.ast.nodes.IntLiteral;
 import mtm68.ast.nodes.Interface;
+import mtm68.ast.nodes.MethodCall;
 import mtm68.ast.nodes.Negate;
+import mtm68.ast.nodes.New;
 import mtm68.ast.nodes.Program;
 import mtm68.ast.nodes.StringLiteral;
+import mtm68.ast.nodes.This;
 import mtm68.ast.nodes.Var;
 import mtm68.ast.nodes.binary.Add;
 import mtm68.ast.nodes.binary.LessThan;
@@ -29,9 +73,9 @@ import mtm68.ast.nodes.binary.Mult;
 import mtm68.ast.nodes.binary.Sub;
 import mtm68.ast.nodes.stmts.Block;
 import mtm68.ast.nodes.stmts.ExtendedDecl;
-import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.If;
 import mtm68.ast.nodes.stmts.MultipleAssign;
+import mtm68.ast.nodes.stmts.ProcedureCall;
 import mtm68.ast.nodes.stmts.Return;
 import mtm68.ast.nodes.stmts.SimpleDecl;
 import mtm68.ast.nodes.stmts.SingleAssign;
@@ -57,7 +101,7 @@ public class ParserTests {
 	@Test
 	void noFunctionDeclsValidInterface() throws Exception {
 		Interface i = parseInterfaceFromTokens(ArrayUtils.empty());
-		assertEquals(0, i.getFunctionDecls().size());
+		assertEquals(0, i.getBody().getFunctionDecls().size());
 	}
 
 	@Test
@@ -76,9 +120,9 @@ public class ParserTests {
 				token(CLOSE_SQUARE)
 				);
 		Interface i = parseInterfaceFromTokens(tokens);
-		assertEquals(1, i.getFunctionDecls().size());
+		assertEquals(1, i.getBody().getFunctionDecls().size());
 		
-		FunctionDecl decl = i.getFunctionDecls().get(0);
+		FunctionDecl decl = i.getBody().getFunctionDecls().get(0);
 		assertEquals(1, decl.getReturnTypes().size());
 		assertEquals(1, decl.getArgs().size());
 	}
@@ -107,13 +151,262 @@ public class ParserTests {
 				token(BOOL)
 				);
 		Interface i = parseInterfaceFromTokens(tokens);
-		assertEquals(2, i.getFunctionDecls().size());
+		assertEquals(2, i.getBody().getFunctionDecls().size());
 		
-		FunctionDecl declTwo = i.getFunctionDecls().get(1);
+		FunctionDecl declTwo = i.getBody().getFunctionDecls().get(1);
 		assertEquals(2, declTwo.getReturnTypes().size());
 		assertEquals(0, declTwo.getArgs().size());
 	}
 	
+	
+	//-------------------------------------------------------------------------------- 
+	//- Class Decls
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void interfaceWithSingleClassDeclNoSuper() throws Exception {
+		// class A {}
+		List<Token> tokens = elems(
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		
+		ClassDecl decl = i.getBody().getClassDecls().get(0);
+		assertEquals("A", decl.getId());
+		assertNull(decl.getSuperType());
+		assertEquals(0, decl.getMethodDecls().size());
+	}	
+
+	@Test
+	void interfaceWithSingleClassDeclWithSuper() throws Exception {
+		// class A extends B {}
+		List<Token> tokens = elems(
+				token(CLASS),
+				token(ID, "A"),
+				token(EXTENDS),
+				token(ID, "B"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		
+		ClassDecl decl = i.getBody().getClassDecls().get(0);
+		assertEquals("A", decl.getId());
+		assertEquals("B", decl.getSuperType());
+		assertEquals(0, decl.getMethodDecls().size());
+	}	
+	
+	@Test
+	void interfaceWithSingleClassDeclWithMethod() throws Exception {
+		// class A {
+		//   f(a:int):bool[]
+		// }
+		List<Token> tokens = elems(
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(CLOSE_CURLY)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		
+		ClassDecl decl = i.getBody().getClassDecls().get(0);
+		assertEquals("A", decl.getId());
+		assertNull(decl.getSuperType());
+		assertEquals(1, decl.getMethodDecls().size());
+		
+		FunctionDecl fDecl = decl.getMethodDecls().get(0);
+		assertEquals(1, fDecl.getReturnTypes().size());
+		assertEquals(1, fDecl.getArgs().size());
+	}	
+	
+	@Test
+	void interfaceWithSingleClassDeclWithMultipleMethods() throws Exception {
+		// class A {
+		//   f(a:int):bool[]
+		//   g(a:int):int, bool
+		// }
+		List<Token> tokens = elems(
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(ID, "g"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(INT),
+				token(COMMA),
+				token(BOOL),
+				token(CLOSE_CURLY)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		
+		ClassDecl decl = i.getBody().getClassDecls().get(0);
+		assertEquals("A", decl.getId());
+		assertNull(decl.getSuperType());
+		assertEquals(2, decl.getMethodDecls().size());
+		
+		FunctionDecl declTwo = decl.getMethodDecls().get(1);
+		assertEquals(2, declTwo.getReturnTypes().size());
+		assertEquals(0, declTwo.getArgs().size());
+	}	
+	
+	//-------------------------------------------------------------------------------- 
+	//- Interface
+	//-------------------------------------------------------------------------------- 
+	@Test
+	void interfaceSingleUse() throws Exception {
+		// use A
+		List<Token> tokens = elems(
+				token(USE),
+				token(ID, "A")
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getUses().size());
+	} 
+	
+	@Test
+	void interfaceMultipleUse() throws Exception {
+		// use A;
+		// use B
+		List<Token> tokens = elems(
+				token(USE),
+				token(ID, "A"),
+				token(SEMICOLON),
+				token(USE),
+				token(ID, "B")
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(2, i.getUses().size());
+	} 
+	
+	@Test
+	void interfaceFunctionAndClass() throws Exception {
+		// f(a:int):bool[]
+		// class A{}
+		List<Token> tokens = elems(
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		assertEquals(1, i.getBody().getFunctionDecls().size());
+	} 
+	
+	@Test
+	void interfaceClassAndFunction() throws Exception {
+		// class A {}
+		// f(a:int):bool[]
+		List<Token> tokens = elems(
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(1, i.getBody().getClassDecls().size());
+		assertEquals(1, i.getBody().getFunctionDecls().size());
+	} 
+	
+	@Test
+	void interfaceUseClassAndFunctionMedley() throws Exception {
+		// use A;
+		// use B;
+		// class A {}
+		// f(a:int):bool[]
+		// class C
+		// g(a:int):int[]
+		List<Token> tokens = elems(
+				token(USE),
+				token(ID, "A"),
+				token(SEMICOLON),
+				token(USE),
+				token(ID, "B"),
+				token(SEMICOLON),
+				token(CLASS),
+				token(ID, "A"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(BOOL),
+				token(OPEN_SQUARE),
+				token(CLOSE_SQUARE),
+				token(CLASS),
+				token(ID, "B"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(CLASS),
+				token(ID, "C"),
+				token(OPEN_CURLY),
+				token(CLOSE_CURLY),
+				token(ID, "g"),
+				token(OPEN_PAREN),
+				token(ID, "a"),
+				token(COLON),
+				token(INT),
+				token(CLOSE_PAREN),
+				token(COLON),
+				token(INT)
+				);
+		Interface i = parseInterfaceFromTokens(tokens);
+		assertEquals(3, i.getBody().getClassDecls().size());
+		assertEquals(2, i.getBody().getFunctionDecls().size());
+	} 
+
 	//-------------------------------------------------------------------------------- 
 	//- Assign Statement 
 	//-------------------------------------------------------------------------------- 
@@ -867,6 +1160,367 @@ public class ParserTests {
 	
 	// f () { [INSERT HERE] }
 	
+	
+	//-------------------------------------------------------------------------------- 
+	//- Class Definitions
+	//-------------------------------------------------------------------------------- 
+	
+	@Test
+	void testEmptyClassDefn () throws Exception{
+		// Class A {}
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+		assertEquals(0, prog.getBody().getFunctionDefns().size());
+
+		ClassDefn defn = prog.getBody().getClassDefns().get(0);
+		assertEquals("A", defn.getId());
+		assertNull(defn.getSuperType());
+		assertEquals(0, defn.getBody().getFields().size());
+		assertEquals(0, defn.getBody().getMethodDefns().size());
+	}
+	
+	@Test
+	void testClassDefnExtends () throws Exception{
+		// Class A extends B {}
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(EXTENDS),
+ 				token(ID, "B"),
+ 				token(OPEN_CURLY),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+		assertEquals(0, prog.getBody().getFunctionDefns().size());
+
+		ClassDefn defn = prog.getBody().getClassDefns().get(0);
+		assertEquals("A", defn.getId());
+		assertEquals("B", defn.getSuperType());
+	}
+	
+	@Test
+	void testClassDefnWithMethods() throws Exception{
+		// Class A { f() {} g() {}}
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(ID, "f"),
+ 				token(OPEN_PAREN),
+ 				token(CLOSE_PAREN),
+ 				token(OPEN_CURLY),
+ 				token(CLOSE_CURLY),
+				token(ID, "g"),
+ 				token(OPEN_PAREN),
+ 				token(CLOSE_PAREN),
+ 				token(OPEN_CURLY),
+ 				token(CLOSE_CURLY),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+
+		ClassDefn defn = prog.getBody().getClassDefns().get(0);
+		assertEquals(2, defn.getBody().getMethodDefns().size());
+		assertTrue(defn.getBody().getMethodDefns().get(0).getFunctionDecl().isMethod());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(2, decl.getMethodDecls().size());
+	}
+	
+	@Test
+	void testClassDefnWithFields() throws Exception{
+		// Class A { x:int y:int }
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(ID, "x"),
+ 				token(COLON),
+ 				token(INT),
+ 				token(ID, "y"),
+ 				token(COLON),
+ 				token(INT),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+
+		ClassDefn defn = prog.getBody().getClassDefns().get(0);
+		assertEquals(2, defn.getBody().getFields().size());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(0, decl.getMethodDecls().size());
+	}
+		
+	
+	@Test
+	void testClassDefnWithMethodAndField() throws Exception{
+		// Class A { x:int f() {}}
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(ID, "x"),
+ 				token(COLON),
+ 				token(INT),
+ 				token(ID, "f"),
+ 				token(OPEN_PAREN),
+ 				token(CLOSE_PAREN),
+ 				token(OPEN_CURLY),
+ 				token(CLOSE_CURLY),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+
+		ClassDefn defn = prog.getBody().getClassDefns().get(0);
+		assertEquals(1, defn.getBody().getFields().size());
+		assertEquals(1, defn.getBody().getMethodDefns().size());
+	}
+	
+	@Test
+	void testClassDefnWithMethodsAndFieldsAnyOrder() throws Exception{
+		// Class A { x:int f() {}}
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(ID, "x"),
+ 				token(COLON),
+ 				token(INT),
+ 				token(ID, "f"),
+ 				token(OPEN_PAREN),
+ 				token(CLOSE_PAREN),
+ 				token(OPEN_CURLY),
+ 				token(CLOSE_CURLY),
+ 				token(ID, "y"),
+ 				token(COLON),
+ 				token(INT),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+
+		ClassDefn defn = prog.getBody().getClassDefns().get(0);
+		assertEquals(2, defn.getBody().getFields().size());
+		assertEquals(1, defn.getBody().getMethodDefns().size());
+		
+		ClassDecl decl = defn.getClassDecl();
+		assertEquals("A", decl.getId());
+		assertEquals(1, decl.getMethodDecls().size());
+	}
+	
+	@Test
+	void testClassDefnReturnThis() throws Exception{
+		// Class A { f() : A { return this } }
+		List<Token> tokens = elems(
+				token(XI),
+ 				token(CLASS),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(ID, "f"),
+ 				token(OPEN_PAREN),
+ 				token(CLOSE_PAREN),
+ 				token(COLON),
+ 				token(ID, "A"),
+ 				token(OPEN_CURLY),
+ 				token(RETURN),
+ 				token(THIS),
+ 				token(CLOSE_CURLY),
+ 				token(CLOSE_CURLY),
+				token(EOF)
+				);
+		Program prog = parseProg(tokens);
+
+		assertEquals(1, prog.getBody().getClassDefns().size());
+		
+		Optional<Return> retStmt = firstClassReturnStatement(prog); 
+		assertTrue(retStmt.isPresent());
+		assertEquals(1, retStmt.get().getRetList().size());
+	    assertInstanceOf(This.class, retStmt.get().getRetList().get(0));
+	}
+	
+	//--------------------------------------------------------------------------------
+	//- new keyword
+	//--------------------------------------------------------------------------------
+	
+	@Test
+	void singleAssignNew() throws Exception {
+	    // x = new A.init()
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(EQ),
+				token(NEW),
+				token(ID, "A"),
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+	
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(Var.class, assignStmt.getLhs());
+		assertInstanceOf(New.class, assignStmt.getRhs());
+	}
+	
+	@Test
+	void singleAssignDeclNew() throws Exception {
+	    // x : A = new A.init()
+		List<Token> tokens = elems(
+				token(ID, "x"),
+				token(COLON),
+				token(ID, "A"),
+				token(EQ),
+				token(NEW),
+				token(ID, "A"),
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+	
+		SingleAssign assignStmt = assertInstanceOfAndReturn(SingleAssign.class, firstStatement(prog));
+		assertInstanceOf(SimpleDecl.class, assignStmt.getLhs());
+		assertInstanceOf(New.class, assignStmt.getRhs());
+	}
+	
+	@Test
+	void returnNew() throws Exception {
+		// return new A.init()
+		List<Token> tokens = elems(
+				token(RETURN), 
+				token(NEW), 
+				token(ID, "A"), 
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+
+		Optional<Return> retStmt = returnStatement(prog);
+		assertTrue(retStmt.isPresent());
+		assertEquals(1, retStmt.get().getRetList().size());
+	    assertInstanceOf(New.class, retStmt.get().getRetList().get(0));
+	}
+	
+	@Test
+	void procedureCallNewArg() throws Exception {
+		// f(new A.init()) 
+		List<Token> tokens = elems(
+				token(ID, "f"), 
+				token(OPEN_PAREN), 
+				token(NEW),
+				token(ID, "A"), 
+				token(DOT),
+				token(ID, "init"),
+				token(OPEN_PAREN), 
+				token(CLOSE_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromStmt(tokens);
+
+		ProcedureCall fc = assertInstanceOfAndReturn(ProcedureCall.class, firstStatement(prog));
+		List<Expr> args = fc.getFexp().getArgs(); 
+		assertEquals(1, args.size());
+		assertInstanceOf(New.class, args.get(0));
+	}
+	
+	//--------------------------------------------------------------------------------
+	//- MethodCall
+	//--------------------------------------------------------------------------------
+	@Test
+	public void thisDotMethodCall() throws Exception {
+		// this.f()
+		List<Token> tokens = elems(
+				token(THIS),
+				token(DOT),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromExp(tokens);
+		
+		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, firstExp(prog));
+		assertEquals("this", mc.getObj().getId());
+		assertEquals("f", mc.getFExpr().getId());
+		assertTrue(mc.getFExpr().isMethodCall());
+	}
+	
+	@Test
+	public void varDotMethodCall() throws Exception {
+		// o.f()
+		List<Token> tokens = elems(
+				token(ID, "o"),
+				token(DOT),
+				token(ID, "f"),
+				token(OPEN_PAREN),
+				token(CLOSE_PAREN));
+		Program prog = parseProgFromExp(tokens);
+		
+		MethodCall mc = assertInstanceOfAndReturn(MethodCall.class, firstExp(prog));
+		assertEquals("o", mc.getObj().getId());
+		assertEquals("f", mc.getFExpr().getId());
+		assertTrue(mc.getFExpr().isMethodCall());
+	}
+	
+	//--------------------------------------------------------------------------------
+	//- FieldAccess
+	//--------------------------------------------------------------------------------
+	@Test
+	public void thisFieldAccess() throws Exception {
+		// this.p
+		List<Token> tokens = elems(
+				token(THIS),
+				token(DOT),
+				token(ID, "p"));
+		Program prog = parseProgFromExp(tokens);
+		
+		FieldAccess fa = assertInstanceOfAndReturn(FieldAccess.class, firstExp(prog));
+		assertEquals("this", fa.getObj().getId());
+		assertEquals("p", fa.getField().getId());
+	}
+	
+	@Test
+	public void varFieldAccess() throws Exception {
+		// o.p
+		List<Token> tokens = elems(
+				token(ID, "o"),
+				token(DOT),
+				token(ID, "p"));
+		Program prog = parseProgFromExp(tokens);
+		
+		FieldAccess fa= assertInstanceOfAndReturn(FieldAccess.class, firstExp(prog));
+		assertEquals("o", fa.getObj().getId());
+		assertEquals("p", fa.getField().getId());
+	}
+		
+	
 	private void assertSyntaxError(TokenType expected, ParserError actual) {
 		assertEquals(expected, tokenFromError(actual).getType());
 	}
@@ -876,11 +1530,20 @@ public class ParserTests {
 	}
 
 	private Statement firstStatement(Program program) {
-		return program.getFunctionDefns().get(0).getBody().getStmts().get(0);
+		return program.getBody().getFunctionDefns().get(0).getBody().getStmts().get(0);
 	}
 
 	private Optional<Return> returnStatement(Program program) {
-		return program.getFunctionDefns().get(0).getBody().getReturnStmt();
+		return program.getBody().getFunctionDefns().get(0).getBody().getReturnStmt();
+	}
+	
+	private Optional<Return> firstClassReturnStatement(Program program) {
+		return program.getBody()
+			.getClassDefns()
+			.get(0).getBody()
+			.getMethodDefns()
+			.get(0).getBody()
+			.getReturnStmt();
 	}
 
 	private Expr firstExp(Program program) {
@@ -893,7 +1556,11 @@ public class ParserTests {
 	}
 	
 	private Program parseProgFromStmt(List<Token> stmt) throws Exception {
-		ParseResult parseResult = new ParseResult(setupParser(stmtToProg(stmt)));
+		return parseProg(stmtToProg(stmt));
+	}
+	
+	private Program parseProg(List<Token> stmt) throws Exception {
+		ParseResult parseResult = new ParseResult(setupParser(stmt));
 		return (Program) parseResult.getNode().get();
 	}
 
@@ -945,5 +1612,4 @@ public class ParserTests {
 	private Token token(TokenType t, Object data) {
 		return tokenFac.newToken(t, data, 0, 0);
 	}
-	
-	}
+}

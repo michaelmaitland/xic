@@ -82,6 +82,11 @@ EscapedBackslash = "\\\\"
     {Whitespace}  { /* ignore */ }
     {Comment}     { /* ignore */ }
 
+    "class"       { return newToken(TokenType.CLASS); }
+    "extends"     { return newToken(TokenType.EXTENDS); }
+    "this"        { return newToken(TokenType.THIS); }
+    "new"         { return newToken(TokenType.NEW); }
+
     "use"         { return newToken(TokenType.USE); }
     "if"		  { return newToken(TokenType.IF); }
     "while"  	  { return newToken(TokenType.WHILE); }
@@ -106,6 +111,7 @@ EscapedBackslash = "\\\\"
     ","           { return newToken(TokenType.COMMA); }
     "="           { return newToken(TokenType.EQ); }
     "_"           { return newToken(TokenType.UNDERSCORE); }
+    "\."           { return newToken(TokenType.DOT); }
 
     "+"           { return newToken(TokenType.ADD); }
     "-"           { return newToken(TokenType.SUB); }

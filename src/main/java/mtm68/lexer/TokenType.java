@@ -2,6 +2,10 @@ package mtm68.lexer;
 
 public enum TokenType {
 	// Reserved
+	CLASS,
+	EXTENDS,
+	THIS,
+	NEW,
 	USE,
 	IF,
 	WHILE,
@@ -32,6 +36,7 @@ public enum TokenType {
 	COMMA(","),
     EQ("="),
     UNDERSCORE("_"),
+    DOT("."),
 	
 	// Operators
 	ADD("+"),

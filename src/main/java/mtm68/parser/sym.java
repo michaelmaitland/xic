@@ -24,17 +24,21 @@ public class sym {
   public static final int OR = 43;
   public static final int BOOL = 15;
   public static final int COMMA = 27;
+  public static final int CLASS = 45;
   public static final int DIV = 33;
   public static final int GEQ = 39;
   public static final int OPEN_SQUARE = 18;
   public static final int OPEN_CURLY = 22;
   public static final int IF = 9;
   public static final int EXCLAMATION = 24;
+  public static final int THIS = 47;
+  public static final int DOT = 49;
   public static final int ID = 2;
   public static final int EOF = 0;
   public static final int RETURN = 12;
   public static final int XI = 7;
   public static final int TRUE = 16;
+  public static final int NEW = 48;
   public static final int error = 1;
   public static final int ADD = 30;
   public static final int EQEQ = 40;
@@ -46,6 +50,7 @@ public class sym {
   public static final int ELSE = 10;
   public static final int WHILE = 11;
   public static final int HIGH_MULT = 35;
+  public static final int EXTENDS = 46;
   public static final int LEQ = 37;
   public static final int UNDERSCORE = 29;
   public static final int STRING = 3;
@@ -98,7 +103,12 @@ public class sym {
   "NEQ",
   "AND",
   "OR",
-  "UMINUS"
+  "UMINUS",
+  "CLASS",
+  "EXTENDS",
+  "THIS",
+  "NEW",
+  "DOT"
   };
 }
 

@@ -4,16 +4,19 @@ import static mtm68.lexer.TokenType.ADD;
 import static mtm68.lexer.TokenType.AND;
 import static mtm68.lexer.TokenType.BOOL;
 import static mtm68.lexer.TokenType.CHARACTER;
+import static mtm68.lexer.TokenType.CLASS;
 import static mtm68.lexer.TokenType.CLOSE_CURLY;
 import static mtm68.lexer.TokenType.CLOSE_PAREN;
 import static mtm68.lexer.TokenType.CLOSE_SQUARE;
 import static mtm68.lexer.TokenType.COLON;
 import static mtm68.lexer.TokenType.COMMA;
 import static mtm68.lexer.TokenType.DIV;
+import static mtm68.lexer.TokenType.DOT;
 import static mtm68.lexer.TokenType.ELSE;
 import static mtm68.lexer.TokenType.EQ;
 import static mtm68.lexer.TokenType.EQEQ;
 import static mtm68.lexer.TokenType.EXCLAMATION;
+import static mtm68.lexer.TokenType.EXTENDS;
 import static mtm68.lexer.TokenType.FALSE;
 import static mtm68.lexer.TokenType.GEQ;
 import static mtm68.lexer.TokenType.GT;
@@ -28,6 +31,7 @@ import static mtm68.lexer.TokenType.LT;
 import static mtm68.lexer.TokenType.MOD;
 import static mtm68.lexer.TokenType.MULT;
 import static mtm68.lexer.TokenType.NEQ;
+import static mtm68.lexer.TokenType.NEW;
 import static mtm68.lexer.TokenType.OPEN_CURLY;
 import static mtm68.lexer.TokenType.OPEN_PAREN;
 import static mtm68.lexer.TokenType.OPEN_SQUARE;
@@ -36,6 +40,7 @@ import static mtm68.lexer.TokenType.RETURN;
 import static mtm68.lexer.TokenType.SEMICOLON;
 import static mtm68.lexer.TokenType.STRING;
 import static mtm68.lexer.TokenType.SUB;
+import static mtm68.lexer.TokenType.THIS;
 import static mtm68.lexer.TokenType.TRUE;
 import static mtm68.lexer.TokenType.UNDERSCORE;
 import static mtm68.lexer.TokenType.USE;
@@ -306,6 +311,11 @@ public class SourceFileLexerTests {
 
 	@Test
 	public void testAllSingleTokens() throws IOException {
+		assertSingleToken(CLASS, "class");
+		assertSingleToken(EXTENDS, "extends");
+		assertSingleToken(THIS, "this");
+		assertSingleToken(NEW, "new");
+
 		assertSingleToken(USE, "use");
 		assertSingleToken(IF, "if");
 		assertSingleToken(ELSE, "else");
@@ -333,6 +343,7 @@ public class SourceFileLexerTests {
 		assertSingleToken(COMMA, ",");
 		assertSingleToken(EQ, "=");
 		assertSingleToken(UNDERSCORE, "_");
+		assertSingleToken(DOT, ".");
 
 		assertSingleToken(ADD, "+");
 		assertSingleToken(SUB, "-");

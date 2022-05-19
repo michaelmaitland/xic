@@ -124,7 +124,6 @@ public class IRSimulator {
         initialize();
     }
 
-    /** Setup static data and call ctor functions. */
     private void initialize() {
         malloc(8); // Waste first 8 bytes, to preserve an untouched space for null pointer.
         for (IRData dataWrapper : compUnit.dataMap().values()) {
